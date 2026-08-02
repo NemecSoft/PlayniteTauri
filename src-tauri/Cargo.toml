@@ -1,0 +1,70 @@
+[package]
+name = "playnite-desktop-app"
+version = "10.0.0"
+description = "Playnite - open source video game library manager and launcher (Tauri rewrite)"
+authors = ["Playnite"]
+edition = "2021"
+rust-version = "1.74"
+
+# Cargo bin name must be a valid crate name (no dots). The final output
+# executable is renamed to "Playnite.DesktopApp.exe" by the bundle step
+# (productName in tauri.conf.json) and by a post-build rename script.
+[[bin]]
+name = "playnite_desktop_app"
+path = "src/main.rs"
+
+[lib]
+name = "playnite_desktop_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.31", features = ["bundled"] }
+dirs = "5"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4"
+env_logger = "0.11"
+thiserror = "1"
+winreg = "0.52"
+glob = "0.3"
+percent-encoding = "2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = [
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus",
+    "Win32_UI_Shell",
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+# Fast, production-quality release profile:
+#  - own crate optimized fully (opt-level=3 + thin LTO)
+#  - dependencies built with lighter optimization (opt-level=2, no LTO) which
+#    massively speeds up the huge dependency tree without hurting our code
+#  - codegen-units = 16 for parallel codegen
+#  - incremental for faster rebuilds
+codegen-units = 16
+lto = "thin"
+opt-level = 3
+panic = "abort"
+strip = true
+incremental = true
+
+# Dependencies: build lighter & faster. They only need to be "good enough";
+# the hot paths that matter are in our own crate (which uses opt-level=3).
+# `package."*"` is the widely-supported way to override settings for all
+# dependency crates.
+[profile.release.package."*"]
+opt-level = 2
+codegen-units = 16

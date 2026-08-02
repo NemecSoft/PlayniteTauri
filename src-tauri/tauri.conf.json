@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Playnite.DesktopApp",
+  "version": "10.0.0",
+  "identifier": "link.playnite.desktopapp",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Playnite",
+        "width": 1280,
+        "height": 760,
+        "minWidth": 800,
+        "minHeight": 500,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": false,
+        "shadow": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "nsis",
+    "shortDescription": "Open source video game library manager and launcher",
+    "longDescription": "Playnite is an open source video game library manager and launcher with support for 3rd party libraries and game emulation.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "resources": [],
+    "copyright": "Playnite"
+  },
+  "plugins": {}
+}

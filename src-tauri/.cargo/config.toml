@@ -1,0 +1,19 @@
+# Accelerated Rust compilation for this project.
+#  - sccache: cross-build cache of compiled artifacts (massively speeds up
+#    repeated builds of dependencies).
+#  - We avoid overriding `rustc` (which would bypass sccache for the wrapper),
+#    and instead let sccache cache via RUSTC_WRAPPER.
+
+[build]
+# Number of parallel jobs; adjust to your CPU cores.
+jobs = 8
+
+[net]
+# Allow more retries for flaky network mirrors.
+retry = 3
+
+[profile.dev]
+incremental = true
+
+[profile.release]
+incremental = true
