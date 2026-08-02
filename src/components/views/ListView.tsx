@@ -2,6 +2,7 @@
 
 import { useGamesStore } from "../../stores/gamesStore";
 import type { Group } from "../../utils/selectors";
+import { displayName } from "../../utils/display";
 import { Star, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 import { useI18n } from "../../i18n";
 
@@ -66,8 +67,27 @@ export default function ListView({ groups }: Props) {
                     )}
                   </td>
                   <td>
-                    {game.favorite && <Star size={11} className="fav-star" fill="currentColor" style={{ marginRight: 4, verticalAlign: 1 }} />}
-                    {game.name}
+                    <div>{game.favorite && <Star size={11} className="fav-star" fill="currentColor" style={{ marginRight: 4, verticalAlign: 1 }} />}
+                      {displayName(game)}
+                    </div>
+                    {(game.localizedNames?.length || game.alternateNames?.length) ? (
+                      <div className="list-alt-names" title={[
+                        ...((game.localizedNames || []).map((ln) => `${ln.language}: ${ln.name}`)),
+                        ...((game.alternateNames || [])),
+                      ].join("\n")}>
+                        {game.localizedNames?.slice(0, 2).map((ln) => (
+                          <span className="alt-name" key={ln.language}>{ln.name}</span>
+                        ))}
+                        {game.alternateNames?.slice(0, 1).map((alt) => (
+                          <span className="alt-name alias" key={alt}>{alt}</span>
+                        ))}
+                        {((game.localizedNames?.length || 0) + (game.alternateNames?.length || 0)) > 3 ? (
+                          <span className="alt-name more">
+                            +{((game.localizedNames?.length || 0) + (game.alternateNames?.length || 0)) - 3}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </td>
                   <td>{game.platform.join(", ") || "—"}</td>
                   <td>{game.genre.slice(0, 3).join(", ") || "—"}</td>

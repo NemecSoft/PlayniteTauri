@@ -4,6 +4,7 @@
 
 import { pinyin } from "pinyin-pro";
 import type { Game } from "../types/models";
+import { displayName } from "./display";
 
 const normalize = (s: string) =>
   s.toLocaleLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
@@ -80,5 +81,18 @@ export function matchSearch(game: Game, query: string): boolean {
   if (!query) return true;
   const q = normalize(query.trim());
   if (!q) return true;
-  return getSearchHaystack(game).includes(q);
+
+  // Search ONLY the displayed name (see displayName): the Chinese localized
+  // name, or the English name as fallback. We do NOT search stored alternate
+  // names / metadata, so the results always match what is shown.
+  const shown = displayName(game);
+  const shownNorm = normalize(shown);
+  const initials = pinyinInitials(shown);
+
+  // Match either:
+  //  - substring of the displayed name (e.g. "zy" in "自由之翼" -> "zizhiyi",
+  //    wait "自由之翼" normalize lowercased: "自由之翼" has no ascii letters,
+  //    so it won't substring-match "zy"; the match comes from initials)
+  //  - substring of the pinyin initials (e.g. "zy" in "xjzebzyz" -> matches)
+  return shownNorm.includes(q) || (!!initials && initials.includes(q));
 }

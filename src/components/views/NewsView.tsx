@@ -4,6 +4,7 @@
 
 import { useMemo } from "react";
 import { useGamesStore } from "../../stores/gamesStore";
+import { displayName } from "../../utils/display";
 import { Sparkles, CalendarDays, Play } from "lucide-react";
 import { useI18n } from "../../i18n";
 
@@ -52,7 +53,7 @@ export default function NewsView() {
             </div>
             <div className="news-body">
               <div className="news-title-row">
-                <span className="news-name">{g.name}</span>
+                <span className="news-name">{displayName(g)}</span>
                 {g.releaseDate && (
                   <span className="news-date">
                     <CalendarDays size={13} />

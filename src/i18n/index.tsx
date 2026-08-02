@@ -1,65 +1,46 @@
-// Lightweight i18n: React Context + typed dictionaries.
-// Supports English, Simplified Chinese and Traditional Chinese.
-// Language switching is instant and reactive via context state.
+// i18n facade. The underlying engine is i18next (see ./config.ts), aligned
+// with the tauri-template stack. We expose a `useI18n()` hook compatible with
+// the previous custom implementation so components can switch with minimal
+// churn. We intentionally read from the i18next instance directly (instead of
+// react-i18next's hook) to avoid any hook/Suspense pitfalls under React 19.
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { en } from "./locales/en";
-import { zhCN } from "./locales/zh-CN";
-import { zhTW } from "./locales/zh-TW";
+import { useSyncExternalStore } from "react";
+import { i18n, type LanguageCode } from "./config";
 
-export type LanguageCode = "en-US" | "zh-CN" | "zh-TW";
-export type TranslationKey = keyof typeof en;
+export type { LanguageCode };
 
-type Dict = Record<TranslationKey, string>;
-
-const DICTS: Record<LanguageCode, Dict> = {
-  "en-US": en,
-  "zh-CN": zhCN,
-  "zh-TW": zhTW,
-};
-
-export type TranslateFn = (key: TranslationKey, vars?: Record<string, string | number>) => string;
-
-interface I18nContextValue {
-  lang: LanguageCode;
-  setLang: (l: LanguageCode) => void;
-  t: TranslateFn;
+/** Subscribe to i18next language/version changes so components re-render. */
+function subscribe(cb: () => void): () => void {
+  i18n.on("languageChanged", cb);
+  return () => {
+    i18n.off("languageChanged", cb);
+  };
 }
 
-const I18nContext = createContext<I18nContextValue>({
-  lang: "en-US",
-  setLang: () => {},
-  t: (k) => k,
-});
-
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<LanguageCode>("en-US");
-
-  const value = useMemo<I18nContextValue>(() => {
-    const dict = DICTS[lang] ?? en;
-    const t: TranslateFn = (key, vars) => {
-      const template = (dict[key] as string) ?? (en[key] as string) ?? key;
-      if (!vars) return template;
-      return Object.entries(vars).reduce(
-        (acc, [k, v]) => acc.replace(`{${k}}`, String(v)),
-        template
-      );
-    };
-    return { lang, setLang, t };
-  }, [lang]);
-
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
-}
-
+/** Returns the current language + setter and the translation function `t`. */
 export function useI18n() {
-  return useContext(I18nContext);
+  const lang = useSyncExternalStore(
+    subscribe,
+    () => i18n.language as LanguageCode,
+    () => i18n.language as LanguageCode
+  );
+
+  return {
+    lang,
+    setLang: (l: LanguageCode) => {
+      if (l !== i18n.language) i18n.changeLanguage(l);
+    },
+    t: (key: string, vars?: Record<string, string | number>) =>
+      vars ? i18n.t(key, vars) : i18n.t(key),
+  };
 }
 
-/** Applies the active language for non-React bits (e.g. `document.documentElement.lang`). */
-export function useApplyLang() {
-  const { lang } = useI18n();
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
-  return lang;
+/** Alias for direct i18next t() when not in a component. */
+export function t(key: string, vars?: Record<string, string | number>) {
+  return vars ? i18n.t(key, vars) : i18n.t(key);
+}
+
+/** Applies the active language to `document.documentElement.lang` (handled by i18next config). */
+export function useApplyLang(): LanguageCode {
+  return useI18n().lang;
 }

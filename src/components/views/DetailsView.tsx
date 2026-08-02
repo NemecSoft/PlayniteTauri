@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useGamesStore } from "../../stores/gamesStore";
 import type { Group } from "../../utils/selectors";
+import { displayName } from "../../utils/display";
 import { Play, Star, Pencil, Image as ImageIcon } from "lucide-react";
 import GameEditModal from "../GameEditModal";
 import { useI18n } from "../../i18n";
@@ -69,7 +70,22 @@ export default function DetailsView({ groups }: Props) {
         </div>
 
         <div className="info">
-          <h1>{selected.name}</h1>
+          <h1>{displayName(selected)}</h1>
+
+          {/* All names: localized names + alternate names */}
+          {(selected.localizedNames?.length || selected.alternateNames?.length) ? (
+            <div className="all-names">
+              {selected.localizedNames?.map((ln) => (
+                <span className="name-tag" key={ln.language}>
+                  <span className="lang">{ln.language}</span> {ln.name}
+                </span>
+              ))}
+              {selected.alternateNames?.map((alt) => (
+                <span className="name-tag alt" key={alt}>{alt}</span>
+              ))}
+            </div>
+          ) : null}
+
           <div className="meta">
             {selected.developer.join(", ") || t("details_unknownDeveloper")}
             {selected.releaseDate ? ` • ${new Date(selected.releaseDate).getFullYear()}` : ""}

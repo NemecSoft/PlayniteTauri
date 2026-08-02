@@ -33,3 +33,7 @@
 ### 规范
 - [文档同步约定](./CONTRIBUTING.md) — 每次修改后如何更新文档
 - [变更记录](./CHANGELOG.md) — 按时间记录每次功能变更
+
+### AI 开发规范
+- [AGENTS.md](../AGENTS.md) — AI 助手开发规则（架构 / 数据模型 / i18n / 主题 / 绿色存储约定）
+- `.codebuddy/skills/` — CodeBuddy 项目级 skill：`init` / `check` / `cleanup` / `change-package-manager`

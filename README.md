@@ -8,8 +8,9 @@
 | --- | --- |
 | 桌面框架 | Tauri v2（WebView2 / Rust） |
 | 后端 | Rust 1.95（MSVC 工具链） |
-| 前端 | React 18 + TypeScript + Vite 5 |
-| 状态管理 | Zustand |
+| 前端 | React 19（React Compiler）+ TypeScript 6 + Vite 8 |
+| 状态管理 | Zustand 5（UI 状态）+ TanStack Query 5（服务端状态） |
+| UI 组件 | shadcn/ui + Tailwind CSS 4 + Radix |
 | 图标 | lucide-react |
 | 存储 | SQLite（rusqlite） |
 | 国际化 | 自研轻量 i18n（React Context），支持 English / 简体中文 / 繁體中文 |
@@ -119,3 +120,4 @@ npm run tauri dev
   - （注：WebView2 运行时用户数据由 Tauri 管理，详见 [green-storage](./docs/design/green-storage.md) 兼容性说明）
 - 原版 Playnite 是一个约 1000+ 源文件的大型项目，此处复刻了其核心架构与主要功能（游戏库、导入、视图、启动、插件、设置），采用 Tauri 推荐的技术栈。
 - 完整设计文档见 [docs/](./docs/README.md)；变更记录见 [docs/CHANGELOG.md](./docs/CHANGELOG.md)。
+- AI 开发规范见 [AGENTS.md](./AGENTS.md)；CodeBuddy 项目级 skill 位于 `.codebuddy/skills/`（`init` / `check` / `cleanup` / `change-package-manager`）。

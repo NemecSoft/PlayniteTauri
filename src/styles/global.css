@@ -1038,6 +1038,76 @@ textarea {
   color: var(--text-secondary);
 }
 
+/* ---------- All names (localized + alternate) ---------- */
+.alt-names,
+.list-alt-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.list-alt-names {
+  margin-top: 2px;
+  font-size: 11px;
+}
+.alt-name {
+  display: inline-block;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list-alt-names .alt-name {
+  font-size: 10px;
+  padding: 0 6px;
+  max-width: 160px;
+}
+.alt-name.alias {
+  border-style: dashed;
+  color: var(--text-dim);
+}
+.alt-name.more {
+  background: transparent;
+  border: none;
+  color: var(--accent-hover);
+  padding: 1px 2px;
+}
+
+.all-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+.name-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 9px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.name-tag .lang {
+  color: var(--accent-hover);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.name-tag.alt {
+  border-style: dashed;
+  color: var(--text-secondary);
+}
+
 /* ---------- News (recently added) ---------- */
 .news-header {
   display: flex;

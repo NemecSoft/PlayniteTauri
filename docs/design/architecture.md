@@ -6,10 +6,11 @@
 | --- | --- | --- |
 | 桌面框架 | **Tauri v2** | WebView2（Windows）承载前端，Rust 负责后端与系统能力 |
 | 后端 | Rust 1.95（MSVC 工具链） | `x86_64-pc-windows-msvc`，由 `rust-toolchain.toml` 强制指定 |
-| 前端 | React 18 + TypeScript + Vite 5 | 构建产物嵌入 Rust 二进制 |
-| 状态管理 | Zustand | 轻量、可持久化 |
+| 前端 | React 19（React Compiler）+ TypeScript 6 + Vite 8 | 构建产物嵌入 Rust 二进制 |
+| 状态管理 | Zustand 5（UI）+ TanStack Query 5（服务端） | 分工明确 |
+| UI 组件 | shadcn/ui + Tailwind CSS 4 + Radix | 组件库基础 |
 | 存储 | SQLite（rusqlite） | 游戏库 / 设置 / 平台 / 插件元数据 |
-| 国际化 | 自研轻量 i18n（React Context） | 英语 / 简体中文 / 繁體中文 |
+| 国际化 | i18next + react-i18next | 英语(en-US) / 简体中文(zh-CN) / 繁體中文(zh-TW) |
 | 图标 | lucide-react | |
 
 ## 模块划分
