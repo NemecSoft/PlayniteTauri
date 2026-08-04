@@ -2,9 +2,10 @@
 
 ## Overview
 
-PlayniteTauri 是用 **Tauri v2（Rust）+ React 18 + TypeScript + Vite** 复刻的 Playnite
-游戏库管理器。项目已包含：多名称、拼音搜索、多语言、双主题、登录、公告、示例游戏、
-绿色存储、自动构建等完整功能。完整设计见 `docs/`。
+PlayniteTauri 是一个游戏库管理器（技术栈见下方"技术栈约束"）。它并非复刻某个具体产品，
+而是参考 Playnite 等同类工具的理念，并实现了大量自己的设计与特性。项目已包含：多名称、
+拼音搜索、多语言、多主题、登录、公告、示例游戏、封面图库（CoverImages）、绿色存储、
+自动构建等完整功能。完整设计见 `docs/`。
 
 ## 核心规则
 
@@ -28,11 +29,15 @@ PlayniteTauri 是用 **Tauri v2（Rust）+ React 18 + TypeScript + Vite** 复刻
 
 ### 技术栈约束
 - Tauri v2 文档为准；Rust 用现代格式化 `format!("{var}")`
-- **React 19（React Compiler）+ TypeScript 6 + Vite 8**
-- 状态管理：Zustand 5（UI）+ TanStack Query 5（服务端状态）
-- UI 组件：shadcn/ui + Tailwind CSS 4 + Radix
-- 国际化：**i18next + react-i18next**（`src/i18n/config.ts`，字典在 `locales/*.json`，三语 en-US / zh-CN / zh-TW）
+- **React 19（React Compiler）+ TypeScript 6 + Vite 8**（见 `package.json`）
+- 状态管理：Zustand 5（UI 状态）+ TanStack Query 5（服务端状态）
+- **UI 样式：纯手写 CSS**（`src/styles/global.css`，CSS 变量 + `[data-theme]` 多主题）
+- 国际化：**i18next + react-i18next**（`src/i18n/config.ts`，字典在 `locales/*.json`，
+  运行时语言 code：`en-US` / `zh-CN` / `zh-TW`，对应文件 `en.json` / `zh-CN.json` / `zh-TW.json`）
 - `pinyin-pro` 做拼音搜索；`qrcode.react` 做登录二维码
+- 注意：`package.json` 仍残留 `tailwindcss` / `@radix-ui/*` / `sonner` 等依赖，但**代码中已不使用**
+  （因 Tailwind 4 preflight 冲突曾导致黑屏，相关引入与 `src/components/ui/`、`src/lib/` 已移除）。
+  不要新增 Tailwind 工具类或 shadcn 组件，UI 继续用 `global.css`。
 
 ## 关键架构模式
 
@@ -56,17 +61,26 @@ React → api/client.ts (invoke) → commands/*.rs → db.rs (SQLite)
 - 改字段需 `models.rs` ↔ `types/models.ts` 同步，加 `#[serde(default)]` 保证兼容
 
 ### 国际化（i18next）
-- 所有 UI 文本用 `useI18n().t("key")` 或 `useTranslation().t("key")`
-- 字典在 `locales/{en-US,zh-CN,zh-TW}.json`；新增 key 需同步三份 JSON
+- 所有 UI 文本用 `useI18n().t("key")`（`src/i18n/index.tsx` 的 `useSyncExternalStore` 封装，
+  不直接依赖 react-i18next hook）
+- 字典在 `locales/{en,zh-CN,zh-TW}.json`；新增 key 需同步三份 JSON
 - 带占位符用 `t("key", { var })`
 - 语言持久化：`App.tsx` 监听 `settings.language` → `setLang()` → `i18n.changeLanguage()`
 
 ### 主题
-- CSS 变量驱动（`--accent`、`--bg-*` 等），默认 + `[data-theme]` 覆盖
+- CSS 变量驱动（`--accent`、`--bg-*` 等），默认 + `[data-theme]` 覆盖（多主题：卡通 / 赛博朋克 /
+  孟菲斯 / 新拟态 / 美漫 / 吉卜力 / 中国风）
 - 不硬编码颜色；新增主题在 `src/utils/theme.ts` + `global.css`
+
+### 封面图库（CoverImages）
+- `get_games` 时后端扫描 `CoverImages/` 目录，按"规范化文件名 ↔ 游戏中文名/多名称/别名/原名"
+  自动匹配空封面（`covers.rs`，索引缓存）
+- 本地图片经 `read_image` 命令返回字节，前端 `utils/assets.ts` 转 blob URL 并缓存
 
 ### 绿色存储
 - 所有数据存 exe 目录（`settings.rs` 用 `current_exe()`）
+- **应用设置（语言/主题/卡片等）存 `config.json`**（`config.rs` 读写，不存数据库）
+- 游戏库/用户等业务数据存 SQLite（`library/library.db`）
 - 不写注册表、不用 C 盘 / `%LOCALAPPDATA%`
 - 构建产物不入库（见 `.gitignore`）
 

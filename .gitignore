@@ -3,6 +3,7 @@ node_modules/
 
 # Frontend build output
 dist/
+admin-dist/
 
 # Rust / Tauri build output
 src-tauri/target/

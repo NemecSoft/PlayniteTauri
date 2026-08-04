@@ -80,6 +80,22 @@ export interface Game {
   links: GameLink[];
   actions: GameAction[];
   featuresEnabled: boolean;
+  /** HTML guide / how-to-play instructions shown on the detail page. */
+  guide?: string;
+  /** Screenshot / gallery image URLs (supports gif/png/jpg/...). */
+  screenshots?: string[];
+  /** Gameplay / live videos. */
+  videos?: GameVideo[];
+  /** Access level required to play: 1 | 2 | 3. */
+  gameLevel: number;
+}
+
+/** A gameplay/live video attached to a game. */
+export interface GameVideo {
+  /** "youtube" | "file" | "url" */
+  type: string;
+  url: string;
+  name?: string;
 }
 
 export interface AppSettings {
@@ -110,6 +126,51 @@ export interface AppSettings {
   loggedIn: boolean;
   /** Logged-in username (for account login). */
   username?: string;
+  /** Whether to record play time when launching games. */
+  trackPlaytime: boolean;
+  /** Grid card width in px. */
+  cardWidth: number;
+  /** Gap between grid cards in px (0..20). */
+  cardGap: number;
+  /** Path to the enterprise user config JSON. */
+  enterpriseConfigPath: string;
+  /** Current session user kind: "enterprise" | "personal" | "". */
+  currentUserKind: string;
+  /** Current session user display name. */
+  currentUserName: string;
+  /** Current session user level (1|2|3). */
+  currentUserLevel: number;
+  /** User-selected UI font family (empty = theme default). */
+  fontFamily: string;
+}
+
+/** The resolved current user (enterprise or personal or guest). */
+export interface CurrentUser {
+  kind: "enterprise" | "personal" | "guest";
+  name: string;
+  account: string;
+  level: number;
+  enterprise: boolean;
+  configPath: string;
+  configExists: boolean;
+}
+
+/** A personal user as exposed to the admin app (no password). */
+export interface PublicUser {
+  id: string;
+  account: string;
+  name: string;
+  level: number;
+  createdAt: string;
+}
+
+export interface EnterprisePreview {
+  path: string;
+  exists: boolean;
+  records: number;
+  matchedIp?: string;
+  matchedName: string;
+  matchedLevel: number;
 }
 
 export interface LibraryStats {

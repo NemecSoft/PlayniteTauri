@@ -28,6 +28,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   loginType: "wechat",
   loggedIn: false,
   username: undefined,
+  trackPlaytime: true,
+  cardWidth: 180,
+  cardGap: 8,
+  enterpriseConfigPath: "D:/1.json",
+  currentUserKind: "",
+  currentUserName: "",
+  currentUserLevel: 3,
+  fontFamily: "",
 };
 
 interface SettingsState {

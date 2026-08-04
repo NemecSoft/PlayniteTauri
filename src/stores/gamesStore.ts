@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import { api } from "../api/client";
+import { useAuthStore } from "./authStore";
+import { preloadImages } from "../utils/assets";
 import type { Game } from "../types/models";
 
 export type ViewMode = "grid" | "list" | "details";
@@ -30,6 +32,10 @@ interface GamesState {
   activeCategoryFilter: string;
   activeGenreFilter: string;
   activeDeveloperFilter: string;
+  /** Tags checked in the sidebar (AND semantics: keep games that contain all of them). */
+  selectedTags: string[];
+  /** Whether the sidebar is expanded. Auto-hides by default. */
+  sidebarVisible: boolean;
 
   // actions
   load: () => Promise<void>;
@@ -45,6 +51,10 @@ interface GamesState {
   setCategoryFilter: (c: string) => void;
   setGenreFilter: (g: string) => void;
   setDeveloperFilter: (d: string) => void;
+  toggleTag: (tag: string) => void;
+  clearTags: () => void;
+  setSidebarVisible: (v: boolean) => void;
+  toggleSidebar: () => void;
   clearFilters: () => void;
   selectGame: (id: string, multi?: boolean) => void;
   clearSelection: () => void;
@@ -53,6 +63,7 @@ interface GamesState {
   deleteGame: (id: string) => Promise<void>;
   launchGame: (id: string) => Promise<boolean>;
   saveGame: (game: Game) => Promise<void>;
+  rescanCovers: () => Promise<{ matched: number; coverFiles: number; considered: number; dirExists: boolean; dirPath: string }>;
 }
 
 export const useGamesStore = create<GamesState>((set, get) => ({
@@ -73,12 +84,18 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   activeCategoryFilter: "all",
   activeGenreFilter: "all",
   activeDeveloperFilter: "all",
+  selectedTags: [],
+  sidebarVisible: false,
 
   load: async () => {
     set({ loading: true });
     try {
       const games = await api.getGames();
       set({ games, loading: false, error: undefined });
+      // Images load lazily via IntersectionObserver in the grid (see
+      // GridView). We deliberately do NOT preload all covers at startup,
+      // since a 1000+ game library would otherwise flood the backend IPC
+      // and stall the UI for many seconds.
     } catch (e) {
       set({ loading: false, error: String(e) });
     }
@@ -96,6 +113,16 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setCategoryFilter: (c) => set({ activeCategoryFilter: c }),
   setGenreFilter: (g) => set({ activeGenreFilter: g }),
   setDeveloperFilter: (d) => set({ activeDeveloperFilter: d }),
+  toggleTag: (tag) =>
+    set((s) => {
+      const has = s.selectedTags.includes(tag);
+      return {
+        selectedTags: has ? s.selectedTags.filter((t) => t !== tag) : [...s.selectedTags, tag],
+      };
+    }),
+  clearTags: () => set({ selectedTags: [] }),
+  setSidebarVisible: (v) => set({ sidebarVisible: v }),
+  toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   clearFilters: () =>
     set({
       searchQuery: "",
@@ -106,6 +133,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
       activeCategoryFilter: "all",
       activeGenreFilter: "all",
       activeDeveloperFilter: "all",
+      selectedTags: [],
     }),
 
   selectGame: (id, multi = false) =>
@@ -148,13 +176,42 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   },
 
   launchGame: async (id) => {
+    const game = get().games.find((g) => g.id === id);
+    if (game) {
+      // Front-end access check (backend enforces too). Show a friendly toast
+      // if the current user's level is too low to play this game.
+      const canPlay = useAuthStore.getState().canPlay(game.gameLevel);
+      if (!canPlay) {
+        void api.showNotification(
+          "等级不足",
+          `你的用户等级（${useAuthStore.getState().userLevel}）无法游玩《${game.name}》`
+        );
+        return false;
+      }
+    }
     return api.launchGame(id);
   },
 
   saveGame: async (game) => {
+    const before = get().games.find((g) => g.id === game.id);
     const saved = await api.saveGame(game);
     set({
       games: get().games.map((g) => (g.id === saved.id ? saved : g)),
     });
+    // If the cover image changed, preload the new local image so the view
+    // re-renders with the blob URL.
+    if (before?.coverImage !== saved.coverImage && saved.coverImage) {
+      void preloadImages([saved.coverImage]).then(() => {
+        set({ games: [...get().games] });
+      });
+    }
+  },
+
+  rescanCovers: async () => {
+    const res = await api.scanCovers();
+    set({ games: res.games });
+    // Image loading is handled lazily by GridView's IntersectionObserver;
+    // no need to warm the entire cover cache after a rescan.
+    return res.outcome;
   },
 }));

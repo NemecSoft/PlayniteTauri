@@ -87,6 +87,24 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/271590".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/271590")],
             features_enabled: true,
+            guide: Some(
+                "<h3>How to Play</h3><p>GTA V is an open-world action-adventure. Follow the \
+                 story missions (marked by letters on the map) to progress through heists, or \
+                 explore Los Santos freely.</p><h4>Controls</h4><ul><li><b>WASD</b> — move</li>\
+                 <li><b>Mouse</b> — look / shoot</li><li><b>Shift</b> — run</li><li><b>F</b> — \
+                 enter/exit vehicle</li><li><b>Tab</b> — switch character</li></ul>".into(),
+            ),
+            screenshots: vec![
+                "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/271590/ss_1.jpg".into(),
+                "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/271590/ss_2.jpg".into(),
+                "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/271590/ss_3.jpg".into(),
+            ],
+            videos: vec![crate::models::GameVideo {
+                r#type: "youtube".into(),
+                url: "https://www.youtube.com/watch?v=QkkoHAzjnUs".into(),
+                name: Some("Gameplay Trailer".into()),
+            }],
+            game_level: 1,
         },
         Game {
             id: "sample-starcraft".into(),
@@ -145,6 +163,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Battle.net".into(), url: "https://starcraft2.blizzard.com" .into() }],
             actions: vec![url_action("https://starcraft2.blizzard.com")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
         Game {
             id: "sample-cyberpunk".into(),
@@ -203,6 +225,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/1091500".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/1091500")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
         Game {
             id: "sample-witcher3".into(),
@@ -261,6 +287,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/292030".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/292030")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
         Game {
             id: "sample-eldenring".into(),
@@ -319,6 +349,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/1245620".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/1245620")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
         Game {
             id: "sample-celeste".into(),
@@ -376,6 +410,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/504230".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/504230")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
         Game {
             id: "sample-hades".into(),
@@ -433,6 +471,10 @@ pub fn sample_games() -> Vec<Game> {
             links: vec![GameLink { name: "Steam".into(), url: "https://store.steampowered.com/app/1145360".into() }],
             actions: vec![url_action("https://store.steampowered.com/app/1145360")],
             features_enabled: true,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         },
     ]
 }

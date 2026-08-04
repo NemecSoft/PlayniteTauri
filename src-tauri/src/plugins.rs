@@ -144,6 +144,10 @@ impl PluginHost {
                     links: Vec::new(),
                     actions: Vec::new(),
                     features_enabled: false,
+                    guide: None,
+                    screenshots: Vec::new(),
+                    videos: Vec::new(),
+                    game_level: 1,
                 });
             }
         }

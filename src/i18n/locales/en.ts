@@ -2,7 +2,19 @@
 
 export const en = {
   // --- App title ---
-  appTitle: "Playnite",
+  appTitle: "Gold Edition",
+
+  // --- Title bar ---
+  default_edition: "Gold Edition",
+  titlebar_menu: "Menu",
+  titlebar_menu_settings: "Settings",
+  titlebar_menu_regen_tags: "Regenerate tags",
+  titlebar_menu_regen_tags_title: "Auto-tag games by their name (masterpiece, multiplayer, horror, etc.)",
+  titlebar_menu_regen_tags_done: "Tags regenerated",
+  titlebar_menu_regen_tags_done_body: "Tags refreshed for {{count}} games",
+  titlebar_menu_regen_tags_failed: "Failed to regenerate tags",
+  titlebar_menu_reload: "Reload library",
+  titlebar_menu_reload_title: "Reload games from the database",
 
   // --- Login ---
   login_welcome: "Welcome back! Sign in to continue",
@@ -26,9 +38,11 @@ export const en = {
   sidebar_genres: "Genres",
   sidebar_developers: "Developers",
   sidebar_scanLibrary: "Scan Library",
+  sidebar_handle_hint: "Move the mouse here to filter games by tag",
+  sidebar_tagSearch: "Filter tags...",
 
   // --- Toolbar ---
-  toolbar_searchPlaceholder: "Search games...",
+  toolbar_searchPlaceholder: "Search games, supports first-letter of name",
   toolbar_addGames: "Add Games",
   toolbar_settings: "Settings",
   toolbar_sort: "Sort",
@@ -40,6 +54,8 @@ export const en = {
   sort_lastPlayed: "Last Played",
 
   // --- Group labels ---
+  images_loading_title: "Loading images",
+  images_loading: "Loading images {{loaded}}/{{total}}",
   group_all: "All Games",
   group_unknown: "Unknown",
   group_uncategorized: "Uncategorized",

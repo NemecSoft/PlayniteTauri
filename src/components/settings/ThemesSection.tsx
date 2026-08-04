@@ -21,8 +21,8 @@ export default function ThemesSection() {
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {THEMES.map((theme) => {
           const active = current === theme.id;
-          const label = theme.id === "Cartoon" ? t("settings_themeCartoon") : t("settings_themeCyberpunk");
-          const desc = theme.id === "Cartoon" ? t("settings_themeCartoonDesc") : t("settings_themeCyberpunkDesc");
+          const label = t(theme.labelKey);
+          const desc = t(theme.descKey);
           return (
             <button
               key={theme.id}
@@ -51,27 +51,13 @@ export default function ThemesSection() {
                   display: "flex",
                   flexDirection: "column",
                   border: "1px solid var(--border-strong)",
-                  boxShadow: theme.dataAttr === "cyberpunk" ? "0 0 14px rgba(0,255,255,0.4)" : "0 2px 8px rgba(0,0,0,0.3)",
+                  boxShadow: theme.glow
+                    ? "0 0 14px rgba(0,255,255,0.4)"
+                    : "0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
-                <div
-                  style={{
-                    height: 14,
-                    background:
-                      theme.dataAttr === "cyberpunk"
-                        ? "linear-gradient(90deg,#0b1b2b,#1a0b2e)"
-                        : "linear-gradient(90deg,#6edbcf,#ffb3c1)",
-                  }}
-                />
-                <div
-                  style={{
-                    flex: 1,
-                    background:
-                      theme.dataAttr === "cyberpunk"
-                        ? "#0a0f1e"
-                        : "#fff7ec",
-                  }}
-                />
+                <div style={{ height: 14, background: theme.previewAccent }} />
+                <div style={{ flex: 1, background: theme.previewBg }} />
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>

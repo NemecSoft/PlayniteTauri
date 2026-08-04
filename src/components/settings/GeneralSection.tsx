@@ -73,6 +73,16 @@ export default function GeneralSection() {
         />
         <label htmlFor="autoBackup">{t("settings_autoBackup")}</label>
       </div>
+
+      <div className="field checkbox">
+        <input
+          type="checkbox"
+          id="trackPlaytime"
+          checked={settings.trackPlaytime}
+          onChange={(e) => save({ trackPlaytime: e.target.checked })}
+        />
+        <label htmlFor="trackPlaytime">{t("settings_trackPlaytime")}</label>
+      </div>
     </div>
   );
 }

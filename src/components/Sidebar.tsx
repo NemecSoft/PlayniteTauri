@@ -1,175 +1,72 @@
-// Left sidebar: library quick-filters and filterable facets.
+// Left sidebar: only the tag list (no title, no search box, no collapse
+// button). Auto-hides on mouseleave; re-appears when the user moves the mouse
+// onto the vertical hint strip on the left edge.
 
-import {
-  LayoutGrid,
-  Star,
-  Layers,
-  Gamepad2,
-  Tag,
-  Folder,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { useMemo } from "react";
 import { useGamesStore } from "../stores/gamesStore";
-import { useLibraryStore } from "../stores/libraryStore";
 import { useI18n } from "../i18n";
 
 export default function Sidebar() {
   const games = useGamesStore((s) => s.games);
-  const activePage = useGamesStore((s) => s.activePage);
-  const setPage = useGamesStore((s) => s.setPage);
-  const showHidden = useGamesStore((s) => s.showHidden);
-  const showFavorites = useGamesStore((s) => s.showFavorites);
-  const toggleHidden = useGamesStore((s) => s.toggleHidden);
-  const toggleFavorites = useGamesStore((s) => s.toggleFavorites);
-  const activePlatform = useGamesStore((s) => s.activePlatformFilter);
-  const setPlatformFilter = useGamesStore((s) => s.setPlatformFilter);
-  const activeCategory = useGamesStore((s) => s.activeCategoryFilter);
-  const setCategoryFilter = useGamesStore((s) => s.setCategoryFilter);
-  const activeGenre = useGamesStore((s) => s.activeGenreFilter);
-  const setGenreFilter = useGamesStore((s) => s.setGenreFilter);
-  const activeDeveloper = useGamesStore((s) => s.activeDeveloperFilter);
-  const setDeveloperFilter = useGamesStore((s) => s.setDeveloperFilter);
-  const scanSteam = useLibraryStore((s) => s.scanSteam);
-  const reloadGames = useGamesStore((s) => s.load);
+  const selectedTags = useGamesStore((s) => s.selectedTags);
+  const toggleTag = useGamesStore((s) => s.toggleTag);
+  const sidebarVisible = useGamesStore((s) => s.sidebarVisible);
+  const setSidebarVisible = useGamesStore((s) => s.setSidebarVisible);
   const { t } = useI18n();
 
-  const categories = Array.from(new Set(games.flatMap((g) => g.category)));
-  const genres = Array.from(new Set(games.flatMap((g) => g.genre)));
-  const platforms = Array.from(new Set(games.flatMap((g) => g.platform)));
-  const developers = Array.from(new Set(games.flatMap((g) => g.developer)));
+  // Aggregate tags from all games with counts (sorted by frequency).
+  const tagStats = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const g of games) {
+      for (const tag of g.tags) {
+        const k = tag.trim();
+        if (!k) continue;
+        map.set(k, (map.get(k) || 0) + 1);
+      }
+    }
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [games]);
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-section">
-        <button
-          className={`sidebar-item ${activePage === "news" ? "active" : ""}`}
-          onClick={() => setPage(activePage === "news" ? "library" : "news")}
-        >
-          <Sparkles size={16} />
-          {t("news_title")}
-        </button>
-        <button
-          className={`sidebar-item ${activePage !== "news" && !showFavorites && !showHidden ? "active" : ""}`}
-          onClick={() => {
-            setPage("library");
-            toggleFavorites();
-          }}
-        >
-          <LayoutGrid size={16} />
-          {t("sidebar_allGames")}
-          <span className="count">{games.length}</span>
-        </button>
-        <button
-          className={`sidebar-item ${showFavorites ? "active" : ""}`}
-          onClick={() => {
-            setPage("library");
-            toggleFavorites();
-          }}
-        >
-          <Star size={16} />
-          {t("sidebar_favorites")}
-        </button>
-        <button
-          className={`sidebar-item ${showHidden ? "active" : ""}`}
-          onClick={() => {
-            setPage("library");
-            toggleHidden();
-          }}
-        >
-          <Layers size={16} />
-          {t("sidebar_hidden")}
-        </button>
+    <>
+      <div
+        className={`sidebar-handle ${sidebarVisible ? "hidden" : ""}`}
+        onMouseEnter={() => setSidebarVisible(true)}
+        onClick={() => setSidebarVisible(true)}
+        title={t("sidebar_open")}
+      >
+        {t("sidebar_handle_hint")}
       </div>
 
-      <div className="sidebar-section">
-        <div className="sidebar-title">
-          <Gamepad2 size={14} />
-          {t("sidebar_platforms")}
+      <aside
+        className={`sidebar ${sidebarVisible ? "" : "collapsed"}`}
+        onMouseLeave={() => setSidebarVisible(false)}
+      >
+        <div className="sidebar-tag-list">
+          {tagStats.map(({ name, count }) => {
+            const checked = selectedTags.includes(name);
+            return (
+              <label
+                key={name}
+                className={`sidebar-tag ${checked ? "checked" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleTag(name)}
+                />
+                <span className="sidebar-tag-name">#{name}</span>
+                <span className="count">{count}</span>
+              </label>
+            );
+          })}
+          {tagStats.length === 0 && (
+            <div className="sidebar-empty">{t("sidebar_noTags")}</div>
+          )}
         </div>
-        {platforms.map((p) => (
-          <button
-            key={p}
-            className={`sidebar-item small ${activePlatform === p ? "active" : ""}`}
-            onClick={() => {
-              setPage("library");
-              setPlatformFilter(activePlatform === p ? "all" : p);
-            }}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-
-      <div className="sidebar-section">
-        <div className="sidebar-title">
-          <Folder size={14} />
-          {t("sidebar_categories")}
-        </div>
-        {categories.map((c) => (
-          <button
-            key={c}
-            className={`sidebar-item small ${activeCategory === c ? "active" : ""}`}
-            onClick={() => {
-              setPage("library");
-              setCategoryFilter(activeCategory === c ? "all" : c);
-            }}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-
-      <div className="sidebar-section">
-        <div className="sidebar-title">
-          <Tag size={14} />
-          {t("sidebar_genres")}
-        </div>
-        {genres.map((g) => (
-          <button
-            key={g}
-            className={`sidebar-item small ${activeGenre === g ? "active" : ""}`}
-            onClick={() => {
-              setPage("library");
-              setGenreFilter(activeGenre === g ? "all" : g);
-            }}
-          >
-            {g}
-          </button>
-        ))}
-      </div>
-
-      <div className="sidebar-section">
-        <div className="sidebar-title">
-          <Layers size={14} />
-          {t("sidebar_developers")}
-        </div>
-        {developers.map((d) => (
-          <button
-            key={d}
-            className={`sidebar-item small ${activeDeveloper === d ? "active" : ""}`}
-            onClick={() => {
-              setPage("library");
-              setDeveloperFilter(activeDeveloper === d ? "all" : d);
-            }}
-          >
-            {d}
-          </button>
-        ))}
-      </div>
-
-      <div className="sidebar-footer">
-        <button
-          className="btn primary block"
-          onClick={async () => {
-            await scanSteam();
-            await reloadGames();
-          }}
-        >
-          <RefreshCw size={14} />
-          {t("sidebar_scanLibrary")}
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

@@ -14,7 +14,11 @@ pub struct UpdateGamePayload {
 #[tauri::command]
 pub fn get_games(state: State<AppState>) -> crate::Result<Vec<Game>> {
     let db = state.db.lock().unwrap();
-    Ok(db.get_all_games()?)
+    let games = db.get_all_games()?;
+    // Auto-apply local cover images (CoverImages dir) for games without a
+    // cover yet. Persist only the newly-matched ones.
+    let (updated, _) = crate::covers::apply_covers_to_db(&db, games)?;
+    Ok(updated)
 }
 
 #[tauri::command]
@@ -47,6 +51,18 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
         .get_game(&id)?
         .ok_or_else(|| crate::AppError::NotFound(format!("Game {} not found", id)))?;
 
+    // Access control: the current user level must be >= the game's level.
+    let settings = db.load_settings()?;
+    if !crate::auth::can_play(settings.current_user_level, game.game_level) {
+        return Err(crate::AppError::Other(format!(
+            "user level {} cannot play level {} game",
+            settings.current_user_level, game.game_level
+        )));
+    }
+
+    // Whether to record play time (user-toggleable setting).
+    let track = settings.track_playtime;
+
     let launched = if let Some(play_task_id) = &game.play_task {
         let action = game
             .actions
@@ -65,7 +81,9 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
                             .process
                             .launch(&exe, action.arguments.as_deref(), action.working_dir.as_deref())
                             .map_err(|e| crate::AppError::Launch(e.to_string()))?;
-                        state.process.start_tracking(&game);
+                        if track {
+                            state.process.start_tracking(&game);
+                        }
                         true
                     }
                 }
@@ -92,7 +110,9 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
                         Some(&wd.to_string_lossy()),
                     )
                     .map_err(|e| crate::AppError::Launch(e.to_string()))?;
-                state.process.start_tracking(&game);
+                if track {
+                    state.process.start_tracking(&game);
+                }
                 true
             } else {
                 false
@@ -129,5 +149,3 @@ pub fn stop_game_tracking(state: State<AppState>, id: String) -> crate::Result<u
 pub fn running_games(state: State<AppState>) -> crate::Result<Vec<crate::process::RunningGame>> {
     Ok(state.process.running_games())
 }
-
-

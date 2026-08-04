@@ -1,0 +1,231 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+}
+.admin {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f2f4f8;
+  color: #1f2937;
+}
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 15px;
+  color: #6b7280;
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  background: #1e293b;
+  color: #fff;
+  flex-shrink: 0;
+}
+.admin-header h1 {
+  font-size: 17px;
+  margin: 0;
+  white-space: nowrap;
+}
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+.admin-tabs button {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.admin-tabs button.active {
+  background: #3b82f6;
+  color: #fff;
+}
+.admin-tools button {
+  background: #334155;
+  border: none;
+  color: #e2e8f0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.admin-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 10px 20px;
+  font-size: 13px;
+}
+.admin-toast {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.admin-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+.admin-panel {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.panel-head span {
+  font-size: 14px;
+  color: #6b7280;
+  flex: 1;
+}
+.admin-search {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+}
+button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover {
+  background: #d1d5db;
+}
+button.primary {
+  background: #3b82f6;
+  color: #fff;
+}
+button.primary:hover {
+  background: #2563eb;
+}
+button.danger {
+  background: #ef4444;
+  color: #fff;
+}
+button.danger:hover {
+  background: #dc2626;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid #eef0f3;
+}
+.admin-table th {
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 12px;
+}
+.admin-table select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+}
+.row-actions {
+  display: flex;
+  gap: 6px;
+}
+.row-actions button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.config-block {
+  margin-bottom: 22px;
+}
+.config-block h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.config-block .hint {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+.config-row {
+  display: flex;
+  gap: 8px;
+}
+.config-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.admin-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.admin-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 22px;
+  width: 380px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.admin-modal h3 {
+  margin: 0 0 16px;
+}
+.admin-modal label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #374151;
+}
+.admin-modal input,
+.admin-modal select {
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}

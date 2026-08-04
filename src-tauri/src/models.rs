@@ -38,6 +38,18 @@ pub struct GameName {
     pub name: String,
 }
 
+/// A gameplay/live video attached to a game.
+/// - `type = "youtube"` -> `url` is a YouTube watch URL (embedded as iframe).
+/// - `type = "file"`    -> `url` is a local/remote video file path.
+/// - `type = "url"`     -> `url` is a generic video URL (embedded via <video>).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct GameVideo {
+    pub r#type: String, // "youtube" | "file" | "url"
+    pub url: String,
+    pub name: Option<String>,
+}
+
 /// The main game entity. Extends Playnite.SDK.Models.Game with multi-name
 /// support (`localized_names` + `alternate_names`).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -97,6 +109,23 @@ pub struct Game {
     pub links: Vec<GameLink>,
     pub actions: Vec<GameAction>,
     pub features_enabled: bool,
+    /// HTML guide / how-to-play instructions shown on the detail page.
+    #[serde(default)]
+    pub guide: Option<String>,
+    /// Screenshot / gallery image URLs (supports gif/png/jpg/...).
+    #[serde(default)]
+    pub screenshots: Vec<String>,
+    /// Gameplay / live videos (type: youtube / file / url).
+    #[serde(default)]
+    pub videos: Vec<GameVideo>,
+    /// Access level required to play this game: 1 | 2 | 3.
+    /// A user with level N can play any game whose `game_level` <= N.
+    #[serde(default = "default_game_level")]
+    pub game_level: i32,
+}
+
+fn default_game_level() -> i32 {
+    1
 }
 
 /// A game link (website, store page, ...).
@@ -105,6 +134,45 @@ pub struct Game {
 pub struct GameLink {
     pub name: String,
     pub url: String,
+}
+
+/// A unified user record. Both enterprise users (cafes, matched by public IP)
+/// and personal users (login accounts) live in the same `users` table,
+/// distinguished by `kind`.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AppUser {
+    /// Auto-generated UUID.
+    pub id: String,
+    /// Login account name (enterprise users may use the IP as account).
+    pub account: String,
+    /// Password hash (see `auth.rs`). Empty for enterprise users.
+    pub password_hash: String,
+    /// Display name (e.g. "横贯电竞歪歪楼店").
+    pub name: String,
+    /// Access level: 1 | 2 | 3.
+    pub level: i32,
+    /// User category: "enterprise" | "personal".
+    pub kind: String,
+    /// Public IP address used to match enterprise users. Empty for personal.
+    pub ip_address: String,
+    /// When the account was created.
+    pub created_at: String,
+}
+
+/// The access level of the current session, determined at login time from
+/// either the enterprise IP config or a personal account.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CurrentUser {
+    /// "enterprise" | "personal".
+    pub kind: String,
+    /// Display name.
+    pub name: String,
+    /// Matched account / IP.
+    pub account: String,
+    /// Access level 1 | 2 | 3.
+    pub level: i32,
 }
 
 /// Settings that mirror Playnite's settings model.
@@ -142,6 +210,50 @@ pub struct AppSettings {
     /// Logged-in username (for account login).
     #[serde(default)]
     pub username: Option<String>,
+    /// Whether to record play time when launching games.
+    #[serde(default = "default_true")]
+    pub track_playtime: bool,
+    /// Grid card width in px. Range ~120..320.
+    #[serde(default = "default_card_width")]
+    pub card_width: i32,
+    /// Gap between grid cards in px. Range 0..20.
+    #[serde(default = "default_card_gap")]
+    pub card_gap: i32,
+    /// Path to the enterprise user config JSON (default "D:/1.json").
+    #[serde(default = "default_enterprise_config_path")]
+    pub enterprise_config_path: String,
+    /// Current session user kind: "enterprise" | "personal" | "".
+    #[serde(default)]
+    pub current_user_kind: String,
+    /// Current session user display name.
+    #[serde(default)]
+    pub current_user_name: String,
+    /// Current session user level (1 | 2 | 3), default 3 = full access.
+    #[serde(default = "default_user_level")]
+    pub current_user_level: i32,
+    /// User-selected UI font family. Empty = use the theme's default font.
+    #[serde(default)]
+    pub font_family: String,
+}
+
+fn default_enterprise_config_path() -> String {
+    "D:/1.json".into()
+}
+
+fn default_user_level() -> i32 {
+    3
+}
+
+fn default_card_width() -> i32 {
+    180
+}
+
+fn default_card_gap() -> i32 {
+    8
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for AppSettings {
@@ -170,6 +282,14 @@ impl Default for AppSettings {
             login_type: "wechat".into(),
             logged_in: false,
             username: None,
+            track_playtime: true,
+            card_width: 180,
+            card_gap: 8,
+            enterprise_config_path: "D:/1.json".into(),
+            current_user_kind: "".into(),
+            current_user_name: "".into(),
+            current_user_level: 3,
+            font_family: "".into(),
         }
     }
 }

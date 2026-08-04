@@ -5,6 +5,7 @@
 import { useMemo } from "react";
 import { useGamesStore } from "../../stores/gamesStore";
 import { displayName } from "../../utils/display";
+import { imageUrl } from "../../utils/assets";
 import { Sparkles, CalendarDays, Play } from "lucide-react";
 import { useI18n } from "../../i18n";
 
@@ -45,8 +46,8 @@ export default function NewsView() {
         {recent.map((g) => (
           <div className="news-item" key={g.id}>
             <div className="news-cover">
-              {g.coverImage || g.icon ? (
-                <img src={g.coverImage || g.icon} alt={g.name} />
+              {imageUrl(g.coverImage) || imageUrl(g.icon) ? (
+                <img src={imageUrl(g.coverImage) || imageUrl(g.icon)} alt={g.name} />
               ) : (
                 <div className="placeholder">{g.name.charAt(0)}</div>
               )}

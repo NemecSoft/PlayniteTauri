@@ -123,6 +123,10 @@ pub fn import_games(db: &Database, scanned: Vec<ScannedGame>) -> crate::db::DbRe
             links: db::empty_links(),
             actions: vec![action],
             features_enabled: false,
+            guide: None,
+            screenshots: Vec::new(),
+            videos: Vec::new(),
+            game_level: 1,
         });
     }
     db.upsert_games(&games)?;

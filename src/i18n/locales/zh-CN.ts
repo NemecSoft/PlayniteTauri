@@ -1,7 +1,19 @@
 // Simplified Chinese (zh-CN) translations.
 
 export const zhCN = {
-  appTitle: "Playnite",
+  appTitle: "黄金版",
+
+  // --- Title bar ---
+  default_edition: "黄金版",
+  titlebar_menu: "菜单",
+  titlebar_menu_settings: "设置",
+  titlebar_menu_regen_tags: "重新生成标签",
+  titlebar_menu_regen_tags_title: "按游戏名自动生成标签（神作、联机、恐怖等）",
+  titlebar_menu_regen_tags_done: "已重新生成标签",
+  titlebar_menu_regen_tags_done_body: "已为 {{count}} 个游戏重新生成标签",
+  titlebar_menu_regen_tags_failed: "重新生成标签失败",
+  titlebar_menu_reload: "重新加载",
+  titlebar_menu_reload_title: "从数据库重新加载游戏库",
 
   // --- Login ---
   login_welcome: "欢迎回来！请登录以继续",
@@ -25,9 +37,11 @@ export const zhCN = {
   sidebar_genres: "类型",
   sidebar_developers: "开发商",
   sidebar_scanLibrary: "扫描游戏库",
+  sidebar_handle_hint: "鼠标移到这里来按标签挑选游戏",
+  sidebar_tagSearch: "筛选标签...",
 
   // --- Toolbar ---
-  toolbar_searchPlaceholder: "搜索游戏...",
+  toolbar_searchPlaceholder: "搜索游戏，支持游戏名首字母",
   toolbar_addGames: "添加游戏",
   toolbar_settings: "设置",
   toolbar_sort: "排序",
@@ -36,6 +50,9 @@ export const zhCN = {
   sort_platform: "平台",
   sort_playtime: "游玩时长",
   sort_lastPlayed: "最近游玩",
+
+  images_loading_title: "正在加载图片",
+  images_loading: "正在加载图片 {{loaded}}/{{total}}",
 
   group_all: "全部游戏",
   group_unknown: "未知",

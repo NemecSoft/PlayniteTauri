@@ -2,15 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Game } from "../types/models";
-import {
-  Play,
-  Star,
-  Eye,
-  EyeOff,
-  Pencil,
-  Trash2,
-  Copy,
-} from "lucide-react";
+import { Play, Copy } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 
@@ -19,14 +11,10 @@ interface Props {
   x: number;
   y: number;
   onClose: () => void;
-  onEdit: () => void;
 }
 
-export default function GameContextMenu({ game, x, y, onClose, onEdit }: Props) {
+export default function GameContextMenu({ game, x, y, onClose }: Props) {
   const launchGame = useGamesStore((s) => s.launchGame);
-  const toggleFavorite = useGamesStore((s) => s.toggleFavorite);
-  const toggleHiddenGame = useGamesStore((s) => s.toggleHiddenGame);
-  const deleteGame = useGamesStore((s) => s.deleteGame);
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -52,21 +40,7 @@ export default function GameContextMenu({ game, x, y, onClose, onEdit }: Props) 
   return (
     <div ref={ref} className="context-menu" style={{ left: x, top: y }}>
       {item(t("menu_play"), <Play size={14} />, () => launchGame(game.id))}
-      <div className="context-menu-sep" />
-      {item(
-        game.favorite ? t("menu_removeFromFavorites") : t("menu_addToFavorites"),
-        <Star size={14} />,
-        () => toggleFavorite(game.id)
-      )}
-      {item(
-        game.hidden ? t("menu_unhideGame") : t("menu_hideGame"),
-        game.hidden ? <Eye size={14} /> : <EyeOff size={14} />,
-        () => toggleHiddenGame(game.id)
-      )}
-      {item(t("menu_edit"), <Pencil size={14} />, onEdit)}
-      <div className="context-menu-sep" />
       {item(t("menu_copyPath"), <Copy size={14} />, () => navigator.clipboard?.writeText(game.installDirectory || ""))}
-      {item(t("menu_delete"), <Trash2 size={14} />, () => deleteGame(game.id), true)}
     </div>
   );
 }

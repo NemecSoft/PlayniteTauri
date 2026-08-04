@@ -26,9 +26,20 @@ impl AppPaths {
         Self::config_root().join("library").join("library.db")
     }
 
+    /// Full path to the application config file (JSON, next to the exe).
+    pub fn config_path() -> PathBuf {
+        Self::config_root().join("config.json")
+    }
+
     /// Directory for game cover/background images (next to the executable).
     pub fn images_dir() -> PathBuf {
         Self::config_root().join("library").join("images")
+    }
+
+    /// Directory where users drop cover images named after the game's Chinese
+    /// name. Auto-matched to games on load (see `covers.rs`).
+    pub fn cover_images_dir() -> PathBuf {
+        Self::config_root().join("CoverImages")
     }
 
     /// Directory where scanned/imported metadata is cached.
@@ -39,5 +50,15 @@ impl AppPaths {
     /// Directory for plugins / extensions.
     pub fn plugins_dir() -> PathBuf {
         Self::config_root().join("extensions").join("plugins")
+    }
+
+    /// Directory for announcement HTML files (read at startup).
+    pub fn announcements_dir() -> PathBuf {
+        Self::config_root().join("announcements")
+    }
+
+    /// Full path to the startup announcement file.
+    pub fn announcement_file() -> PathBuf {
+        Self::announcements_dir().join("announcement.html")
     }
 }

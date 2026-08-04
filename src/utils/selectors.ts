@@ -13,6 +13,8 @@ export interface ViewOptions {
   categoryFilter: string;
   genreFilter: string;
   developerFilter: string;
+  /** Tags to AND-filter by. Game must contain every selected tag. */
+  selectedTags: string[];
 }
 
 const normalize = (s: string) =>
@@ -44,6 +46,11 @@ export function filterGames(games: Game[], opts: ViewOptions): Game[] {
   // Developer
   if (opts.developerFilter !== "all") {
     out = out.filter((g) => g.developer.includes(opts.developerFilter));
+  }
+
+  // Tag filter (AND): keep games whose tags include every selected tag.
+  if (opts.selectedTags.length > 0) {
+    out = out.filter((g) => opts.selectedTags.every((t: string) => g.tags.includes(t)));
   }
 
   // Search: matches the primary name, localized/alternate names, metadata

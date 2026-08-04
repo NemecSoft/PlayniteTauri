@@ -16,13 +16,18 @@
 ```
 release/
 ├─ Playnite.DesktopApp.exe   ← 主程序
+├─ config.json               ← 应用设置（语言/主题/卡片等，见 config.rs）
 ├─ library/
 │  ├─ library.db              ← 游戏库数据库（SQLite）
 │  └─ images/                 ← 封面/背景图片
+├─ CoverImages/               ← 用户放置的封面图库（按中文名自动匹配，见 covers.md）
 ├─ cache/                     ← 元数据缓存
 ├─ UserData/EBWebView         ← WebView2 运行时用户数据
 └─ extensions/plugins/        ← 插件目录
 ```
+
+> **设置与数据分离**：应用偏好（语言、主题、卡片大小、渲染模式、企业配置路径等）存 `config.json`
+> （`config.rs`），不再存 SQLite。数据库只存游戏库、用户等业务数据。首次从旧版数据库自动迁移设置。
 
 ## 关键实现点
 
