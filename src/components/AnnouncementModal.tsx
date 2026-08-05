@@ -1,25 +1,19 @@
 // Startup announcement dialog.
-// Reads the announcement HTML (from the app's `announcements/announcement.html`
-// file via the backend) and renders it with cool entrance animations.
+// The HTML is **statically inlined at build time** via Vite's `?raw` import, so
+// the dialog renders synchronously on first open — no IPC round-trip, no
+// "Loading announcement..." flicker. If the bundle ever fails to embed the
+// file, a tiny fallback snippet is shown.
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { api } from "../api/client";
+import announcementHtml from "../../announcements/announcement.html?raw";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function AnnouncementModal({ onClose }: Props) {
-  const [html, setHtml] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
-
-  useEffect(() => {
-    api
-      .getAnnouncement()
-      .then((a) => setHtml(a.html))
-      .catch(() => setHtml(null));
-  }, []);
 
   const close = () => {
     setClosing(true);
@@ -35,6 +29,10 @@ export default function AnnouncementModal({ onClose }: Props) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const html = announcementHtml && announcementHtml.trim().length > 0
+    ? announcementHtml
+    : "<div class=\"announcement-hero\"><h1>Welcome</h1><p>Your game library, reimagined.</p></div>";
+
   return (
     <div className={`announcement-overlay ${closing ? "closing" : ""}`} onClick={close}>
       {/* Decorative animated background */}
@@ -44,14 +42,10 @@ export default function AnnouncementModal({ onClose }: Props) {
           <X size={18} />
         </button>
         <div className="announcement-scroll">
-          {html ? (
-            <div
-              className="announcement-content"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-          ) : (
-            <div className="announcement-loading">Loading announcement...</div>
-          )}
+          <div
+            className="announcement-content"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         </div>
       </div>
     </div>

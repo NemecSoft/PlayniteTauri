@@ -1,0 +1,30 @@
+[package]
+name = "yungame-admin"
+version = "10.0.0"
+description = "YunGame admin console (Playnite.Admin.exe)"
+authors = ["YunGame"]
+edition = "2021"
+rust-version = "1.74"
+
+# Internal crate name avoids the "Playnite" word. The final executable is
+# renamed to "Playnite.Admin.exe" by the build script. This admin app is NOT
+# shipped with the client.
+[[bin]]
+name = "admin_app"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Shared core library: data models, db, auth, process, settings, covers, commands.
+yungame-core = { path = "../../crates/yungame-core" }
+
+# Independent Tauri runtime so this app's generate_context!() embeds only the
+# admin frontend (dist-admin/), never the client frontend.
+tauri = { version = "2", features = ["protocol-asset", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+log = "0.4"
+env_logger = "0.11"

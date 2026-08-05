@@ -5,6 +5,17 @@ export function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T>
   return invoke<T>(cmd, args);
 }
 
+export interface GameAction {
+  id: string;
+  name: string;
+  type: string; // "File" | "URL"
+  path?: string | null;
+  workingDir?: string | null;
+  arguments?: string | null;
+  isPlayAction: boolean;
+  trackGame: boolean;
+}
+
 export interface Game {
   id: string;
   name: string;
@@ -17,6 +28,7 @@ export interface Game {
   genre: string[];
   platform: string[];
   category: string[];
+  actions?: GameAction[];
   modified?: string;
 }
 

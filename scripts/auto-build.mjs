@@ -1,7 +1,7 @@
 // Auto-build watcher (robust, content-hash based).
-// Watches frontend (src/) and backend (src-tauri/src/) source files. On any
-// *content* change it debounces and runs the full green build (build.ps1)
-// automatically, so you never have to click "build" yourself.
+// Watches frontend (src/, admin/src/) and backend (crates/, apps/) source
+// files. On any *content* change it debounces and runs the full green build
+// (build.ps1) automatically, so you never have to click "build" yourself.
 //
 // Why content-hash: the build process itself touches source-file timestamps
 // (cargo / vite / tauri-build). If we reacted to every timestamp event, the
@@ -24,7 +24,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // which the build touches and would otherwise cause rebuild loops).
 const WATCH_PATHS = [
   join(root, "src"), // React frontend
-  join(root, "src-tauri", "src"), // Rust backend
+  join(root, "admin", "src"), // Admin frontend
+  join(root, "crates", "yungame-core", "src"), // Shared Rust backend
+  join(root, "apps", "desktop", "src"), // Client Rust backend
+  join(root, "apps", "admin", "src"), // Admin Rust backend
 ];
 
 const IGNORE = /(node_modules|target|dist|release|\/\.git\/|\/gen\/|\.ttf$|\.png$|\.ico$)/;

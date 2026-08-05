@@ -162,6 +162,34 @@ button.danger:hover {
   display: flex;
   gap: 6px;
 }
+.action-path {
+  max-width: 260px;
+}
+.action-path .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-right: 6px;
+}
+.action-path code {
+  font-size: 12px;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.action-path .muted {
+  color: #9ca3af;
+  font-size: 12px;
+}
 .row-actions button {
   padding: 5px 10px;
   font-size: 12px;
@@ -202,11 +230,42 @@ button.danger:hover {
   background: #fff;
   border-radius: 10px;
   padding: 22px;
-  width: 380px;
+  width: 460px;
+  max-height: 90vh;
+  overflow: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 .admin-modal h3 {
   margin: 0 0 16px;
+}
+.action-block {
+  margin: 14px 0 4px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+.action-block h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #111827;
+}
+.action-block .hint {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+.action-block .hint code {
+  background: #eef0f3;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.action-block label {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #4b5563;
 }
 .admin-modal label {
   display: block;

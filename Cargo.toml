@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/yungame-core",
+    "apps/desktop",
+    "apps/admin",
+]
+
+# Shared release profile settings applied across all workspace members.
+[profile.release]
+codegen-units = 16
+lto = "thin"
+opt-level = 3
+panic = "abort"
+strip = true
+incremental = true
+
+[profile.release.package."*"]
+opt-level = 2
+codegen-units = 16
+
+[profile.dev]
+opt-level = 1

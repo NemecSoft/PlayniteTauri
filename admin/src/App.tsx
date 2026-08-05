@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { call, type Game, type PublicUser, type AppSettings, type EnterprisePreview } from "./lib";
+import { call, type Game, type GameAction, type PublicUser, type AppSettings, type EnterprisePreview } from "./lib";
 
 type Tab = "games" | "users" | "config";
 
@@ -14,7 +14,14 @@ export default function AdminApp() {
 
   // Game editors
   const [editingGame, setEditingGame] = useState<Game | null>(null);
-  const [gameForm, setGameForm] = useState({ name: "", gameLevel: 1 });
+  const [gameForm, setGameForm] = useState({
+    name: "",
+    gameLevel: 1,
+    actionType: "File",
+    actionPath: "",
+    workingDir: "",
+    arguments: "",
+  });
   // User editor
   const [editingUser, setEditingUser] = useState<PublicUser | null>(null);
   const [userForm, setUserForm] = useState({ id: "", account: "", name: "", level: 1, password: "" });
@@ -56,11 +63,47 @@ export default function AdminApp() {
 
   const openNewGame = () => {
     setEditingGame({ id: "", name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [] });
-    setGameForm({ name: "", gameLevel: 1 });
+    setGameForm({
+      name: "",
+      gameLevel: 1,
+      actionType: "File",
+      actionPath: "",
+      workingDir: "",
+      arguments: "",
+    });
   };
   const openEditGame = (g: Game) => {
+    // Pick the play action (first is-play-action, else first File action) to prefill the form.
+    const play =
+      (g.actions || []).find((a) => a.isPlayAction) ||
+      (g.actions || []).find((a) => a.type === "File");
     setEditingGame(g);
-    setGameForm({ name: g.name, gameLevel: g.gameLevel });
+    setGameForm({
+      name: g.name,
+      gameLevel: g.gameLevel,
+      actionType: play?.type || "File",
+      actionPath: play?.path || "",
+      workingDir: play?.workingDir || "",
+      arguments: play?.arguments || "",
+    });
+  };
+
+  // Build the launch action list from the form: keep existing non-play actions
+  // and replace the play action with the current form values.
+  const buildActions = (existing: GameAction[] = []): GameAction[] => {
+    const rest = existing.filter((a) => !a.isPlayAction);
+    const id = existing.find((a) => a.isPlayAction)?.id || crypto.randomUUID();
+    const action: GameAction = {
+      id,
+      name: gameForm.actionType === "URL" ? "打开链接" : "启动游戏",
+      type: gameForm.actionType,
+      path: gameForm.actionPath || null,
+      workingDir: gameForm.workingDir || null,
+      arguments: gameForm.arguments || null,
+      isPlayAction: true,
+      trackGame: gameForm.actionType === "File",
+    };
+    return [...rest, action];
   };
 
   const saveGame = async () => {
@@ -69,11 +112,16 @@ export default function AdminApp() {
       return;
     }
     if (editingGame && editingGame.id) {
-      const updated = { ...editingGame, name: gameForm.name, gameLevel: gameForm.gameLevel };
+      const updated = {
+        ...editingGame,
+        name: gameForm.name,
+        gameLevel: gameForm.gameLevel,
+        actions: buildActions(editingGame.actions),
+      };
       await call("save_game", { game: updated });
       showToast("已保存游戏");
     } else {
-      const created = {
+      const created: Game = {
         id: crypto.randomUUID(),
         name: gameForm.name,
         gameLevel: gameForm.gameLevel,
@@ -81,6 +129,7 @@ export default function AdminApp() {
         genre: [],
         platform: [],
         category: [],
+        actions: buildActions([]),
         modified: new Date().toISOString(),
       };
       await call("save_game", { game: created });
@@ -159,7 +208,7 @@ export default function AdminApp() {
   return (
     <div className="admin">
       <header className="admin-header">
-        <h1>Playnite Admin</h1>
+        <h1>YunGame Admin</h1>
         <nav className="admin-tabs">
           <button className={tab === "games" ? "active" : ""} onClick={() => setTab("games")}>
             游戏管理
@@ -197,11 +246,14 @@ export default function AdminApp() {
                 <tr>
                   <th>名称</th>
                   <th>等级</th>
+                  <th>启动路径</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredGames.map((g) => (
+                {filteredGames.map((g) => {
+                  const play = (g.actions || []).find((a) => a.isPlayAction) || (g.actions || [])[0];
+                  return (
                   <tr key={g.id}>
                     <td>{g.name}</td>
                     <td>
@@ -214,6 +266,16 @@ export default function AdminApp() {
                         <option value={3}>3</option>
                       </select>
                     </td>
+                    <td className="action-path">
+                      {play ? (
+                        <>
+                          <span className="tag">{play.type === "URL" ? "URL" : "File"}</span>
+                          <code title={play.path || ""}>{play.path || "—"}</code>
+                        </>
+                      ) : (
+                        <span className="muted">自动扫描</span>
+                      )}
+                    </td>
                     <td className="row-actions">
                       <button onClick={() => openEditGame(g)}>编辑</button>
                       <button className="danger" onClick={() => void deleteGame(g.id, g.name)}>
@@ -221,7 +283,8 @@ export default function AdminApp() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </section>
@@ -313,6 +376,50 @@ export default function AdminApp() {
                 <option value={3}>3</option>
               </select>
             </label>
+
+            <div className="action-block">
+              <h4>启动配置（Play Action）</h4>
+              <p className="hint">
+                优先使用相对路径：游戏通常与 YunGame.exe 同盘，可用 <code>.</code>
+                或 <code>..</code> 从 exe 目录定位。例如 <code>.\Game\Game.exe</code>、
+                <code>..\Games\Game\Game.exe</code>。留空则客户端尝试自动扫描安装目录。
+              </p>
+              <label>
+                类型
+                <select
+                  value={gameForm.actionType}
+                  onChange={(e) => setGameForm({ ...gameForm, actionType: e.target.value })}
+                >
+                  <option value="File">File（启动程序）</option>
+                  <option value="URL">URL（打开链接）</option>
+                </select>
+              </label>
+              <label>
+                路径（可相对）
+                <input
+                  value={gameForm.actionPath}
+                  onChange={(e) => setGameForm({ ...gameForm, actionPath: e.target.value })}
+                  placeholder='如 .\Game\Game.exe 或 ..\Game\Game.exe'
+                />
+              </label>
+              <label>
+                工作目录（可选，默认取程序所在目录）
+                <input
+                  value={gameForm.workingDir}
+                  onChange={(e) => setGameForm({ ...gameForm, workingDir: e.target.value })}
+                  placeholder="留空则使用路径所在目录"
+                />
+              </label>
+              <label>
+                启动参数（可选）
+                <input
+                  value={gameForm.arguments}
+                  onChange={(e) => setGameForm({ ...gameForm, arguments: e.target.value })}
+                  placeholder="如 --windowed 等"
+                />
+              </label>
+            </div>
+
             <div className="modal-actions">
               <button onClick={() => setEditingGame(null)}>取消</button>
               <button className="primary" onClick={() => void saveGame()}>

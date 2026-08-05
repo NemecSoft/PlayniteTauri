@@ -67,7 +67,7 @@ try {
     }
   }, 5000);
 
-  document.title = "Playnite";
+  document.title = "YunGame";
 } catch (err: any) {
   showBoot("MOUNT ERR: " + (err?.message || String(err)));
 }

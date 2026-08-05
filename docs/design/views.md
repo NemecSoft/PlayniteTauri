@@ -1,5 +1,21 @@
 # 视图系统
 
+## 顶层标签页（`TabsBar`）
+
+主界面采用**顶部标签栏**导航，由 `uiStore.activeTab` 控制（默认 `home`）：
+
+| 标签 | 组件 | 说明 |
+| --- | --- | --- |
+| 主页 | `MainContent`（现有库视图） | 工具栏 + 网格/列表/详情视图，或"最近新增"（`activePage === "news"`） |
+| 视频 | `VideosView` | 展示游戏库中各游戏关联的 `videos` 字段 |
+| 额外工具 | `ToolsView` | 占位工具卡片（屏幕录制 / 游戏加速 / 游戏增强），功能后续实现 |
+
+- `TabsBar` 渲染在 `app-body`（侧边栏 + 主内容）上方。
+- `MainContent` 依据 `activeTab` 决定渲染哪个视图；`home` 标签内部继续沿用原有的
+  `activePage`（`library` / `news`）机制。
+- 视频播放：`videos.type === "youtube"` 时转换为 `https://www.youtube.com/embed/<id>`
+  内嵌 iframe；`file` / `url` 类型作为外链卡片展示。
+
 ## 三种视图
 
 | 视图 | 组件 | 说明 |

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
-import TitleBar from "./components/TitleBar";
+import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import LoginScreen from "./components/LoginScreen";
 import AnnouncementModal from "./components/AnnouncementModal";
@@ -67,12 +67,20 @@ export default function App() {
   const needsLogin = loginEnabled && !loggedIn;
 
   // Show the startup announcement once the main UI is visible.
-  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  // The announcement HTML is statically inlined into the bundle (see
+  // AnnouncementModal), so we can show it immediately — no IPC, no
+  // "Loading announcement..." flash.
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
+
+  // Close the announcement and hand focus back to the search box.
+  const closeAnnouncement = () => {
+    setShowAnnouncement(false);
+    // The announcement modal may have stolen keyboard focus; refocus search.
+    window.dispatchEvent(new Event("yungame:focus-search"));
+  };
+
   useEffect(() => {
-    if (needsLogin) return;
-    // Small delay so the main UI paints first, then pop the announcement.
-    const t = setTimeout(() => setShowAnnouncement(true), 400);
-    return () => clearTimeout(t);
+    if (needsLogin) setShowAnnouncement(false);
   }, [needsLogin]);
 
   if (needsLogin) {
@@ -82,7 +90,7 @@ export default function App() {
   return (
     <HashRouter>
       <div className="app">
-        <TitleBar />
+        <TopBar />
         <Routes>
           <Route path="/" element={<AppBody />} />
           <Route path="/game/:id" element={<GameDetailPage />} />
@@ -91,7 +99,7 @@ export default function App() {
         <ImageProgressBar />
         {settingsOpen && <SettingsModal onClose={closeSettings} />}
         {showAnnouncement && (
-          <AnnouncementModal onClose={() => setShowAnnouncement(false)} />
+          <AnnouncementModal onClose={closeAnnouncement} />
         )}
       </div>
     </HashRouter>

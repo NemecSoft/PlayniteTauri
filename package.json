@@ -1,5 +1,5 @@
 {
-  "name": "playnite-tauri",
+  "name": "yungame",
   "version": "10.0.0",
   "private": true,
   "description": "Playnite desktop app rewritten with Tauri (Rust + React 19 + TypeScript + Vite 8)",
@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "tauri": "tauri",
-    "auto-build": "node scripts/auto-build.mjs"
+    "auto-build": "node scripts/auto-build.mjs",
+    "dev:admin": "vite --config vite.admin.config.ts",
+    "build:admin": "tsc -p tsconfig.admin.json && vite build --config vite.admin.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

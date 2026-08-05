@@ -1,0 +1,29 @@
+[package]
+name = "yungame-desktop"
+version = "10.0.0"
+description = "YunGame desktop client (Playnite.DesktopApp.exe)"
+authors = ["YunGame"]
+edition = "2021"
+rust-version = "1.74"
+
+# Cargo bin name must be a valid crate name (no dots). The final output
+# executable is renamed to "Playnite.DesktopApp.exe" by the bundle step
+# (productName in tauri.conf.json) and by the post-build copy script.
+[[bin]]
+name = "yungame"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Shared core library: data models, db, auth, process, settings, covers, commands.
+yungame-core = { path = "../../crates/yungame-core" }
+
+# Tauri runtime for this app's generate_context!() (embeds the client frontend).
+tauri = { version = "2", features = ["protocol-asset", "tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+log = "0.4"
+env_logger = "0.11"
