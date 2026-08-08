@@ -37,6 +37,11 @@ interface GamesState {
   /** Whether the sidebar is expanded. Auto-hides by default. */
   sidebarVisible: boolean;
 
+  /** Set when a game has just been launched; consumers (App.tsx) navigate to the
+   * game-detail page so the user can read the guide / instructions while
+   * playing. Cleared via `clearLastLaunched` after navigation. */
+  lastLaunchedId: string | null;
+
   // actions
   load: () => Promise<void>;
   setPage: (p: ActivePage) => void;
@@ -62,6 +67,7 @@ interface GamesState {
   toggleHiddenGame: (id: string) => Promise<void>;
   deleteGame: (id: string) => Promise<void>;
   launchGame: (id: string) => Promise<boolean>;
+  clearLastLaunched: () => void;
   saveGame: (game: Game) => Promise<void>;
   rescanCovers: () => Promise<{ matched: number; coverFiles: number; considered: number; dirExists: boolean; dirPath: string }>;
 }
@@ -86,6 +92,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   activeDeveloperFilter: "all",
   selectedTags: [],
   sidebarVisible: false,
+  lastLaunchedId: null,
 
   load: async () => {
     set({ loading: true });
@@ -103,7 +110,9 @@ export const useGamesStore = create<GamesState>((set, get) => ({
 
   setPage: (p) => set({ activePage: p }),
   setViewMode: (m) => set({ viewMode: m }),
-  setSearch: (q) => set({ searchQuery: q }),
+  // Search and tag filters are mutually exclusive: typing in the search box
+  // clears the selected tags, and picking a tag clears the search query.
+  setSearch: (q) => set({ searchQuery: q, selectedTags: [] }),
   setSort: (o, d) => set({ sortOrder: o, sortDirection: d }),
   toggleInstalledOnly: () => set((s) => ({ showInstalledOnly: !s.showInstalledOnly })),
   toggleHidden: () => set((s) => ({ showHidden: !s.showHidden })),
@@ -113,16 +122,19 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setCategoryFilter: (c) => set({ activeCategoryFilter: c }),
   setGenreFilter: (g) => set({ activeGenreFilter: g }),
   setDeveloperFilter: (d) => set({ activeDeveloperFilter: d }),
+  // Picking a tag clears the search query (search and tags are exclusive).
   toggleTag: (tag) =>
     set((s) => {
       const has = s.selectedTags.includes(tag);
       return {
         selectedTags: has ? s.selectedTags.filter((t) => t !== tag) : [...s.selectedTags, tag],
+        searchQuery: "",
       };
     }),
   clearTags: () => set({ selectedTags: [] }),
   setSidebarVisible: (v) => set({ sidebarVisible: v }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
+  clearLastLaunched: () => set({ lastLaunchedId: null }),
   clearFilters: () =>
     set({
       searchQuery: "",
@@ -189,7 +201,16 @@ export const useGamesStore = create<GamesState>((set, get) => ({
         return false;
       }
     }
-    return api.launchGame(id);
+    const launched = await api.launchGame(id);
+    if (launched) {
+      // Signal to App.tsx to navigate to the detail page (so the user can read
+      // the guide / instructions while playing).
+      set({ lastLaunchedId: id });
+      // Maximize the client window once the game starts, so the detail page
+      // (guide / instructions) gets as much screen space as possible.
+      void api.maximizeWindow();
+    }
+    return launched;
   },
 
   saveGame: async (game) => {

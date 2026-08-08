@@ -15,16 +15,11 @@
     "build:admin": "tsc -p tsconfig.admin.json && vite build --config vite.admin.config.ts"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-dialog": "^2.0.1",
     "@tauri-apps/plugin-fs": "^2.0.1",
     "@tauri-apps/plugin-shell": "^2.0.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "i18next": "^26.3.6",
     "lucide-react": "^0.441.0",
     "pinyin-pro": "^3.28.2",
@@ -33,10 +28,6 @@
     "react-dom": "^19.2.3",
     "react-i18next": "^17.0.11",
     "react-router-dom": "^6.26.2",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.18",
-    "tw-animate-css": "^1.4.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

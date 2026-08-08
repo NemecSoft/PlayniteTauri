@@ -3,35 +3,67 @@
 // rating, how-to-play guide (HTML), screenshot gallery (GIF supported) and
 // gameplay videos. Fully localized via i18n.
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGamesStore } from "../stores/gamesStore";
-import { displayName } from "../utils/display";
-import { imageUrl } from "../utils/assets";
 import { useI18n } from "../i18n";
-import {
-  Play,
-  ArrowLeft,
-  CalendarDays,
-  Gauge,
-  Image as ImageIcon,
-  Film,
-  Building2,
-} from "lucide-react";
+import { api } from "../api/client";
+import { ArrowLeft } from "lucide-react";
 
 export default function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useI18n();
   const games = useGamesStore((s) => s.games);
-  const launchGame = useGamesStore((s) => s.launchGame);
 
   const game = useMemo(() => games.find((g) => g.id === id), [games, id]);
+
+  // Every game links to its standalone static detail page
+  // (Game_Details/<游戏名>/index.html), served by the `yungame-game://` custom
+  // scheme so the webview natively loads css/js/images and handles anchors.
+  // If none exists, show a 404.
+  const [htmlFound, setHtmlFound] = useState(false);
+  const [htmlLoading, setHtmlLoading] = useState(true);
+  const [serverUrl, setServerUrl] = useState("");
+  useEffect(() => {
+    if (!game) return;
+    let cancelled = false;
+    setHtmlLoading(true);
+    api
+      .getGameHtmlPage(game.name)
+      .then((r) => {
+        if (!cancelled) {
+          setHtmlFound(r.found);
+          setHtmlLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHtmlFound(false);
+          setHtmlLoading(false);
+        }
+      });
+    api
+      .getGameServerUrl()
+      .then((u) => {
+        if (!cancelled) setServerUrl(u);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Absolute URL for the game's page, served by the local HTTP server.
+  const gamePageUrl =
+    game && serverUrl
+      ? `${serverUrl}/games/${encodeURIComponent(game.name)}/index.html`
+      : "";
 
   if (!game) {
     return (
       <div className="detail-page">
-        <button className="btn" onClick={() => navigate(-1)}>
+        <button className="btn" onClick={() => navigate("/")}>
           <ArrowLeft size={15} /> {t("details_back")}
         </button>
         <div className="detail-not-found">{t("details_notFound")}</div>
@@ -39,128 +71,53 @@ export default function GameDetailPage() {
     );
   }
 
-  const screenshots = game.screenshots || [];
-  const videos = game.videos || [];
+  // Every game links to Game_Details/<游戏名>/index.html:
+  //  - loading  → brief spinner
+  //  - found    → back button + the page (iframe)
+  //  - missing  → back button + a 404 page
+  const detailTopbar = (
+    <div className="detail-topbar">
+      <button className="btn" onClick={() => navigate("/")}>
+        <ArrowLeft size={15} /> {t("details_back")}
+      </button>
+    </div>
+  );
 
-  // Convert a YouTube watch URL to an embeddable URL.
-  const embedYoutube = (url: string) => {
-    const m = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})(?:[?&]|$)/);
-    return m ? `https://www.youtube.com/embed/${m[1]}` : url;
-  };
+  if (htmlLoading) {
+    return (
+      <div className="detail-page detail-page-html">
+        {detailTopbar}
+        <div className="detail-loading">{t("details_loading")}</div>
+      </div>
+    );
+  }
 
+  if (htmlFound) {
+    return (
+      <div className="detail-page detail-page-html">
+        {detailTopbar}
+        <iframe
+          className="detail-game-html-full"
+          title={`${game.name} page`}
+          src={gamePageUrl}
+          // Allow the embedded static page's own player (DPlayer / <video> /
+          // YouTube embed) to enter fullscreen. Without this, the browser
+          // blocks `requestFullscreen()` inside a cross-origin iframe.
+          allowFullScreen
+          allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+        />
+      </div>
+    );
+  }
+
+  // 404: no static page for this game.
   return (
-    <div className="detail-page">
-      <div className="detail-topbar">
-        <button className="btn" onClick={() => navigate(-1)}>
-          <ArrowLeft size={15} /> {t("details_back")}
-        </button>
-      </div>
-
-      {/* Hero header with backdrop */}
-      <div className="detail-hero">
-        {imageUrl(game.backgroundImage) ? (
-          <div
-            className="detail-hero-bg"
-            style={{ backgroundImage: `url(${imageUrl(game.backgroundImage)})` }}
-          />
-        ) : null}
-        <div className="detail-hero-inner">
-          <div className="detail-cover">
-            {imageUrl(game.coverImage) ? (
-              <img src={imageUrl(game.coverImage)} alt={game.name} />
-            ) : (
-              <div className="placeholder"><ImageIcon size={40} /></div>
-            )}
-          </div>
-          <div className="detail-title-block">
-            <h1>{displayName(game)}</h1>
-            <div className="detail-meta">
-              <span><Building2 size={14} /> {game.developer.join(", ") || t("details_unknown")}</span>
-              {game.releaseDate && (
-                <span><CalendarDays size={14} /> {new Date(game.releaseDate).toLocaleDateString()}</span>
-              )}
-              {game.communityScore != null && (
-                <span className="score"><Gauge size={14} /> {game.communityScore}%</span>
-              )}
-              {game.ageRating.length > 0 && <span className="rating">{game.ageRating.join("/")}</span>}
-              <span className={`inst ${game.installed ? "yes" : "no"}`}>
-                {game.installed ? t("details_installed") : t("details_notInstalled")}
-              </span>
-            </div>
-            <button className="detail-play" onClick={() => launchGame(game.id)}>
-              <Play size={20} fill="currentColor" /> {t("details_play")}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="detail-body">
-        {/* Description */}
-        {game.description && (
-          <section className="detail-section">
-            <h2>{t("details_about")}</h2>
-            <p className="detail-desc">{game.description}</p>
-          </section>
-        )}
-
-        {/* Platform / genre chips */}
-        <section className="detail-section">
-          <h2>{t("details_info")}</h2>
-          <div className="chip-list">
-            {game.platform.map((p) => <span className="chip" key={p}>{p}</span>)}
-            {game.genre.map((g) => <span className="chip" key={g}>{g}</span>)}
-            {game.tags.map((tag) => <span className="chip" key={tag}>{tag}</span>)}
-          </div>
-        </section>
-
-        {/* How-to-play guide (HTML) */}
-        {game.guide && (
-          <section className="detail-section">
-            <h2>{t("details_howToPlay")}</h2>
-            <div
-              className="detail-guide"
-              dangerouslySetInnerHTML={{ __html: game.guide }}
-            />
-          </section>
-        )}
-
-        {/* Screenshots gallery (GIF supported) */}
-        {screenshots.length > 0 && (
-          <section className="detail-section">
-            <h2>{t("details_gallery")}</h2>
-            <div className="detail-gallery">
-              {screenshots.map((s, i) => (
-                <div className="gallery-item" key={i}>
-                  <img src={imageUrl(s)} alt={`screenshot ${i + 1}`} loading="lazy" />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Gameplay videos */}
-        {videos.length > 0 && (
-          <section className="detail-section">
-            <h2><Film size={18} /> {t("details_videos")}</h2>
-            <div className="detail-videos">
-              {videos.map((v, i) => (
-                <div className="video-item" key={i}>
-                  <div className="video-label">{v.name || `${t("details_videos")} ${i + 1}`}</div>
-                  {v.type === "youtube" ? (
-                    <iframe
-                      src={embedYoutube(v.url)}
-                      title={v.name || "video"}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video src={v.url} controls />
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+    <div className="detail-page detail-page-html">
+      {detailTopbar}
+      <div className="detail-404">
+        <div className="detail-404-code">404</div>
+        <p>{t("details_page404", { name: game.name })}</p>
+        <p className="detail-404-hint">{t("details_page404hint")}</p>
       </div>
     </div>
   );

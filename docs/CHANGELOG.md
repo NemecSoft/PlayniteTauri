@@ -1,6 +1,142 @@
 # 变更记录
 
+## 2026-08-08
+
+- **动态视频列表 API（`/api/videos`）**：详情页静态服务器新增 `GET /api/videos?dir=<游戏目录名>`，
+  返回 `Game_Details/<游戏名>/videos/` 下视频的 JSON 列表（`{ root: [...], dirs: [{name, files}] }`），
+  支持子文件夹分组与自然排序（`实况2` < `实况10`）。详情页（如 `Kenshi剑士/js/main.js`）
+  `fetch("/api/videos?dir=" + location.pathname)` 即可自动渲染 DPlayer 播放列表——把视频丢进
+  `videos/` 目录即可，无需手写 `<video>` 标签。复刻了早期 Node `server.js` 的行为，用
+  `axum::extract::Query` + `std::fs::read_dir` + `serde_json` 实现在同一自包含服务器上（`game_server.rs`
+  的 `api_videos` handler，约 60 行，不新增依赖）；`..`/绝对路径/空 `dir` 一律 403 防越界。
+  文档：`docs/design/game-detail.md` 新增"动态视频列表 API"小节。
+
+- **游戏静态详情页容器：彻底重写为成熟方案 `axum` + `tower-http::services::ServeDir`**
+  （遵循项目"优先使用已有成熟方案"原则）。详情页服务器核心由约 210 行手写
+  `std::net::TcpListener` + HTTP 解析/响应代码，全部删除，替换为 ~70 行
+  `axum::Router::nest_service("/games", ServeDir::new(Game_Details))`。ServeDir 开箱即用提供：
+
+  - **HTTP Range / 206 Partial Content**（视频 seek / 拖动播放必需）—— 解决 Kenshi 剑士
+    `videos/实况1.mp4` 在 iframe 内无法加载的根因（旧手写服务器无 Range 支持）。
+  - `GET` + `HEAD`—— 修复旧服务器对 HEAD 返回 405 导致 `XMLHttpRequest HEAD` 视频探测
+    误判为 `status >= 400` 而显示"视频待添加"的问题。
+  - 流式输出大文件（206MB 视频不读全内存）。
+  - MIME 探测（含 `video/mp4` 等）、`If-Modified-Since` 304、路径穿越防护、`append_index_html_on_directories`。
+
+  运行模型：`GameServer::start` 启动独立 `std::thread` + 自建 `tokio` runtime，
+  不依赖 Tauri async_runtime 初始化时序。`base_url` 通过 `get_game_server_url` 暴露给前端。
+  对比方案：`hyper-staticfile` / `actix-files` / 自实现 Range——`tower-http::ServeDir`
+  是 Rust 生态静态文件服务的标准答案，被广泛生产使用，故采用。
+
+  - **iframe 全屏授权**：`GameDetailPage` 的 iframe 增加 `allowFullScreen` +
+    `allow="fullscreen; autoplay; encrypted-media; picture-in-picture"`——否则跨源 iframe 内
+    的 DPlayer / `<video>` / YouTube 嵌入调用 `requestFullscreen()` 会被浏览器拦截，**全屏按钮无效**。
+
+  新增文档 `docs/design/game-detail.md` 记录设计原则、URL 映射、能力清单与
+  与"优先成熟方案"准则的对应关系；`docs/README.md` 索引加入该文档。
+  新增依赖：`axum = "0.8"`、`tokio = { version = "1", features = ["rt-multi-thread", "net", "macros", "sync"] }`、
+  `tower-http = { version = "0.6", features = ["fs"] }`；移除不再使用的 `tiny_http`。
+
+- **确立开发准则"优先使用已有成熟方案"**：将"基础设施类与通用功能优先复用生态成熟 crate、
+  不手写底层实现"写入 `docs/CONTRIBUTING.md`（新增"开发准则"小节）、`AGENTS.md`（开发规范第 11 条）、
+  并作为 `docs/design/game-detail.md` 的顶层设计原则。`docs/design/architecture.md` 模块表补充
+  `game_server` 模块与 `game_html` 命令。此准则源于本次详情页容器重写（手写 HTTP 服务器 → axum+ServeDir）
+  的经验教训。
+
+## 2026-08-07
+
+- **游戏静态资料页（连接客户端，通用方案）**：每游戏独立静态详情页机制——游戏在数据目录
+  `Game_Details/<游戏名>/` 放 `index.html` + `css/` + `js/` + `images/`。
+  采用 **本地 HTTP 服务器**（`tiny_http`，监听 127.0.0.1 随机端口）服务 `Game_Details/`
+  目录，URL 形如 `http://127.0.0.1:<port>/games/<游戏名>/index.html`。webview **原生**加载
+  css/js/images、执行脚本、处理 `#anchor` 锚点跳转——无需内联、无需打补丁，对所有游戏
+  页面通用（同 Playnite 等启动器的做法）。客户端 `GameDetailPage`：`get_game_server_url`
+  取服务器地址 + `get_game_html_page` 检测是否存在；有资料页→返回按钮+全屏 iframe
+  （`src = <base>/games/<游戏名>/index.html`），无资料页→返回按钮+**404 页面**。
+  已生成《赛菲莉娅-网吧联机版》资料页（真实 Steam 截图 11 张，点击灯箱放大）。
+
+## 2026-08-07
+
+- **封面匹配修复**：`covers.rs` 的 `apply_covers` 对"已有封面"的判断从"路径非空"改为
+  "路径非空 **且文件存在**"。当数据库存的封面文件被删除/改名（例如 `007.jpg` 换成
+  `007.gif`）时，会重新扫描 `CoverImages/` 并按格式优先级（APNG > webp > gif > jpg > png）
+  重新匹配新文件，避免显示失效路径导致封面空白。
+
+- **注册表数据目录覆盖**：`AppPaths::config_root()` 新增 Windows 注册表读取，支持管理员
+  指定数据/配置目录：
+  - 注册表键：`HKEY_CURRENT_USER\Software\YunGame`，值名 `DataDir`（`REG_SZ` 绝对路径）。
+  - 读取顺序：`DataDir` 存在且非空 → 用它作为所有数据（数据库、config.json、CoverImages、
+    cache 等）的根目录；否则回退到原有逻辑（debug 指向 `<project>/release`，release 指向
+    exe 所在目录）。
+  - 效果：一处设定，全部路径派生自 `config_root()`，自动覆盖数据库 / 配置 / 封面 / 图片等。
+
+- **管理端：游戏编辑器升级为多标签页 + 多启动项**：
+  - 游戏编辑弹窗改为 **通用 / 指令 / 游戏库** 三个子标签页。
+  - **指令标签页**：支持为单个游戏配置**多条启动项**（原版 / MOD / DX11 / DX12 等）：
+    每条含名称、类型（文件 / URL）、路径、工作目录、启动参数、是否作为启动指令、
+    是否追踪游玩时间；支持 **添加 / 上移 / 下移 / 移除**。启动指令为唯一（勾选一条自动取消其它）。
+  - **游戏库标签页**：配置游戏库根目录列表，映射到 `{Gamelibrary1}`、`{Gamelibrary2}` … 占位符。
+  - **新增顶层"游戏库管理"标签页（完整 CRUD）**：以**表格**列出所有游戏库
+    （ID / 名称 / 路径 / 操作），支持新增、编辑、删除，与游戏管理一致；游戏库模型为
+    `GameLibrary { id, name, path }`，name 可改（如"库1"、"库2"），path 为根目录。
+    后端命令改为 `admin_get_game_libraries` / `admin_save_game_library` /
+    `admin_delete_game_library`；旧纯字符串数组配置自动兼容升级。
+  - **游戏编辑"通用"标签页补全字段**：新增版本 / 发行商 / 系列 / 发行日期 / 收藏 / 隐藏，
+    以及简介 / 描述、HTML 攻略 / 玩法指南、备注；标签改为**标签选择器**（全库唯一标签
+    chip 点选 + 自定义添加），不再用手打逗号分隔。
+  - **表格统一显示 ID 列**：游戏管理、用户管理、游戏库管理三张表均展示 ID。
+  - **修复保存命令参数键**：`save_game` 改为 `{ payload: { game } }`、`admin_set_game_level`
+    改为 `{ game_id, level }`，与后端命令参数名对齐（此前参数键不匹配导致标签等保存失败）。
+  - **文档新增"桌面端启动路径拼接"**：客户端启动时按名称匹配 `{名称}` 占位符 → 游戏库根
+    目录 → 拼接剩余相对路径并归一化 → 启动进程。
+  - **用户管理补全**：新增**用户类别**（个人用户 / 企业用户，`kind` 字段），列表展示类别
+    标签；`admin_save_user` 支持 `kind` 参数；保存/删除带错误提示（新增必须填密码）。
+  - **删除确认 + 撤销**：所有删除（游戏 / 用户 / 游戏库）改用**自定义确认弹窗**
+    （替换不可靠的 `window.confirm`）；删除后底部弹出**撤销条**。用户删除为**软删除**
+    （`users` 表新增 `deleted_at`，迁移自动补列），`admin_restore_user` 恢复；已删除用户
+    不参与登录校验与列表展示。新增 `admin_restore_user` 命令。
+  - **启动项可执行性真实校验**：新增 `admin_validate_action` 命令，对启动项路径做**真实
+    文件系统校验**（解析占位符 → 绝对路径 → 存在性 / 非目录 / 可执行扩展名）。
+    前端输入路径实时显示校验结果及解析后实际路径，保存时对 File 启动项再次校验，
+    无效路径阻止保存。`process.rs` 的路径解析逻辑提取为共享的 `resolve_path` 供校验复用。
+  - **设计修正：游戏只属于一个游戏库**：`Game` 模型新增 `gameLibrary: Option<String>`
+    字段；**"所属游戏库"下拉移到"通用"标签页**（每个游戏单选一个库）；
+    **"游戏库"子标签页移除**，库增删改统一只在顶层"游戏库管理"。
+    指令标签页底部新增"此启动项引用的游戏库（只读）"自动展示 actions 中实际使用的 `{库名}`。
+    启动路径解析逻辑不变。
+  - **工作目录便捷按钮**：指令标签页工作目录旁加"**用 exe 所在目录**"按钮（解析 exe
+    实际路径后取 parent 作为工作目录，默认应=exe 所在目录，填错游戏启动不了）。
+  - **启动项校验改为手动触发**：路径右侧加"**校验**"按钮（手动触发，不阻塞保存——
+    开发与部署环境路径不同，保存时校验会阻碍配置）。`saveGame` 加 try/catch 错误提示。
+- **保存时缺失字段容错**：`saveGame` 构造 payload 时以"完整默认 Game"为基底，再合并
+  `editingGame`（仅替换非 undefined 字段）——避免老数据缺字段（如 `installed`）时
+  serde 反序列化失败。工作目录提示具体路径（如 `{Gamelibrary1}\bin`）而非"留空"，并强调
+  工作目录**必须指定**（很多游戏是 exe 子目录如 `\bin`）。
+- **弹窗关闭保护（基本规则）**：游戏 / 游戏库 / 用户编辑弹窗**点击外部一律不关闭**（无论
+  有无改动），只通过明确的"保存 / 取消"按钮关闭，防止误点击丢失编辑内容。"取消"按钮在
+  有未保存改动时先弹确认框。打开时对表单做 JSON 快照对比改动。
+  - **数据自动迁移**：`init_app_db` 启动时自动执行 `migrate_gamelibrary_paths`（幂等，受
+    `gamelibrary_migrated` 标记保护），把数据库所有启动项路径从旧的 `.\Gamelibrary\...`
+    格式批量替换为 `{Gamelibrary1}\...` 占位符；同时提供 `admin_migrate_gamelibrary_placeholder`
+    命令与编辑器内"迁移旧路径"按钮供手动触发。已对现有 1270 个游戏完成迁移。
+  - 路径 / 工作目录 / 游戏库目录支持 **Tauri 文件选择对话框**（`@tauri-apps/plugin-dialog`）。
+  - **后端**：新增 `admin_get_game_libraries` / `admin_set_game_libraries` /
+    `admin_migrate_gamelibrary_placeholder` 命令；`AppSettings` 增加 `game_libraries: Vec<String>`
+    字段（持久化到 `config.json`）；`process.rs` 的 `launch` 支持解析 `{GamelibraryN}` 占位符，
+    替换为对应游戏库根目录后再做路径解析（绝对/相对）。
+  - `launch_game` 命令读取 `settings.game_libraries` 传入 `process.launch` 以解析占位符。
+  - 管理端游戏列表的"启动项"列改名为**"安装目录"**。
+  - **移除管理端"企业配置"标签页**（企业用户 IP 匹配功能不再使用），导航栏仅保留
+    游戏管理 / 用户管理 / 游戏库管理。
+
 ## 2026-08-05
+
+- **彻底清除残留依赖**：从 `package.json` 移除已不使用的 shadcn/Tailwind 相关依赖
+  （`tailwindcss`、`@tailwindcss/vite`、`@radix-ui/react-dialog`、`@radix-ui/react-slot`、
+  `class-variance-authority`、`clsx`、`sonner`、`tailwind-merge`、`tw-animate-css`），
+  并移除 `vite.config.ts` 中的 `@tailwindcss/vite` 插件。`npm install` 后共移除 40 个包。
+  保留在用的 `@tanstack/react-query`、`react-router-dom`、`lucide-react` 等。
+  同步更新 `AGENTS.md`、`README.md`、`docs/design/architecture.md` 的 UI 栈说明。
 
 - **重构为 Cargo workspace monorepo（多项目结构，类似 .NET 解决方案）**：
   - 目录布局改为 **共享核心库 + 多个 Tauri 应用**：
@@ -18,6 +154,9 @@
   - `build.ps1` 支持 `-ClientOnly` / `-AdminOnly` / `-Debug`；`dev-client.bat` / `dev-admin.bat`
     提供前端 HMR + 后端增量编译的快速验证。
   - 移除旧的 `src-tauri/` 与 `src-tauri-admin/` 单 crate 结构。
+  - **文档同步**：重写 `docs/design/architecture.md`（monorepo 架构）、`directory-structure.md`
+    （新目录布局）、`build-script.md`（多 exe 构建 + dev 模式）；新增 `docs/design/admin.md`
+    （管理端设计）；更新 `docs/README.md` 索引与根 `README.md`。
 
 - **修复：管理端窗口错误加载客户端前端导致 `library_stats not found`**：
   Tauri v2 的 `tauri.conf.json` `windows[].url` 字段在 `generate_context!`

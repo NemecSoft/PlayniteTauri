@@ -53,9 +53,9 @@ export const api = {
   getCoverDirInfo: () =>
     call<{ dirPath: string; dirExists: boolean; coverFiles: number; images: string[] }>("get_cover_dir_info"),
   readImage: (path: string) =>
-    call<{ bytes: number[]; mime: string }>("read_image", { path }),
+    call<{ data: string; mime: string }>("read_image", { path }),
   readImagesBatch: (paths: string[]) =>
-    call<Array<{ bytes: number[]; mime: string } | null>>("read_images_batch", { paths }),
+    call<Array<{ data: string; mime: string } | null>>("read_images_batch", { paths }),
   clearImageCache: () => call<number>("clear_image_cache"),
 
   // auth (client)
@@ -84,10 +84,21 @@ export const api = {
   // announcement
   getAnnouncement: () => call<{ html: string; fromFile: boolean }>("get_announcement"),
 
+  // Check whether a game has a static detail page (Game_Details/<name>/index.html).
+  // The page itself is loaded via the `yungame-game://` custom scheme.
+  getGameHtmlPage: (name: string) =>
+    call<{ name: string; found: boolean }>("get_game_html_page", { name }),
+
+  // Base URL of the local HTTP server that serves Game_Details/ pages.
+  getGameServerUrl: () => call<string>("get_game_server_url"),
+
   // system
   getAppInfo: () => call<{ appName: string; version: string; os: string; arch: string }>("get_app_info"),
   minimizeWindow: () => call<void>("minimize_window"),
   maximizeWindow: () => call<boolean>("maximize_window"),
+  isMaximized: () => call<boolean>("is_maximized"),
+  isFullscreen: () => call<boolean>("is_fullscreen"),
+  toggleFullscreen: () => call<boolean>("toggle_fullscreen"),
   closeWindow: () => call<void>("close_window"),
   hideWindow: () => call<void>("hide_window"),
   showWindow: () => call<void>("show_window"),

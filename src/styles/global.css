@@ -650,26 +650,52 @@ textarea {
 
 .window-controls {
   display: flex;
-  gap: 2px;
+  align-items: stretch;
+  align-self: stretch;
   -webkit-app-region: no-drag;
   z-index: 2;
   flex-shrink: 0;
 }
 .window-controls button {
-  width: 38px;
-  height: 30px;
-  border-radius: 4px;
+  width: 40px;
+  height: 100%;
+  border: none;
+  border-radius: 0;
   display: grid;
   place-items: center;
+  background: transparent;
   color: var(--text-secondary);
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+}
+.window-controls button svg {
+  stroke-width: 1.6;
+}
+.window-controls .win-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.window-controls .win-icon-fullscreen {
+  font-size: 16px;
+}
+.window-controls .win-icon-min {
+  font-size: 15px;
+  font-weight: 400;
 }
 .window-controls button:hover {
-  background: var(--bg-item-hover);
+  background: rgba(128, 128, 128, 0.18);
   color: var(--text-primary);
+}
+.window-controls button:active {
+  background: rgba(128, 128, 128, 0.28);
 }
 .window-controls button.close:hover {
   background: #e5484d;
+  color: #fff;
+}
+.window-controls button.close:active {
+  background: #c93a3f;
   color: #fff;
 }
 
@@ -2405,6 +2431,66 @@ textarea {
 .detail-guide h3, .detail-guide h4 { color: var(--text-primary); margin: 12px 0 6px; }
 .detail-guide ul { margin: 0 0 10px; padding-left: 20px; }
 .detail-guide li { margin: 4px 0; }
+.detail-game-html {
+  width: 100%;
+  height: 640px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* When a game has a standalone static detail page, hide everything else
+ * (hero, chips, guide, screenshots, etc.) and let the page fill the screen. */
+.detail-page-html {
+  padding: 0;
+  max-width: none;
+}
+.detail-page-html .detail-topbar {
+  padding: 14px 20px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.detail-game-html-full {
+  width: 100%;
+  height: calc(100vh - 56px);
+  border: none;
+  background: #fff;
+  display: block;
+}
+.detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 56px);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.detail-404 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 56px);
+  color: var(--text-color);
+  gap: 6px;
+  padding: 0 24px;
+  text-align: center;
+}
+.detail-404-code {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--accent-color, #3b82f6);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.detail-404 p { margin: 0; }
+.detail-404-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
 .detail-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

@@ -14,8 +14,8 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Menu,
-  Minimize,
   Square,
+  Copy,
   X,
   Settings as SettingsIcon,
   Tags as TagsIcon,
@@ -51,6 +51,65 @@ export default function TopBar() {
 
   const menuRef = useRef<HTMLDivElement>(null);
   const [regenBusy, setRegenBusy] = useState(false);
+
+  // Window state for the maximize/restore & fullscreen toggle buttons.
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const refreshWindowState = async () => {
+    try {
+      const [max, fs] = await Promise.all([api.isMaximized(), api.isFullscreen()]);
+      setIsMaximized(max);
+      setIsFullscreen(fs);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  useEffect(() => {
+    void refreshWindowState();
+    // Keep state in sync even if the window is changed by other means
+    // (Win+Up, double-click, Esc to exit fullscreen).
+    window.addEventListener("yungame:window-state", refreshWindowState);
+    window.addEventListener("focus", refreshWindowState);
+
+    // F11 toggles fullscreen (familiar desktop shortcut).
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "F11") {
+        e.preventDefault();
+        void onFullscreenToggle();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      window.removeEventListener("yungame:window-state", refreshWindowState);
+      window.removeEventListener("focus", refreshWindowState);
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onMaximizeToggle = async () => {
+    const max = await api.maximizeWindow();
+    setIsMaximized(max);
+  };
+
+  const onFullscreenToggle = async () => {
+    const fs = await api.toggleFullscreen();
+    setIsFullscreen(fs);
+  };
+
+  const onClose = () => {
+    void api.closeWindow();
+  };
+
+  const onDoubleClick = () => {
+    // Double-clicking the empty title bar toggles maximize (modern window
+    // behavior). Fullscreen is left alone so it doesn't fight maximize.
+    if (isFullscreen) return;
+    void onMaximizeToggle();
+  };
 
   // Close the dropdown when clicking outside it.
   useEffect(() => {
@@ -102,9 +161,13 @@ export default function TopBar() {
   }
 
   return (
-    <header className="topbar">
+    <header className="topbar" onDoubleClick={onDoubleClick}>
       {/* Far left: settings / app menu (circle 2 in the reference image) */}
-      <div className="topbar-left" ref={menuRef}>
+      <div
+        className="topbar-left"
+        ref={menuRef}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
         <button
           className="topbar-menu-btn"
           aria-label={t("titlebar_menu")}
@@ -148,7 +211,11 @@ export default function TopBar() {
       </div>
 
       {/* Middle: top-level tabs */}
-      <nav className="topbar-tabs" aria-label="Main tabs">
+      <nav
+        className="topbar-tabs"
+        aria-label="Main tabs"
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
         {TABS.map(({ key, labelKey, icon: Icon }) => (
           <button
             key={key}
@@ -166,15 +233,28 @@ export default function TopBar() {
         {titleText}
       </div>
 
-      {/* Far right: window controls */}
-      <div className="window-controls">
-        <button title="Minimize" onClick={() => api.minimizeWindow()}>
-          <Minimize size={15} />
+      {/* Far right: window controls: [Fullscreen] [Minimize] [Maximize] [Close] */}
+      <div
+        className="window-controls"
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="win-fullscreen"
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          onClick={() => void onFullscreenToggle()}
+        >
+          <span className="win-icon win-icon-fullscreen">⛶</span>
         </button>
-        <button title="Maximize" onClick={() => api.maximizeWindow()}>
-          <Square size={13} />
+        <button title="Minimize" onClick={() => void api.minimizeWindow()}>
+          <span className="win-icon win-icon-min">─</span>
         </button>
-        <button className="close" title="Close" onClick={() => api.closeWindow()}>
+        <button
+          title={isMaximized ? "Restore" : "Maximize"}
+          onClick={() => void onMaximizeToggle()}
+        >
+          {isMaximized ? <Copy size={13} /> : <Square size={13} />}
+        </button>
+        <button className="close" title="Close" onClick={onClose}>
           <X size={16} />
         </button>
       </div>

@@ -40,13 +40,15 @@ if ($sccache) {
 $profile = if ($Debug) { "debug" } else { "release" }
 $targetDir = Join-Path $PSScriptRoot "target"
 
-function Run-Cargo([string]$Dir, [string[]]$Args, [string]$Label) {
+function Run-Tauri([string]$Dir, [string[]]$ExtraArgs, [string]$Label) {
     Write-Host "==> $Label..." -ForegroundColor Cyan
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     Push-Location $Dir
     $oldEAP = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    & cargo @Args 2>&1 | Out-Host
+    $args = @("tauri", "build", "--no-bundle")
+    if ($Debug) { $args += "--debug" }
+    & npx @args 2>&1 | Out-Host
     $code = $LASTEXITCODE
     $ErrorActionPreference = $oldEAP
     Pop-Location
@@ -59,7 +61,7 @@ function Run-Cargo([string]$Dir, [string[]]$Args, [string]$Label) {
 
 # ---------------- Client (apps/desktop) ----------------
 if (-not $AdminOnly) {
-    Run-Cargo "apps\desktop" @("tauri", "build", "--no-bundle", $(if ($Debug) { "--debug" })) "Building client (frontend + backend)"
+    Run-Tauri "apps\desktop" @() "Building client (frontend + backend)"
 
     $srcExe = Join-Path $targetDir "$profile\yungame.exe"
     $outDir = Join-Path $PSScriptRoot "release"
@@ -82,7 +84,7 @@ if (-not $ClientOnly) {
         Write-Error "Admin frontend build failed (exit code $LASTEXITCODE)"
     }
 
-    Run-Cargo "apps\admin" @("tauri", "build", "--no-bundle", $(if ($Debug) { "--debug" })) "Building admin (frontend + backend)"
+    Run-Tauri "apps\admin" @() "Building admin (frontend + backend)"
 
     $adminOutDir = Join-Path $PSScriptRoot "admin_release"
     New-Item -ItemType Directory -Force -Path $adminOutDir | Out-Null

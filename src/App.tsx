@@ -2,7 +2,7 @@
 // optional login screen.
 
 import { useEffect, useState } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import LoginScreen from "./components/LoginScreen";
@@ -25,8 +25,6 @@ export default function App() {
   const loadGames = useGamesStore((s) => s.load);
   const loadStats = useLibraryStore((s) => s.loadStats);
   const loadAuth = useAuthStore((s) => s.load);
-  const settingsOpen = useUIStore((s) => s.settingsOpen);
-  const closeSettings = useUIStore((s) => s.closeSettings);
   const theme = useSettingsStore((s) => s.settings.theme);
   const language = useSettingsStore((s) => s.settings.language);
   const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
@@ -66,6 +64,30 @@ export default function App() {
   // Show the login screen first when enabled and not yet logged in.
   const needsLogin = loginEnabled && !loggedIn;
 
+  // Show the startup announcement is managed inside AppShell (it needs the
+  // announcement modal to live inside HashRouter). Skip when needs login.
+
+  if (needsLogin) {
+    return <LoginScreen onLogin={() => undefined} />;
+  }
+
+  return (
+    <HashRouter>
+      <AppShell />
+    </HashRouter>
+  );
+}
+
+/** Inner component: lives inside HashRouter so it can use react-router hooks.
+ *  Wires up global UI (top bar, body, toast, image progress) and reacts to
+ *  "game just launched" by navigating to the detail page. */
+function AppShell() {
+  const navigate = useNavigate();
+  const lastLaunchedId = useGamesStore((s) => s.lastLaunchedId);
+  const clearLastLaunched = useGamesStore((s) => s.clearLastLaunched);
+  const settingsOpen = useUIStore((s) => s.settingsOpen);
+  const closeSettings = useUIStore((s) => s.closeSettings);
+
   // Show the startup announcement once the main UI is visible.
   // The announcement HTML is statically inlined into the bundle (see
   // AnnouncementModal), so we can show it immediately — no IPC, no
@@ -75,20 +97,27 @@ export default function App() {
   // Close the announcement and hand focus back to the search box.
   const closeAnnouncement = () => {
     setShowAnnouncement(false);
-    // The announcement modal may have stolen keyboard focus; refocus search.
     window.dispatchEvent(new Event("yungame:focus-search"));
   };
 
+  // Auto-hide the announcement once the user is logged in.
+  const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
+  const loggedIn = useAuthStore((s) => s.currentUser !== null);
+  const needsLogin = loginEnabled && !loggedIn;
   useEffect(() => {
     if (needsLogin) setShowAnnouncement(false);
   }, [needsLogin]);
 
-  if (needsLogin) {
-    return <LoginScreen onLogin={() => undefined} />;
-  }
+  // When a game has just been launched, jump to its detail page so the user
+  // can read the guide / instructions while playing (Steam / Playnite-style).
+  useEffect(() => {
+    if (lastLaunchedId) {
+      navigate(`/game/${lastLaunchedId}`);
+      clearLastLaunched();
+    }
+  }, [lastLaunchedId, navigate, clearLastLaunched]);
 
   return (
-    <HashRouter>
       <div className="app">
         <TopBar />
         <Routes>
@@ -102,6 +131,5 @@ export default function App() {
           <AnnouncementModal onClose={closeAnnouncement} />
         )}
       </div>
-    </HashRouter>
   );
 }

@@ -1,6 +1,6 @@
 //! Game process launching and tracking, mirroring Playnite's GameController.
 
-use crate::models::Game;
+use crate::models::{Game, GameLibrary};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -31,33 +31,25 @@ impl ProcessManager {
 
     /// Launches a game executable with the given arguments and working directory.
     ///
-    /// Both `exe` and `working_dir` may be **relative paths**. They are resolved
-    /// against the app's own directory (the folder containing YunGame.exe), so a
-    /// portable setup can store games on the same drive and reference them with
-    /// `.` / `..` (e.g. `.\Game\Game.exe`, `..\Games\Game\Game.exe`).
+    /// Both `exe` and `working_dir` may be:
+    ///   - **Absolute** paths — used as-is.
+    ///   - **Relative** paths — resolved against the app's own directory (the
+    ///     folder containing YunGame.exe), so a portable setup can store games on
+    ///     the same drive and reference them with `.` / `..` (e.g. `.\Game\Game.exe`,
+    ///     `..\Games\Game\Game.exe`).
+    ///   - Paths starting with `{LibraryName}` — the placeholder is replaced by
+    ///     the matching configured game-library root (matched by library `name`,
+    ///     see `AppSettings::game_libraries`), then the remainder is treated as a
+    ///     relative path from that root.
+    ///     Example: `{库1}\SomeGame\Game.exe` (with a library named "库1").
     pub fn launch(
         &self,
         exe: &str,
         args: Option<&str>,
         working_dir: Option<&str>,
+        game_libraries: &[GameLibrary],
     ) -> std::io::Result<()> {
-        // Resolve relative paths against the executable's own directory.
-        let root = crate::settings::AppPaths::config_root();
-        let resolve = |p: &str| -> String {
-            if p.is_empty() {
-                return p.to_string();
-            }
-            let path = std::path::Path::new(p);
-            if path.is_absolute() {
-                p.to_string()
-            } else {
-                // Normalize (collapse `..`, `.`) relative to the app root.
-                let joined = root.join(path);
-                normalize_path(&joined).to_string_lossy().to_string()
-            }
-        };
-
-        let exe_abs = resolve(exe);
+        let exe_abs = resolve_path(exe, game_libraries);
         let mut cmd = std::process::Command::new(&exe_abs);
         if let Some(a) = args {
             // Simple whitespace split; play actions usually only need simple args.
@@ -68,7 +60,7 @@ impl ProcessManager {
         // Working directory: resolve relative paths; default to the exe's parent.
         match working_dir {
             Some(wd) if !wd.trim().is_empty() => {
-                cmd.current_dir(resolve(wd));
+                cmd.current_dir(resolve_path(wd, game_libraries));
             }
             _ => {
                 if let Some(parent) = std::path::Path::new(&exe_abs).parent() {
@@ -108,6 +100,56 @@ impl ProcessManager {
     pub fn running_games(&self) -> Vec<RunningGame> {
         self.running.lock().unwrap().values().cloned().collect()
     }
+}
+
+/// Resolves a launch path to an absolute path:
+///   - `{LibraryName}\rest`  -> library root joined with `rest` (normalized)
+///   - absolute              -> as-is
+///   - relative (`.`/`..`)   -> joined against the app root (normalized)
+/// Empty input stays empty. Used by both `launch` and validation commands so
+/// the exact same resolution logic is shared.
+pub fn resolve_path(p: &str, game_libraries: &[GameLibrary]) -> String {
+    if p.is_empty() {
+        return p.to_string();
+    }
+    let root = crate::settings::AppPaths::config_root();
+    if let Some((rest, lib_root)) = resolve_library_placeholder(p, game_libraries) {
+        let joined = lib_root.join(std::path::Path::new(rest));
+        return normalize_path(&joined).to_string_lossy().to_string();
+    }
+    let path = std::path::Path::new(p);
+    if path.is_absolute() {
+        p.to_string()
+    } else {
+        let joined = root.join(path);
+        normalize_path(&joined).to_string_lossy().to_string()
+    }
+}
+
+/// If `p` starts with a `{LibraryName}` placeholder, returns the remaining path
+/// (after the placeholder) and the matching library root. The placeholder token
+/// is matched case-insensitively against each library's `name` (e.g. `{库1}`,
+/// `{Gamelibrary1}`). Returns `None` when the path has no placeholder or no
+/// library with that name is configured.
+fn resolve_library_placeholder<'a>(
+    p: &'a str,
+    game_libraries: &[GameLibrary],
+) -> Option<(&'a str, PathBuf)> {
+    let trimmed = p.trim_start();
+    if !trimmed.starts_with('{') {
+        return None;
+    }
+    let end = trimmed.find('}')?;
+    let token = &trimmed[1..end];
+    if token.is_empty() {
+        return None;
+    }
+    let lib = game_libraries.iter().find(|l| l.name.eq_ignore_ascii_case(token))?;
+    if lib.path.trim().is_empty() {
+        return None;
+    }
+    let rest = trimmed[end + 1..].trim_start_matches(|c| c == '/' || c == '\\');
+    Some((rest, PathBuf::from(&lib.path)))
 }
 
 /// Lexically normalizes a path, collapsing `.` and `..` segments (without

@@ -31,6 +31,36 @@ pub fn maximize_window(app: AppHandle) -> crate::Result<bool> {
     }
 }
 
+/// Returns whether the main window is currently maximized.
+#[tauri::command]
+pub fn is_maximized(app: AppHandle) -> crate::Result<bool> {
+    Ok(app
+        .get_webview_window("main")
+        .map(|w| w.is_maximized().unwrap_or(false))
+        .unwrap_or(false))
+}
+
+/// Returns whether the main window is currently in fullscreen.
+#[tauri::command]
+pub fn is_fullscreen(app: AppHandle) -> crate::Result<bool> {
+    Ok(app
+        .get_webview_window("main")
+        .map(|w| w.is_fullscreen().unwrap_or(false))
+        .unwrap_or(false))
+}
+
+/// Toggles fullscreen on/off. Returns the new fullscreen state.
+#[tauri::command]
+pub fn toggle_fullscreen(app: AppHandle) -> crate::Result<bool> {
+    if let Some(win) = app.get_webview_window("main") {
+        let currently = win.is_fullscreen().unwrap_or(false);
+        let _ = win.set_fullscreen(!currently);
+        Ok(!currently)
+    } else {
+        Ok(false)
+    }
+}
+
 #[tauri::command]
 pub fn close_window(app: AppHandle, state: State<AppState>) -> crate::Result<()> {
     let db = state.db.lock().unwrap();

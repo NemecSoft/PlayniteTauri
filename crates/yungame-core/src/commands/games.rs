@@ -79,7 +79,12 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
                     } else {
                         state
                             .process
-                            .launch(&exe, action.arguments.as_deref(), action.working_dir.as_deref())
+                            .launch(
+                                &exe,
+                                action.arguments.as_deref(),
+                                action.working_dir.as_deref(),
+                                &settings.game_libraries,
+                            )
                             .map_err(|e| crate::AppError::Launch(e.to_string()))?;
                         if track {
                             state.process.start_tracking(&game);
@@ -108,6 +113,7 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
                         &exe.to_string_lossy(),
                         None,
                         Some(&wd.to_string_lossy()),
+                        &settings.game_libraries,
                     )
                     .map_err(|e| crate::AppError::Launch(e.to_string()))?;
                 if track {

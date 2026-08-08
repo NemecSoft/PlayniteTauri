@@ -18,6 +18,19 @@ import { useImageProgressStore } from "../stores/imageProgressStore";
 const isRemote = (s: string) => /^https?:\/\//i.test(s) || /^asset:\/\//i.test(s);
 const isLocalPath = (s: string) => /^[a-zA-Z]:[\\/]/i.test(s) || s.startsWith("/") || s.startsWith("\\");
 
+/**
+ * Decode a base64 string into bytes backed by a standard `ArrayBuffer` (the
+ * WebView2 runtime always provides `atob`). The result is safe to hand to
+ * `new Blob(...)`.
+ */
+function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
+  const binary = atob(b64);
+  const len = binary.length;
+  const bytes = new Uint8Array(new ArrayBuffer(len));
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
 /** How many paths we send in one IPC call (keeps each round-trip fast). */
 const BATCH_SIZE = 24;
 /** How many concurrent batches to keep in flight. */
@@ -103,7 +116,7 @@ async function loadOne(path: string): Promise<string | undefined> {
     await acquireSingle();
     try {
       const res = await api.readImage(path);
-      const arr = new Uint8Array(res.bytes);
+      const arr = base64ToBytes(res.data);
       const blob = new Blob([arr], { type: res.mime });
       const url = URL.createObjectURL(blob);
       putBlob(path, url);
@@ -128,7 +141,7 @@ async function loadBatch(paths: string[]): Promise<void> {
     for (let i = 0; i < paths.length; i++) {
       const r = results[i];
       if (!r) continue;
-      const arr = new Uint8Array(r.bytes);
+      const arr = base64ToBytes(r.data);
       const blob = new Blob([arr], { type: r.mime });
       const url = URL.createObjectURL(blob);
       putBlob(paths[i], url);

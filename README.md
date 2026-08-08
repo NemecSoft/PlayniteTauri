@@ -23,7 +23,9 @@
 | 存储 | **SQLite**（rusqlite，游戏库 / 用户等业务数据）+ **`config.json`**（应用偏好） |
 | 图标 | lucide-react |
 
-> **说明**：`package.json` 中仍残留 `tailwindcss` / `@radix-ui/*` / `sonner` 等依赖，但**代码中已不使用**（Tailwind 4 preflight 冲突曾导致黑屏，相关 UI 组件已移除）。请勿新增 Tailwind 工具类或 shadcn 组件，UI 继续使用 `global.css`。
+> **UI 栈说明**：曾引入 shadcn/ui + Tailwind，因 Tailwind 4 preflight 冲突导致黑屏，已全部移除，
+> 相关依赖也已彻底从 `package.json` 清除。请勿新增 Tailwind 工具类、shadcn/Radix 组件或 sonner 依赖，
+> UI 继续使用 `global.css`（CSS 变量驱动多主题）。
 
 ---
 

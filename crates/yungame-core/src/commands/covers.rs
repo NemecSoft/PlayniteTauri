@@ -94,11 +94,26 @@ pub fn get_cover_dir_info() -> crate::Result<CoverDirInfo> {
 /// frontend to render covers/screenshots stored as absolute paths, without
 /// relying on the Tauri asset protocol (which has variable scope behaviour
 /// across Tauri 2 patch versions on Windows).
+///
+/// The bytes are returned **base64-encoded** (`data` field) instead of a raw
+/// `Vec<u8>`. Raw byte arrays cross IPC as huge JSON number lists (each byte →
+/// "123,"), which is several times the size of the file and can exceed the
+/// WebView2 postMessage budget for large images (e.g. animated GIFs ~1MB).
+/// Base64 is ~33% larger than the raw bytes but far smaller and faster to
+/// serialize/parse than a JSON array, so large images transfer reliably.
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImagePayload {
-    pub bytes: Vec<u8>,
+    /// Base64-encoded image bytes.
+    pub data: String,
     pub mime: String,
+}
+
+fn to_payload(bytes: Vec<u8>, path: &Path) -> ImagePayload {
+    use base64::Engine;
+    let data = base64::engine::general_purpose::STANDARD.encode(&bytes);
+    let mime = mime_from_ext(path).to_string();
+    ImagePayload { data, mime }
 }
 
 fn mime_from_ext(path: &Path) -> &'static str {
@@ -129,8 +144,7 @@ pub async fn read_image(path: String) -> crate::Result<ImagePayload> {
     let bytes = tauri::async_runtime::spawn_blocking(move || read_one_validated(&path_clone))
         .await
         .map_err(|e| crate::AppError::Other(format!("join: {}", e)))??;
-    let mime = mime_from_ext(Path::new(&path)).to_string();
-    let payload = ImagePayload { bytes, mime };
+    let payload = to_payload(bytes, Path::new(&path));
     cache_put(&path, payload.clone());
     Ok(payload)
 }
@@ -186,8 +200,7 @@ pub async fn read_images_batch(paths: Vec<String>) -> crate::Result<Vec<Option<I
                     continue;
                 }
             };
-            let mime = mime_from_ext(&canonical).to_string();
-            let payload = ImagePayload { bytes, mime };
+            let payload = to_payload(bytes, &canonical);
             cache_put(&p, payload.clone());
             out.push(Some(payload));
         }

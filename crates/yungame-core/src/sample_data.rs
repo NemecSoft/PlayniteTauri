@@ -104,6 +104,7 @@ pub fn sample_games() -> Vec<Game> {
                 url: "https://www.youtube.com/watch?v=QkkoHAzjnUs".into(),
                 name: Some("Gameplay Trailer".into()),
             }],
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -166,6 +167,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -228,6 +230,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -290,6 +293,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -352,6 +356,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -413,6 +418,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
         Game {
@@ -474,6 +480,7 @@ pub fn sample_games() -> Vec<Game> {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         },
     ]

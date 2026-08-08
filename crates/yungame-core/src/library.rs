@@ -126,6 +126,7 @@ pub fn import_games(db: &Database, scanned: Vec<ScannedGame>) -> crate::db::DbRe
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         });
     }

@@ -147,6 +147,7 @@ impl PluginHost {
                     guide: None,
                     screenshots: Vec::new(),
                     videos: Vec::new(),
+                    game_library: None,
                     game_level: 1,
                 });
             }

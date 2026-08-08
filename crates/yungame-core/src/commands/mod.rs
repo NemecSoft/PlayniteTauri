@@ -4,6 +4,7 @@ pub mod admin;
 pub mod announcement;
 pub mod auth;
 pub mod covers;
+pub mod game_html;
 pub mod games;
 pub mod library;
 pub mod plugins;

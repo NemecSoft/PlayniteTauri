@@ -26,6 +26,10 @@ PlayniteTauri 是一个游戏库管理器（技术栈见下方"技术栈约束"�
 8. **不主动提交**：除非用户明确要求，否则不 commit / push
 9. **文档同步**：数据模型 / 功能 / 目录变更后，必须更新 `docs/design/*.md` 和 `docs/CHANGELOG.md`
 10. **删除文件**：用工具删除（`delete_file`），不留下残留
+11. **优先使用已有成熟方案**：基础设施类（HTTP 服务器、协议、文件 IO、序列化、数据库、图片/视频等）
+    和通用功能一律复用生态成熟 crate / 官方库，不要为局部需求手写底层实现。自研代码只负责把
+    成熟方案接到本项目的模型与目录约定；采用后应在设计文档中写明候选对比与选择理由
+    （见 `docs/CONTRIBUTING.md` 开发准则）。
 
 ### 技术栈约束
 - Tauri v2 文档为准；Rust 用现代格式化 `format!("{var}")`
@@ -35,9 +39,9 @@ PlayniteTauri 是一个游戏库管理器（技术栈见下方"技术栈约束"�
 - 国际化：**i18next + react-i18next**（`src/i18n/config.ts`，字典在 `locales/*.json`，
   运行时语言 code：`en-US` / `zh-CN` / `zh-TW`，对应文件 `en.json` / `zh-CN.json` / `zh-TW.json`）
 - `pinyin-pro` 做拼音搜索；`qrcode.react` 做登录二维码
-- 注意：`package.json` 仍残留 `tailwindcss` / `@radix-ui/*` / `sonner` 等依赖，但**代码中已不使用**
-  （因 Tailwind 4 preflight 冲突曾导致黑屏，相关引入与 `src/components/ui/`、`src/lib/` 已移除）。
-  不要新增 Tailwind 工具类或 shadcn 组件，UI 继续用 `global.css`。
+- 注意：曾引入 shadcn/ui + Tailwind（因 Tailwind 4 preflight 冲突导致黑屏已全部移除，
+  相关依赖也已彻底从 `package.json` 清除）。**不要新增 Tailwind 工具类、shadcn/Radix 组件
+  或 sonner 等依赖**，UI 继续用 `global.css`（CSS 变量驱动多主题）。
 
 ## 关键架构模式
 

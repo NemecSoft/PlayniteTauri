@@ -8,6 +8,7 @@ pub mod auth;
 pub mod autotags;
 pub mod commands;
 pub mod config;
+pub mod game_server;
 pub mod covers;
 pub mod db;
 pub mod library;
@@ -24,7 +25,7 @@ use process::ProcessManager;
 use settings::AppPaths;
 use serde::Deserialize;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use thiserror::Error;
 
@@ -58,6 +59,10 @@ pub struct AppState {
     pub process: ProcessManager,
     pub plugins: Mutex<PluginHost>,
     pub config_root: PathBuf,
+    /// Local HTTP server serving `Game_Details/` static pages. Kept here so it
+    /// lives for the whole app lifetime; the base URL is exposed via
+    /// `get_game_server_url`.
+    pub game_server: Option<Arc<game_server::GameServer>>,
 }
 
 /// One record in the game catalog JSON file.
@@ -163,6 +168,7 @@ fn import_game_catalog(db: &Database) -> usize {
             guide: None,
             screenshots: Vec::new(),
             videos: Vec::new(),
+            game_library: None,
             game_level: 1,
         });
     }
@@ -259,6 +265,7 @@ fn import_enterprise_if_empty(db: &Database, path: &str) -> usize {
             kind: "enterprise".into(),
             ip_address: ip,
             created_at: now.clone(),
+            deleted_at: None,
         });
     }
     let n = users.len();
@@ -291,9 +298,75 @@ fn seed_demo_personal_users(db: &Database) {
             kind: "personal".into(),
             ip_address: String::new(),
             created_at: now.clone(),
+            deleted_at: None,
         };
         let _ = db.upsert_user(&user);
     }
+}
+
+/// One-shot migration of launch-action paths/working-dirs from the old
+/// relative form `.\Gamelibrary\...` (or `..\Gamelibrary\...`) to the new
+/// placeholder form `{Gamelibrary1}\...`. Called automatically at startup
+/// (guarded by the `gamelibrary_migrated` setting) and exposed to the admin
+/// console as `admin_migrate_gamelibrary_placeholder`.
+///
+/// The placeholder is resolved **at launch time** by `process.rs` against the
+/// configured game-library roots, so the DB always stores the template form.
+/// Returns the number of games whose data was rewritten.
+pub fn migrate_gamelibrary_paths(db: &Database) -> usize {
+    let Ok(games) = db.get_all_games() else {
+        return 0;
+    };
+    let mut updated = 0usize;
+    for g in &games {
+        let mut dirty = false;
+        let new_actions: Vec<models::GameAction> = g
+            .actions
+            .iter()
+            .map(|a| {
+                let mut b = a.clone();
+                if let Some(p) = b.path.as_ref() {
+                    let np = migrate_path(p);
+                    if &np != p {
+                        b.path = Some(np);
+                        dirty = true;
+                    }
+                }
+                if let Some(w) = b.working_dir.as_ref() {
+                    let nw = migrate_path(w);
+                    if &nw != w {
+                        b.working_dir = Some(nw);
+                        dirty = true;
+                    }
+                }
+                b
+            })
+            .collect();
+
+        if dirty {
+            let mut ng = g.clone();
+            ng.actions = new_actions;
+            ng.modified = chrono::Utc::now().to_rfc3339();
+            if db.upsert_game(&ng).is_ok() {
+                updated += 1;
+            }
+        }
+    }
+    // Mark migration as done so future startups don't re-run it.
+    let _ = db.set_setting("gamelibrary_migrated", "1");
+    updated
+}
+
+/// Replace a leading `Gamelibrary` relative prefix with the `{Gamelibrary1}`
+/// placeholder. Handles `.\` / `..\` (and forward-slash) variants.
+fn migrate_path(p: &str) -> String {
+    let mut s = p.to_string();
+    for prefix in [r".\Gamelibrary\", r"..\Gamelibrary\", r"./Gamelibrary/", r"../Gamelibrary/"] {
+        if s.contains(prefix) {
+            s = s.replace(prefix, r"{Gamelibrary1}\");
+        }
+    }
+    s
 }
 
 /// Initialize the shared database: seed platforms + example games on first run,
@@ -307,6 +380,19 @@ fn init_app_db(app: &tauri::App) {
     }
     let _ = import_game_catalog(&db);
     maybe_backfill_tags(&db);
+    // One-time migration of `.\Gamelibrary\...` -> `{Gamelibrary1}\...`
+    // placeholder paths (only runs once, guarded by the setting).
+    if db
+        .get_setting("gamelibrary_migrated")
+        .ok()
+        .flatten()
+        .map(|v| v == "1")
+        .unwrap_or(false)
+    {
+        // already migrated
+    } else {
+        let _ = migrate_gamelibrary_paths(&db);
+    }
     if let Ok(settings) = db.load_settings() {
         let cfg = settings.enterprise_config_path.clone();
         if import_enterprise_if_empty(&db, &cfg) == 0 {
@@ -334,6 +420,9 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
     let _ = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
         .init();
 
+    let game_server = game_server::GameServer::start(AppPaths::games_html_dir())
+        .map(Arc::new)
+        .ok();
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -345,6 +434,7 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             process: ProcessManager::new(),
             plugins: Mutex::new(PluginHost::new(AppPaths::plugins_dir())),
             config_root,
+            game_server,
         })
         .setup(|app| {
             init_app_db(app);
@@ -366,12 +456,21 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             commands::admin::admin_list_users,
             commands::admin::admin_save_user,
             commands::admin::admin_delete_user,
+            commands::admin::admin_restore_user,
             commands::admin::admin_get_settings,
             commands::admin::admin_set_enterprise_config,
             commands::admin::admin_preview_enterprise,
             commands::admin::admin_set_game_level,
+            commands::admin::admin_get_game_libraries,
+            commands::admin::admin_save_game_library,
+            commands::admin::admin_delete_game_library,
+            commands::admin::admin_migrate_gamelibrary_placeholder,
+            commands::admin::admin_validate_action,
             // announcement
             commands::announcement::get_announcement,
+            // per-game static detail page
+            commands::game_html::get_game_html_page,
+            commands::game_html::get_game_server_url,
             // games
             commands::games::get_games,
             commands::games::get_game,
@@ -409,6 +508,9 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             commands::system::get_app_info,
             commands::system::minimize_window,
             commands::system::maximize_window,
+            commands::system::is_maximized,
+            commands::system::is_fullscreen,
+            commands::system::toggle_fullscreen,
             commands::system::close_window,
             commands::system::hide_window,
             commands::system::show_window,
@@ -450,6 +552,7 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             process: ProcessManager::new(),
             plugins: Mutex::new(PluginHost::new(AppPaths::plugins_dir())),
             config_root,
+            game_server: None,
         })
         .setup(|app| {
             init_app_db(app);
@@ -463,14 +566,21 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             commands::admin::admin_list_users,
             commands::admin::admin_save_user,
             commands::admin::admin_delete_user,
+            commands::admin::admin_restore_user,
             commands::admin::admin_get_settings,
             commands::admin::admin_set_enterprise_config,
             commands::admin::admin_preview_enterprise,
             commands::admin::admin_set_game_level,
+            commands::admin::admin_get_game_libraries,
+            commands::admin::admin_save_game_library,
+            commands::admin::admin_delete_game_library,
+            commands::admin::admin_migrate_gamelibrary_placeholder,
+            commands::admin::admin_validate_action,
             // auth (status / current user)
             commands::auth::get_current_user,
             commands::auth::resolve_enterprise,
             // games (read + save for editing launch actions)
+            commands::game_html::get_game_html_page,
             commands::games::get_games,
             commands::games::get_game,
             commands::games::save_game,
@@ -492,6 +602,9 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             commands::system::get_app_info,
             commands::system::minimize_window,
             commands::system::maximize_window,
+            commands::system::is_maximized,
+            commands::system::is_fullscreen,
+            commands::system::toggle_fullscreen,
             commands::system::close_window,
             commands::system::quit,
             commands::system::show_notification,

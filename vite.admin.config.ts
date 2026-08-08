@@ -24,6 +24,15 @@ export default defineConfig(async () => ({
   server: {
     port: 1421,
     strictPort: true,
-    watch: { ignored: ["**/src-tauri/**"] },
+    watch: {
+      ignored: [
+        "**/target/**",
+        "**/dist/**",
+        "**/dist-admin/**",
+        "**/release/**",
+        "**/admin_release/**",
+        "**/node_modules/**",
+      ],
+    },
   },
 }));

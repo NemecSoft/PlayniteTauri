@@ -27,6 +27,25 @@ pub struct GameAction {
     pub track_game: bool,
 }
 
+/// A game library: a named collection of games living under one root directory.
+/// The `name` is user-editable (e.g. "库1", "库2", "Gamelibrary1") and is used
+/// as the placeholder token in launch-action paths (`{name}\SomeGame\Game.exe`).
+/// The `path` is the absolute root directory where those games are stored.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct GameLibrary {
+    /// Unique id (UUID). Auto-assigned on creation; empty for legacy entries
+    /// until the next save.
+    #[serde(default)]
+    pub id: String,
+    /// User-editable display / placeholder name (e.g. "库1", "Gamelibrary1").
+    #[serde(default)]
+    pub name: String,
+    /// Absolute root directory of the library (e.g. `D:\Games`).
+    #[serde(default)]
+    pub path: String,
+}
+
 /// A localized / alternate name for a game, tagged with a language code.
 /// This extends the original Playnite model which only had a single `name`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -118,6 +137,13 @@ pub struct Game {
     /// Gameplay / live videos (type: youtube / file / url).
     #[serde(default)]
     pub videos: Vec<GameVideo>,
+    /// Name of the game library this game belongs to (each game belongs to at
+    /// most one library). `None` means "uncategorized". Matches a `GameLibrary`
+    /// by its `name` field (case-insensitive). Setting this is purely an
+    /// organizational / filtering aid — launch paths still resolve against the
+    /// `GameLibrary` list by `{name}` placeholder independently.
+    #[serde(default)]
+    pub game_library: Option<String>,
     /// Access level required to play this game: 1 | 2 | 3.
     /// A user with level N can play any game whose `game_level` <= N.
     #[serde(default = "default_game_level")]
@@ -158,6 +184,11 @@ pub struct AppUser {
     pub ip_address: String,
     /// When the account was created.
     pub created_at: String,
+    /// Soft-delete marker: `Some(timestamp)` when the user was deleted but kept
+    /// for undo/restore. `None` means active. Deleted users are hidden from
+    /// listings and cannot log in.
+    #[serde(default)]
+    pub deleted_at: Option<String>,
 }
 
 /// The access level of the current session, determined at login time from
@@ -222,6 +253,16 @@ pub struct AppSettings {
     /// Path to the enterprise user config JSON (default "D:/1.json").
     #[serde(default = "default_enterprise_config_path")]
     pub enterprise_config_path: String,
+    /// Game libraries: each is a `{ name, path }` pair. The `name` is a
+    /// user-editable placeholder token (e.g. "库1", "库2", "Gamelibrary1") and
+    /// `path` is the absolute root directory where that library's games live.
+    /// Launch-action paths reference a library via `{name}\SomeGame\Game.exe`,
+    /// resolved at launch time by looking up the matching library name.
+    ///
+    /// Backward compatible: older configs stored `Vec<String>` (plain paths);
+    /// those are migrated into `{ name: "GamelibraryN", path }` entries.
+    #[serde(default, deserialize_with = "deserialize_game_libraries")]
+    pub game_libraries: Vec<GameLibrary>,
     /// Current session user kind: "enterprise" | "personal" | "".
     #[serde(default)]
     pub current_user_kind: String,
@@ -246,6 +287,39 @@ fn default_user_level() -> i32 {
 
 fn default_card_width() -> i32 {
     180
+}
+
+/// Compatibility deserializer for `game_libraries`: accepts BOTH the current
+/// `[{ "name", "path" }]` shape AND the legacy `["path", ...]` string-array
+/// shape (which becomes `{ name: "GamelibraryN", path }` using 1-based names).
+fn deserialize_game_libraries<'de, D>(d: D) -> Result<Vec<GameLibrary>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Entry {
+        Str(String),
+        Obj(GameLibrary),
+    }
+    let items = Vec::<Entry>::deserialize(d)?;
+    Ok(items
+        .into_iter()
+        .enumerate()
+        .map(|(i, e)| match e {
+            Entry::Str(p) => GameLibrary {
+                id: format!("lib-legacy-{}", i + 1),
+                name: format!("Gamelibrary{}", i + 1),
+                path: p,
+            },
+            Entry::Obj(mut l) => {
+                if l.id.is_empty() {
+                    l.id = format!("lib-legacy-{}", i + 1);
+                }
+                l
+            }
+        })
+        .collect())
 }
 
 fn default_card_gap() -> i32 {
@@ -286,6 +360,7 @@ impl Default for AppSettings {
             card_width: 180,
             card_gap: 8,
             enterprise_config_path: "D:/1.json".into(),
+            game_libraries: Vec::new(),
             current_user_kind: "".into(),
             current_user_name: "".into(),
             current_user_level: 3,

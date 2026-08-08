@@ -16,9 +16,11 @@
 - [搜索系统（含拼音首字母）](./design/search.md) — 匹配范围、拼音首字母（`xjzb`）、缓存策略
 
 ### 用户界面
-- [视图系统](./design/views.md) — 网格 / 列表 / 详情，分组与排序
+- [视图系统](./design/views.md) — 网格 / 列表 / 详情 + 顶层标签页（主页 / 视频 / 工具）
+- [管理端（Playnite.Admin.exe）](./design/admin.md) — 独立管理程序、游戏/用户管理、与客户端同库
 - [主题系统（多主题即时切换）](./design/theming.md) — 卡通 / 赛博朋克 / 孟菲斯 / 新拟态 / 美漫 / 吉卜力 / 中国风
 - [封面图库（CoverImages 自动匹配）](./design/covers.md) — 本地图片按中文名自动设置封面
+- [游戏静态详情页（Game_Details 容器）](./design/game-detail.md) — axum + tower-http ServeDir 加载任意静态网站（含视频 Range）
 - [修改器整合（Trainer / Mods）](./design/trainers.md) — 本地/在线修改器、管理员启动、导入
 - [备份游戏存档（Backup Saves）](./design/backup-save.md) — 本地 + 多种云途径的存档备份/恢复
 - [图文 / 视频攻略整合](./design/guides.md) — 章节化攻略、本地攻略库、内嵌视频

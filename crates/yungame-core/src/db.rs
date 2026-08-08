@@ -78,12 +78,25 @@ impl Database {
                 level INTEGER NOT NULL DEFAULT 1,
                 kind TEXT NOT NULL DEFAULT 'personal',
                 ip_address TEXT NOT NULL DEFAULT '',
-                created_at TEXT NOT NULL DEFAULT ''
+                created_at TEXT NOT NULL DEFAULT '',
+                deleted_at TEXT DEFAULT NULL
             );
 
             CREATE INDEX IF NOT EXISTS idx_games_name ON games(name);
             "#,
         )?;
+        // Migrate older databases: add the `deleted_at` column to users if missing.
+        let has_deleted_at = self
+            .conn
+            .prepare("PRAGMA table_info(users)")?
+            .query_map([], |r| r.get::<_, String>(1))?
+            .collect::<Result<Vec<String>, _>>()?
+            .iter()
+            .any(|col| col == "deleted_at");
+        if !has_deleted_at {
+            self.conn
+                .execute_batch("ALTER TABLE users ADD COLUMN deleted_at TEXT DEFAULT NULL")?;
+        }
         Ok(())
     }
 
@@ -247,7 +260,7 @@ impl Database {
 
     pub fn get_all_users(&self) -> DbResult<Vec<crate::models::AppUser>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at FROM users ORDER BY name",
+            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at FROM users WHERE deleted_at IS NULL ORDER BY name",
         )?;
         let rows = stmt.query_map([], |r| {
             Ok(crate::models::AppUser {
@@ -259,6 +272,28 @@ impl Database {
                 kind: r.get(5)?,
                 ip_address: r.get(6)?,
                 created_at: r.get(7)?,
+                deleted_at: r.get(8)?,
+            })
+        })?;
+        Ok(rows.collect::<Result<Vec<_>, _>>()?)
+    }
+
+    /// All users including soft-deleted ones (used to restore on undo).
+    pub fn get_all_users_including_deleted(&self) -> DbResult<Vec<crate::models::AppUser>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at FROM users ORDER BY name",
+        )?;
+        let rows = stmt.query_map([], |r| {
+            Ok(crate::models::AppUser {
+                id: r.get(0)?,
+                account: r.get(1)?,
+                password_hash: r.get(2)?,
+                name: r.get(3)?,
+                level: r.get(4)?,
+                kind: r.get(5)?,
+                ip_address: r.get(6)?,
+                created_at: r.get(7)?,
+                deleted_at: r.get(8)?,
             })
         })?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
@@ -266,7 +301,7 @@ impl Database {
 
     pub fn get_user_by_account(&self, account: &str) -> DbResult<Option<crate::models::AppUser>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at FROM users WHERE account = ?1",
+            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at FROM users WHERE account = ?1 AND deleted_at IS NULL",
         )?;
         let mut rows = stmt.query_map(params![account], |r| {
             Ok(crate::models::AppUser {
@@ -278,6 +313,28 @@ impl Database {
                 kind: r.get(5)?,
                 ip_address: r.get(6)?,
                 created_at: r.get(7)?,
+                deleted_at: r.get(8)?,
+            })
+        })?;
+        Ok(rows.next().transpose()?)
+    }
+
+    /// Look up a user by account including soft-deleted (used to restore).
+    pub fn get_user_by_account_including_deleted(&self, account: &str) -> DbResult<Option<crate::models::AppUser>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at FROM users WHERE account = ?1",
+        )?;
+        let mut rows = stmt.query_map(params![account], |r| {
+            Ok(crate::models::AppUser {
+                id: r.get(0)?,
+                account: r.get(1)?,
+                password_hash: r.get(2)?,
+                name: r.get(3)?,
+                level: r.get(4)?,
+                kind: r.get(5)?,
+                ip_address: r.get(6)?,
+                created_at: r.get(7)?,
+                deleted_at: r.get(8)?,
             })
         })?;
         Ok(rows.next().transpose()?)
@@ -286,7 +343,7 @@ impl Database {
     /// Look up an enterprise user by its public IP address.
     pub fn get_user_by_ip(&self, ip: &str) -> DbResult<Option<crate::models::AppUser>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at FROM users WHERE kind = 'enterprise' AND ip_address = ?1",
+            "SELECT id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at FROM users WHERE kind = 'enterprise' AND ip_address = ?1 AND deleted_at IS NULL",
         )?;
         let mut rows = stmt.query_map(params![ip], |r| {
             Ok(crate::models::AppUser {
@@ -298,6 +355,7 @@ impl Database {
                 kind: r.get(5)?,
                 ip_address: r.get(6)?,
                 created_at: r.get(7)?,
+                deleted_at: r.get(8)?,
             })
         })?;
         Ok(rows.next().transpose()?)
@@ -315,8 +373,8 @@ impl Database {
         // `INSERT OR REPLACE` works on the PRIMARY KEY (id). Enterprise users
         // are bulk-imported after clearing the table, so no conflicts arise.
         self.conn.execute(
-            "INSERT OR REPLACE INTO users (id, account, password_hash, name, level, kind, ip_address, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            "INSERT OR REPLACE INTO users (id, account, password_hash, name, level, kind, ip_address, created_at, deleted_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 id,
                 u.account,
@@ -325,15 +383,26 @@ impl Database {
                 u.level,
                 u.kind,
                 u.ip_address,
-                u.created_at
+                u.created_at,
+                u.deleted_at
             ],
         )?;
         Ok(())
     }
 
+    /// Soft-delete a user: set `deleted_at` instead of physically removing the
+    /// row, so it can be restored later (undo).
     pub fn delete_user(&self, id: &str) -> DbResult<()> {
+        let now = chrono::Utc::now().to_rfc3339();
         self.conn
-            .execute("DELETE FROM users WHERE id = ?1", params![id])?;
+            .execute("UPDATE users SET deleted_at = ?1 WHERE id = ?2", params![now, id])?;
+        Ok(())
+    }
+
+    /// Restore a soft-deleted user (clear `deleted_at`). No-op if not found.
+    pub fn restore_user(&self, id: &str) -> DbResult<()> {
+        self.conn
+            .execute("UPDATE users SET deleted_at = NULL WHERE id = ?1", params![id])?;
         Ok(())
     }
 

@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -13,7 +12,6 @@ export default defineConfig(async () => ({
         ],
       },
     }),
-    tailwindcss(),
   ],
 
   // Vite options tailored for Tauri development.
@@ -24,8 +22,16 @@ export default defineConfig(async () => ({
     port: 1420,
     strictPort: true,
     watch: {
-      // 3. tell vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      // 3. tell vite to ignore cargo/build artifacts so it doesn't try to
+      //    watch target/ (locked while rustc writes) or the green exe outputs.
+      ignored: [
+        "**/target/**",
+        "**/dist/**",
+        "**/dist-admin/**",
+        "**/release/**",
+        "**/admin_release/**",
+        "**/node_modules/**",
+      ],
     },
   },
 }));

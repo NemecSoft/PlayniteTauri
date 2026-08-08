@@ -4,8 +4,9 @@
 //! directory. This module scans that directory once, builds a normalized
 //! `file-name -> path` index (O(1) lookup), and matches each game against the
 //! index using its Chinese display name, localized names, alternate names and
-//! original name. Only games with an empty `cover_image` are filled in, so
-//! manually-set covers are never overwritten.
+//! original name. Only games with an empty or stale (file-missing) `cover_image`
+//! are filled in, so manually-set covers are never overwritten while they still
+//! point to an existing file.
 
 use crate::models::Game;
 use crate::settings::AppPaths;
@@ -259,10 +260,14 @@ pub fn apply_covers(games: &[Game]) -> (Vec<Game>, CoverScanResult) {
     let updated: Vec<Game> = games
         .iter()
         .map(|g| {
+            // A cover is "present" only if its path is non-empty AND the file
+            // actually exists on disk. If the stored path is stale (the file was
+            // deleted/renamed, e.g. a user swapped `007.jpg` for `007.gif`), we
+            // re-match against the CoverImages dir so the new file takes over.
             let has_cover = g
                 .cover_image
                 .as_deref()
-                .map(|s| !s.trim().is_empty())
+                .map(|s| !s.trim().is_empty() && Path::new(s.trim()).is_file())
                 .unwrap_or(false);
             if has_cover {
                 return g.clone();
