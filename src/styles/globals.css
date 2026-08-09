@@ -1,0 +1,9 @@
+/* Tailwind must be imported first — @import order is the #1 black-screen cause. */
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
