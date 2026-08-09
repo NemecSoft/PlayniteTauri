@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   trackPlaytime: true,
   cardWidth: 180,
   cardGap: 8,
+  sidebarWidth: 210,
   enterpriseConfigPath: "D:/1.json",
   currentUserKind: "",
   currentUserName: "",

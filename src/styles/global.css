@@ -227,6 +227,87 @@
   --font-ui: "Segoe UI", "STKaiti", "KaiTi", "Microsoft YaHei", system-ui, sans-serif;
 }
 
+:root[data-theme="wow"] {
+  /* World of Warcraft — gold lettering on Alliance blue / dark parchment */
+  --bg-base: #14100a;
+  --bg-top: #1c1810;
+  --bg-sidebar: #0f0c08;
+  --bg-panel: #1a140d;
+  --bg-item-hover: #2a2114;
+  --bg-item-active: #34291a;
+  --bg-input: #1f1810;
+  --border: #4a3c1f;
+  --border-strong: #c8a44e;
+  --text-primary: #f8edc6;
+  --text-secondary: #e0c368;
+  --text-dim: #b69d55;
+  --accent: #c8a44e;
+  --accent-hover: #e8c46e;
+  --accent-soft: rgba(200, 164, 78, 0.18);
+  --success: #7a9e3f;
+  --warning: #c8a44e;
+  --danger: #b32d2d;
+  --glow: 0 0 8px rgba(200, 164, 78, 0.35);
+  --text-glow: 0 0 5px rgba(232, 196, 110, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
+  --radius: 4px;
+  --radius-lg: 8px;
+  --font-ui: "Cinzel", "Trajan Pro", "Georgia", "Segoe UI", serif;
+}
+
+:root[data-theme="lol"] {
+  /* League of Legends — Runeterra midnight gold on hextech blue */
+  --bg-base: #0a0a14;
+  --bg-top: #0f1428;
+  --bg-sidebar: #07070d;
+  --bg-panel: #101426;
+  --bg-item-hover: #1a2042;
+  --bg-item-active: #232a55;
+  --bg-input: #0f1428;
+  --border: #1f2548;
+  --border-strong: #c8aa6e;
+  --text-primary: #f0ebd6;
+  --text-secondary: #e0c890;
+  --text-dim: #a79db8;
+  --accent: #c8aa6e;
+  --accent-hover: #e8c886;
+  --accent-soft: rgba(200, 170, 110, 0.16);
+  --success: #7fb069;
+  --warning: #c8aa6e;
+  --danger: #c83a3a;
+  --glow: 0 0 10px rgba(120, 90, 200, 0.4);
+  --text-glow: 0 0 5px rgba(200, 170, 110, 0.55), 0 1px 2px rgba(0, 0, 0, 0.85);
+  --radius: 4px;
+  --radius-lg: 10px;
+  --font-ui: "Beaufort", "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+:root[data-theme="pubg"] {
+  /* PUBG — military olive/tan on charcoal */
+  --bg-base: #2a2a26;
+  --bg-top: #2f2f2b;
+  --bg-sidebar: #1f1f1c;
+  --bg-panel: #33332e;
+  --bg-item-hover: #3d3d36;
+  --bg-item-active: #45453e;
+  --bg-input: #2f2f2b;
+  --border: #4a4a44;
+  --border-strong: #8b7e5e;
+  --text-primary: #f0ebdd;
+  --text-secondary: #c4b68d;
+  --text-dim: #8f8872;
+  --accent: #b8a06e;
+  --accent-hover: #d0b78a;
+  --accent-soft: rgba(184, 160, 110, 0.18);
+  --success: #8aa84a;
+  --warning: #d8a04a;
+  --danger: #c84a3a;
+  --glow: none;
+  --text-glow: 0 0 4px rgba(200, 185, 150, 0.45), 0 1px 2px rgba(0, 0, 0, 0.85);
+  --radius: 2px;
+  --radius-lg: 6px;
+  --font-ui: "Rajdhani", "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -317,6 +398,7 @@ textarea {
   align-items: center;
   gap: 5px;
   color: var(--text-secondary);
+  text-shadow: var(--text-glow, none);
 }
 .status-item svg {
   color: var(--text-dim);
@@ -434,6 +516,7 @@ textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: var(--text-glow, none);
 }
 .video-open-link {
   margin: 0 12px 12px;
@@ -461,6 +544,7 @@ textarea {
   margin: 8px 0 20px;
   font-size: 13px;
   color: var(--text-dim);
+  text-shadow: var(--text-glow, none);
 }
 .tools-grid {
   display: grid;
@@ -710,6 +794,7 @@ textarea {
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0;
+  position: relative;
   transition: width 0.22s ease, padding 0.22s ease, opacity 0.18s ease,
     border-color 0.22s ease;
   opacity: 1;
@@ -799,6 +884,7 @@ textarea {
   letter-spacing: 0.08em;
   color: var(--text-dim);
   padding: 6px 8px 4px;
+  text-shadow: var(--text-glow, none);
 }
 .sidebar-title {
   display: flex;
@@ -810,6 +896,7 @@ textarea {
   color: var(--text-dim);
   padding: 8px 8px 4px;
   font-weight: 600;
+  text-shadow: var(--text-glow, none);
 }
 .sidebar-clear-btn {
   margin-left: auto;
@@ -840,6 +927,7 @@ textarea {
   text-align: left;
   background: transparent;
   border: none;
+  text-shadow: var(--text-glow, none);
 }
 .sidebar-item:hover {
   background: var(--bg-item-hover);
@@ -877,22 +965,31 @@ textarea {
   min-width: 0;
 }
 .sidebar-tag-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  /* Auto-flow by sidebar width: each tag gets at least ~86px, so wide sidebars
+     pack more columns and narrow ones wrap naturally. */
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 4px;
   padding: 0 4px;
+  align-content: start;
+}
+.sidebar-tag {
+  min-width: 0;
 }
 .sidebar-tag {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 7px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 5px 6px;
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 12px;
   color: var(--text-secondary);
   user-select: none;
   transition: background 0.12s, color 0.12s;
+  background: var(--bg-item);
+  border: 1px solid var(--border);
 }
 .sidebar-tag:hover {
   background: var(--bg-item-hover);
@@ -902,6 +999,22 @@ textarea {
   background: var(--accent-soft);
   color: var(--accent-hover);
   font-weight: 600;
+  border-color: var(--accent);
+}
+.sidebar-tag .sidebar-tag-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  text-shadow: var(--text-glow, none);
+}
+.sidebar-tag .sidebar-tag-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 .sidebar-tag input[type="checkbox"] {
   margin: 0;
@@ -910,21 +1023,12 @@ textarea {
   accent-color: var(--accent);
   cursor: pointer;
 }
-.sidebar-tag .sidebar-tag-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .sidebar-tag .count {
   font-size: 10px;
   color: var(--text-dim);
-  background: var(--bg-input);
-  border-radius: 8px;
-  padding: 1px 6px;
+  text-shadow: var(--text-glow, none);
 }
 .sidebar-tag.checked .count {
-  background: transparent;
   color: var(--accent-hover);
 }
 .sidebar-empty {
@@ -932,6 +1036,22 @@ textarea {
   font-size: 12px;
   padding: 6px 8px;
   text-align: center;
+}
+
+/* Right-edge resize handle for the sidebar */
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+.sidebar-resizer:hover,
+.sidebar-resizer.dragging {
+  background: var(--accent);
 }
 
 /* Sidebar current-user card */

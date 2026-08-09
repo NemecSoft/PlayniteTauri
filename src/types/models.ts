@@ -132,6 +132,8 @@ export interface AppSettings {
   cardWidth: number;
   /** Gap between grid cards in px (0..20). */
   cardGap: number;
+  /** Left sidebar width in px (user-resizable, 160..600). */
+  sidebarWidth: number;
   /** Path to the enterprise user config JSON. */
   enterpriseConfigPath: string;
   /** Current session user kind: "enterprise" | "personal" | "". */

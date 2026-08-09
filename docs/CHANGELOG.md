@@ -1,5 +1,39 @@
 # 变更记录
 
+## 2026-08-09
+
+- **弱文字荧光/描边可读性优化**：为所有主题新增统一变量 `--text-glow`（文字荧光阴影，
+  默认 `none`），并让 `wow`/`lol`/`pubg` 三个深色新主题携带主题色荧光+暗色描边的
+  `text-shadow`。对侧边栏（`.sidebar-label`/`.sidebar-title`/`.sidebar-item`/
+  `.sidebar-tag-name`/`.count`）、状态栏（`.status-item`）、工具页（`.tools-subtitle`）、
+  游戏卡片副标题（`.video-game`）等使用 `--text-secondary`/`--text-dim` 的弱文字统一应用
+  `text-shadow: var(--text-glow, none)`，使文字在深色背景下呈现"荧光描边、强反差"，解决
+  部分界面字不清。同时调亮了 `wow`/`lol`/`pubg` 的 `--text-primary`/`--text-secondary`/
+  `--text-dim`，从根本提升对比度。改动集中在 `src/styles/global.css`。
+- **新增三大游戏主题**：设置 → 主题增加 **魔兽世界（World of Warcraft）**、
+  **英雄联盟（League of Legends）**、**绝地求生（PUBG）** 三个游戏风格主题，
+  与现有的卡通/赛博朋克/孟菲斯/新拟态/美漫/吉卜力/中国风并列。色板与字体风格
+  紧扣各自 IP 调性（艾泽拉斯羊皮纸金字、符文之地魔法蓝金、战场橄榄绿沙土褐）。
+  实现遵循现有成熟模式：`src/utils/theme.ts` 的 `ThemeId` 与 `THEMES` 列表追加，
+  `global.css` 追加 `[data-theme="wow|lol|pubg"]` 变量覆写，三份 locale 新增 6 个 key。
+- **侧边栏可拖拽改宽度并持久化**：侧边栏右边新增 5px 拖拽手柄，鼠标按住可水平拖动
+  调整宽度（范围 160..600px），宽度持久化到应用设置 `AppSettings::sidebar_width`（config.json，
+  `#[serde(default)]` 保证旧配置兼容）。拖拽过程用本地 React state 做实时响应，松手再调
+  `saveSettings` 落盘，避免每次 mousemove 都打后端。标签列表的 `auto-fill minmax(86px)`
+  自动换行会跟着新宽度即时重排。
+  改动：后端 `models.rs`（新增 `sidebar_width` + `default_sidebar_width` + Default 210）、
+  前端 `types/models.ts` / `settingsStore.ts`（`sidebarWidth: 210`）、`Sidebar.tsx`
+  （拖拽手柄 + 鼠标事件 + 本地 state）、`global.css`（`.sidebar` 加 `position: relative` +
+  `.sidebar-resizer` 样式）、三份 locale 新增 `sidebar_resize` 文案。
+- **侧边栏标签按宽度自动换行**：标签列表不再手动选列数，改为 **CSS Grid 自动换行**
+  （`repeat(auto-fill, minmax(86px, 1fr))`）——sidebar 宽则多列、窄则少列，自动排布。
+  标签项采用**列内垂直布局**（第一行 `#name` ellipsis，下方 `checkbox + count` 同行），
+  padding 收紧到 5px6px，多列下清晰不覆盖。移除之前临时加入的手动列数机制
+  （`AppSettings.tag_columns`、`Settings.tagColumns`、下拉框 UI 与 `tag_columns` 翻译 key）。
+  改动：`Sidebar.tsx`（去掉下拉框/内联 grid）、`global.css`（`.sidebar-tag-list` 自动换行 +
+  `.sidebar-tag` 垂直布局 + padding 紧凑）、回滚 `crates/.../models.rs`、`types/models.ts`、
+  `settingsStore.ts` 及三份 locale。
+
 ## 2026-08-08
 
 - **动态视频列表 API（`/api/videos`）**：详情页静态服务器新增 `GET /api/videos?dir=<游戏目录名>`，

@@ -250,6 +250,9 @@ pub struct AppSettings {
     /// Gap between grid cards in px. Range 0..20.
     #[serde(default = "default_card_gap")]
     pub card_gap: i32,
+    /// Left sidebar width in px (user-resizable). Range 160..600.
+    #[serde(default = "default_sidebar_width")]
+    pub sidebar_width: i32,
     /// Path to the enterprise user config JSON (default "D:/1.json").
     #[serde(default = "default_enterprise_config_path")]
     pub enterprise_config_path: String,
@@ -326,6 +329,10 @@ fn default_card_gap() -> i32 {
     8
 }
 
+fn default_sidebar_width() -> i32 {
+    210
+}
+
 fn default_true() -> bool {
     true
 }
@@ -359,6 +366,7 @@ impl Default for AppSettings {
             track_playtime: true,
             card_width: 180,
             card_gap: 8,
+            sidebar_width: 210,
             enterprise_config_path: "D:/1.json".into(),
             game_libraries: Vec::new(),
             current_user_kind: "".into(),

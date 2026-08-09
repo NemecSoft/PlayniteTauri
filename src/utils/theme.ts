@@ -8,7 +8,10 @@ export type ThemeId =
   | "Neumorphism"
   | "Comic"
   | "Ghibli"
-  | "Chinese";
+  | "Chinese"
+  | "WorldOfWarcraft"
+  | "LeagueOfLegends"
+  | "PUBG";
 
 export interface ThemeDefinition {
   id: ThemeId;
@@ -91,6 +94,35 @@ export const THEMES: ThemeDefinition[] = [
     swatches: ["#9e1b32", "#c8a24b", "#f0e6d2", "#3a2f28"],
     previewAccent: "linear-gradient(90deg,#9e1b32,#c8a24b)",
     previewBg: "#f7efe0",
+  },
+  {
+    id: "WorldOfWarcraft",
+    labelKey: "settings_themeWorldOfWarcraft",
+    descKey: "settings_themeWorldOfWarcraftDesc",
+    dataAttr: "wow",
+    swatches: ["#c8a44e", "#1c2541", "#b32d2d", "#3a2f1c"],
+    previewAccent: "linear-gradient(90deg,#c8a44e,#1c2541)",
+    previewBg: "#1a1208",
+    glow: true,
+  },
+  {
+    id: "LeagueOfLegends",
+    labelKey: "settings_themeLeagueOfLegends",
+    descKey: "settings_themeLeagueOfLegendsDesc",
+    dataAttr: "lol",
+    swatches: ["#0a1428", "#785a28", "#c8aa6e", "#1c1c2c"],
+    previewAccent: "linear-gradient(90deg,#0a1428,#c8aa6e)",
+    previewBg: "#0a0a14",
+    glow: true,
+  },
+  {
+    id: "PUBG",
+    labelKey: "settings_themePUBG",
+    descKey: "settings_themePUBGDesc",
+    dataAttr: "pubg",
+    swatches: ["#4a5a3a", "#8b7e5e", "#2c2c2c", "#a0a0a0"],
+    previewAccent: "linear-gradient(90deg,#4a5a3a,#8b7e5e)",
+    previewBg: "#2a2a26",
   },
 ];
 
