@@ -8,6 +8,7 @@ import LibrarySection from "./LibrarySection";
 import PluginsSection from "./PluginsSection";
 import ThemesSection from "./ThemesSection";
 import LoginSection from "./LoginSection";
+import { Button } from "../ui/button";
 import { useI18n } from "../../i18n";
 
 interface Props {
@@ -34,9 +35,14 @@ export default function SettingsModal({ onClose }: Props) {
       <div className="modal" style={{ minWidth: 720, maxWidth: 860, height: "82vh" }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t("settings_title")}</h2>
-          <button className="tb-btn" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Close settings"
+            onClick={onClose}
+          >
             <X size={16} />
-          </button>
+          </Button>
         </div>
         <div className="settings-layout">
           <div className="settings-nav">
