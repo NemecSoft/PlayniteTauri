@@ -60,28 +60,31 @@ export default function VideosView() {
 
   return (
     <div className="content">
-      <div className="videos-header">
-        <Clapperboard size={22} color="var(--accent)" />
-        <h2>{t("videos_title")}</h2>
+      <div className="mb-[18px] flex items-center gap-2.5">
+        <Clapperboard size={22} className="text-accent" />
+        <h2 className="m-0 text-xl">{t("videos_title")}</h2>
         <span className="count">{entries.length}</span>
       </div>
 
       {entries.length === 0 && (
-        <div className="empty-state">
-          <div className="big-icon">
+        <div className="flex h-full flex-col items-center justify-center gap-3.5 text-dim">
+          <div className="opacity-40">
             <Clapperboard size={48} />
           </div>
           {t("videos_empty")}
         </div>
       )}
 
-      <div className="videos-grid">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
         {entries.map((entry, idx) => {
           const embed = toEmbedUrl(entry.video);
           const videoName = entry.video.name || entry.gameName;
           return (
-            <div className="video-card" key={`${entry.gameId}-${idx}`}>
-              <div className="video-thumb">
+            <div
+              className="flex flex-col rounded-md border border-border bg-card transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.12)]"
+              key={`${entry.gameId}-${idx}`}
+            >
+              <div className="relative aspect-video bg-black">
                 {embed ? (
                   <iframe
                     src={embed}
@@ -89,31 +92,32 @@ export default function VideosView() {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     loading="lazy"
+                    className="h-full w-full border-0"
                   />
                 ) : (
-                  <div className="video-thumb-fallback">
+                  <div className="relative flex h-full w-full items-center justify-center overflow-hidden text-dim">
                     {entry.cover ? (
-                      <img src={imageUrl(entry.cover)} alt={videoName} />
+                      <img src={imageUrl(entry.cover)} alt={videoName} className="h-full w-full object-cover opacity-60" />
                     ) : (
                       <Play size={40} />
                     )}
-                    <span className="video-file-badge">
+                    <span className="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] text-white">
                       <ExternalLink size={12} /> {entry.video.type}
                     </span>
                   </div>
                 )}
               </div>
-              <div className="video-info">
-                <span className="video-name" title={videoName}>
+              <div className="flex flex-col gap-0.5 px-3 pb-1.5 pt-2.5">
+                <span className="truncate text-sm font-semibold text-primary-text" title={videoName}>
                   {videoName}
                 </span>
-                <span className="video-game" title={entry.gameName}>
+                <span className="truncate text-xs text-dim" title={entry.gameName}>
                   {entry.gameName}
                 </span>
               </div>
               {!embed && entry.video.url && (
                 <a
-                  className="video-open-link"
+                  className="self-start px-3 pb-3 text-xs text-accent no-underline hover:underline"
                   href={entry.video.url}
                   target="_blank"
                   rel="noreferrer"

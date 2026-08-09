@@ -10,6 +10,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Gamepad2, QrCode, User, Lock, MessageCircle, LogIn } from "lucide-react";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useI18n } from "../i18n";
+import { Button } from "./ui/button";
 
 interface Props {
   onLogin: () => void;
@@ -57,53 +58,57 @@ export default function LoginScreen({ onLogin }: Props) {
   };
 
   return (
-    <div className="login-screen">
-      <div className="login-card">
-        <div className="login-brand">
-          <Gamepad2 size={40} color="var(--accent)" />
-          <h1>{t("appTitle")}</h1>
-          <p>{t("login_welcome")}</p>
+    <div className="fixed inset-0 grid place-items-center bg-[radial-gradient(circle_at_20%_20%,var(--accent-soft),transparent_40%),var(--bg-base)]">
+      <div className="w-[380px] rounded-md border border-border-strong bg-panel p-[32px_28px_22px] shadow-[0_24px_64px_rgba(0,0,0,0.45)]">
+        <div className="mb-[22px] text-center">
+          <Gamepad2 size={40} className="text-accent" />
+          <h1 className="my-2.5 text-[22px] tracking-wide">{t("appTitle")}</h1>
+          <p className="text-[13px] text-secondary-text">{t("login_welcome")}</p>
         </div>
 
-        <div className="login-tabs">
+        <div className="mb-5 flex gap-1 border-b border-border">
           <button
-            className={`login-tab ${mode === "wechat" ? "active" : ""}`}
+            className={`flex-1 cursor-pointer border-b-2 px-2 py-2 text-[13px] transition-colors ${mode === "wechat" ? "border-accent font-semibold text-accent-hover" : "border-transparent text-secondary-text hover:text-primary-text"}`}
             onClick={() => setMode("wechat")}
           >
-            <QrCode size={16} /> {t("login_wechat")}
+            <QrCode size={16} className="mr-1.5 inline" /> {t("login_wechat")}
           </button>
           <button
-            className={`login-tab ${mode === "account" ? "active" : ""}`}
+            className={`flex-1 cursor-pointer border-b-2 px-2 py-2 text-[13px] transition-colors ${mode === "account" ? "border-accent font-semibold text-accent-hover" : "border-transparent text-secondary-text hover:text-primary-text"}`}
             onClick={() => setMode("account")}
           >
-            <User size={16} /> {t("login_account")}
+            <User size={16} className="mr-1.5 inline" /> {t("login_account")}
           </button>
         </div>
 
-        <div className="login-body">
+        <div className="min-h-[220px]">
           {mode === "wechat" ? (
-            <div className="wechat-login">
-              <div className="qr-wrap">
+            <div className="flex flex-col items-center gap-3.5">
+              <div className="relative rounded-lg bg-white p-3">
                 <QRCodeSVG value={mockWechatUrl} size={170} fgColor="#202124" />
-                <div className="qr-mask" onClick={() => setScanning(true)}>
+                <div
+                  className="absolute inset-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md bg-black/60 text-white opacity-0 transition-opacity hover:opacity-100"
+                  onClick={() => setScanning(true)}
+                >
                   <MessageCircle size={22} />
                   {scanning ? t("login_scanning") : t("login_scanToLogin")}
                 </div>
               </div>
-              <p className="hint">{t("login_wechatHint")}</p>
+              <p className="text-center text-xs text-dim">{t("login_wechatHint")}</p>
             </div>
           ) : (
-            <div className="account-login">
-              <div className="login-field">
+            <div className="flex flex-col gap-3 pt-2">
+              <div className="flex items-center gap-2 rounded-md border border-border bg-input px-2.5 text-dim">
                 <User size={16} />
                 <input
                   type="text"
                   placeholder={t("login_username")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="flex-1 bg-transparent py-2.5 text-[13px] outline-none"
                 />
               </div>
-              <div className="login-field">
+              <div className="flex items-center gap-2 rounded-md border border-border bg-input px-2.5 text-dim">
                 <Lock size={16} />
                 <input
                   type="password"
@@ -111,21 +116,22 @@ export default function LoginScreen({ onLogin }: Props) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAccount()}
+                  className="flex-1 bg-transparent py-2.5 text-[13px] outline-none"
                 />
               </div>
-              {error && <div className="login-error">{error}</div>}
-              <button className="btn primary block" onClick={handleAccount}>
+              {error && <div className="text-xs text-danger">{error}</div>}
+              <Button className="w-full" onClick={handleAccount}>
                 <LogIn size={16} /> {t("login_signIn")}
-              </button>
+              </Button>
             </div>
           )}
         </div>
 
         {settings.loginEnabled && (
-          <div className="login-skip">
-            <button className="link-btn" onClick={() => onLogin()}>
+          <div className="mt-3.5 text-center">
+            <Button variant="link" className="text-[12px] text-dim hover:text-secondary-text" onClick={() => onLogin()}>
               {t("login_skip")}
-            </button>
+            </Button>
           </div>
         )}
       </div>

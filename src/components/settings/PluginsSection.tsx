@@ -5,6 +5,7 @@ import { Plug, RefreshCw, Trash2 } from "lucide-react";
 import type { LibraryPluginInfo } from "../../types/models";
 import { api } from "../../api/client";
 import { useI18n } from "../../i18n";
+import { Button } from "../ui/button";
 
 export default function PluginsSection() {
   const [plugins, setPlugins] = useState<LibraryPluginInfo[]>([]);
@@ -21,53 +22,42 @@ export default function PluginsSection() {
 
   return (
     <div>
-      <h3 style={{ marginBottom: 14 }}>{t("settings_plugins_header")}</h3>
+      <h3 className="mb-3.5">{t("settings_plugins_header")}</h3>
 
-      <div style={{ marginBottom: 16 }}>
-        <button className="btn primary" onClick={load}>
+      <div className="mb-4">
+        <Button onClick={load}>
           <RefreshCw size={15} /> {t("settings_rescanPlugins")}
-        </button>
+        </Button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {plugins.length === 0 && (
-          <div style={{ color: "var(--text-dim)" }}>
-            {t("settings_noPlugins")}{" "}
-            <code>./extensions/plugins</code>.
+          <div className="text-dim">
+            {t("settings_noPlugins")} <code>./extensions/plugins</code>.
           </div>
         )}
         {plugins.map((p) => (
           <div
             key={p.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "9px 12px",
-              background: "var(--bg-input)",
-              border: "1px solid var(--border)",
-              borderRadius: 6,
-            }}
+            className="flex items-center gap-2.5 rounded-md border border-border bg-input px-3 py-2"
           >
-            <Plug size={16} style={{ color: "var(--accent-hover)" }} />
-            <span style={{ fontWeight: 600 }}>{p.name}</span>
-            <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{p.id}</span>
-            <span style={{ marginLeft: "auto", fontSize: 12 }}>
-              {p.enabled ? (
-                <span style={{ color: "var(--success)" }}>{t("settings_enabled")}</span>
-              ) : (
-                t("settings_disabled")
-              )}
+            <Plug size={16} className="text-accent-hover" />
+            <span className="font-semibold">{p.name}</span>
+            <span className="text-xs text-dim">{p.id}</span>
+            <span className="ml-auto text-xs">
+              {p.enabled ? <span className="text-success">{t("settings_enabled")}</span> : t("settings_disabled")}
             </span>
-            <button
-              className="tb-btn"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
               onClick={async () => {
                 await api.deleteLibraryPlugin(p.id);
                 await load();
               }}
             >
               <Trash2 size={14} />
-            </button>
+            </Button>
           </div>
         ))}
       </div>

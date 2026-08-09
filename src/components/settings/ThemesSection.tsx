@@ -13,44 +13,30 @@ export default function ThemesSection() {
 
   return (
     <div>
-      <h3 style={{ marginBottom: 6 }}>{t("settings_themes_header")}</h3>
-      <p style={{ color: "var(--text-dim)", fontSize: 12, marginBottom: 18 }}>
-        {t("settings_themes_hint")}
-      </p>
+      <h3 className="mb-1.5">{t("settings_themes_header")}</h3>
+      <p className="mb-[18px] text-xs text-dim">{t("settings_themes_hint")}</p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="flex flex-col gap-4">
         {THEMES.map((theme) => {
           const active = current === theme.id;
           const label = t(theme.labelKey);
           const desc = t(theme.descKey);
           return (
-            <button
+            <div
               key={theme.id}
+              role="button"
+              tabIndex={0}
               onClick={() => save({ theme: theme.id })}
-              style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "center",
-                padding: 14,
-                borderRadius: 12,
-                textAlign: "left",
-                background: "var(--bg-input)",
-                border: `2px solid ${active ? "var(--accent)" : "var(--border)"}`,
-                cursor: "pointer",
-                transition: "border-color 0.15s, transform 0.15s",
-              }}
+              className={`flex cursor-pointer items-center gap-4 rounded-xl p-3.5 text-left transition-colors ${
+                active
+                  ? "border-2 border-accent bg-input"
+                  : "border-2 border-border bg-input"
+              }`}
             >
               {/* mini preview */}
               <div
+                className="flex h-[60px] w-24 shrink-0 flex-col overflow-hidden rounded-lg border border-border-strong"
                 style={{
-                  width: 96,
-                  height: 60,
-                  borderRadius: 8,
-                  flexShrink: 0,
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                  border: "1px solid var(--border-strong)",
                   boxShadow: theme.glow
                     ? "0 0 14px rgba(0,255,255,0.4)"
                     : "0 2px 8px rgba(0,0,0,0.3)",
@@ -60,39 +46,23 @@ export default function ThemesSection() {
                 <div style={{ flex: 1, background: theme.previewBg }} />
               </div>
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontWeight: 700,
-                    fontSize: 15,
-                  }}
-                >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-[15px] font-bold">
                   {label}
-                  {active && <Check size={16} style={{ color: "var(--accent)" }} />}
+                  {active && <Check size={16} className="text-accent" />}
                 </div>
-                <div style={{ color: "var(--text-dim)", fontSize: 12, marginTop: 3 }}>
-                  {desc}
-                </div>
-                <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                <div className="mt-[3px] text-xs text-dim">{desc}</div>
+                <div className="mt-2 flex gap-1.5">
                   {theme.swatches.map((c) => (
                     <span
                       key={c}
-                      style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: "50%",
-                        background: c,
-                        display: "inline-block",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                      }}
+                      className="inline-block size-3.5 rounded-full"
+                      style={{ background: c, boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
                     />
                   ))}
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

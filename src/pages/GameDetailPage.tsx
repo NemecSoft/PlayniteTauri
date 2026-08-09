@@ -9,6 +9,7 @@ import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 import { api } from "../api/client";
 import { ArrowLeft } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 export default function GameDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,13 +61,17 @@ export default function GameDetailPage() {
       ? `${serverUrl}/games/${encodeURIComponent(game.name)}/index.html`
       : "";
 
+  const backButton = (
+    <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+      <ArrowLeft size={15} /> {t("details_back")}
+    </Button>
+  );
+
   if (!game) {
     return (
-      <div className="detail-page">
-        <button className="btn" onClick={() => navigate("/")}>
-          <ArrowLeft size={15} /> {t("details_back")}
-        </button>
-        <div className="detail-not-found">{t("details_notFound")}</div>
+      <div className="h-full overflow-y-auto p-[16px_24px_48px]">
+        {backButton}
+        <div className="p-10 text-center text-dim">{t("details_notFound")}</div>
       </div>
     );
   }
@@ -76,28 +81,28 @@ export default function GameDetailPage() {
   //  - found    → back button + the page (iframe)
   //  - missing  → back button + a 404 page
   const detailTopbar = (
-    <div className="detail-topbar">
-      <button className="btn" onClick={() => navigate("/")}>
-        <ArrowLeft size={15} /> {t("details_back")}
-      </button>
+    <div className="flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
+      {backButton}
     </div>
   );
 
   if (htmlLoading) {
     return (
-      <div className="detail-page detail-page-html">
+      <div className="h-full overflow-y-auto">
         {detailTopbar}
-        <div className="detail-loading">{t("details_loading")}</div>
+        <div className="flex items-center justify-center p-10 text-sm text-secondary-text">
+          {t("details_loading")}
+        </div>
       </div>
     );
   }
 
   if (htmlFound) {
     return (
-      <div className="detail-page detail-page-html">
+      <div className="h-full overflow-y-auto">
         {detailTopbar}
         <iframe
-          className="detail-game-html-full"
+          className="block h-[calc(100vh-56px)] w-full border-0 bg-white"
           title={`${game.name} page`}
           src={gamePageUrl}
           // Allow the embedded static page's own player (DPlayer / <video> /
@@ -112,12 +117,12 @@ export default function GameDetailPage() {
 
   // 404: no static page for this game.
   return (
-    <div className="detail-page detail-page-html">
+    <div className="h-full overflow-y-auto">
       {detailTopbar}
-      <div className="detail-404">
-        <div className="detail-404-code">404</div>
-        <p>{t("details_page404", { name: game.name })}</p>
-        <p className="detail-404-hint">{t("details_page404hint")}</p>
+      <div className="flex flex-col items-center p-10 text-center">
+        <div className="mb-2 text-[72px] font-extrabold leading-none text-accent">404</div>
+        <p className="m-0">{t("details_page404", { name: game.name })}</p>
+        <p className="text-[13px] text-secondary-text">{t("details_page404hint")}</p>
       </div>
     </div>
   );
