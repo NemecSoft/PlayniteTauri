@@ -1,9 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [
+    // IMPORTANT: @tailwindcss/vite MUST precede react() to avoid CSS
+    // injection ordering issues that caused a black screen before.
+    tailwindcss(),
     react({
       // Enable React Compiler (babel-plugin-react-compiler)
       babel: {
