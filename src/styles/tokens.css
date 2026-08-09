@@ -1,111 +1,112 @@
-/* tokens.css — semantic design tokens, shadcn naming convention.
-   Applied on :root (light default) and [data-theme="..."].
-   Values are HSL triplets ("h s l") for shadcn tokens; legacy business
-   variables (--bg-base, --text-primary, --accent, ...) are derived from them
-   so un-migrated components (GridView/TopBar/Sidebar) follow the active theme
-   correctly during the M5b transition. */
+/* tokens.css — semantic design tokens (shadcn naming), concrete hex values.
+   Palettes sourced from the ui-ux-pro-max design system (premium dark gaming,
+   luxury light, neon cyberpunk, chinese ink) and tuned for a game-library app.
+
+   Applied on :root (light default) and [data-theme="..."]. Legacy business
+   variables (--bg-base, --text-primary, --accent, ...) are defined here too so
+   un-migrated components (GridView/TopBar/Sidebar) follow the active theme. */
 
 :root,
 [data-theme="light"] {
-  --background: 222 47% 96%;
-  --foreground: 222 47% 10%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 10%;
-  --primary: 262 83% 58%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 90%;
-  --secondary-foreground: 222 47% 10%;
-  --muted: 220 14% 90%;
-  --muted-foreground: 220 9% 46%;
-  --border: 220 13% 82%;
-  --ring: 262 83% 58%;
+  --background: #f7f7f9;
+  --foreground: #1c1c22;
+  --card: #ffffff;
+  --card-foreground: #1c1c22;
+  --primary: #6d5df6;
+  --primary-foreground: #ffffff;
+  --secondary: #ececf2;
+  --secondary-foreground: #1c1c22;
+  --muted: #efeff4;
+  --muted-foreground: #6e6e80;
+  --border: #e2e2ea;
+  --ring: #6d5df6;
 
-  /* Legacy business variables derived from the tokens above (light) */
-  --bg-base: hsl(var(--background));
-  --bg-top: hsl(222 40% 92%);
-  --bg-sidebar: hsl(222 42% 93%);
-  --bg-panel: hsl(var(--card));
-  --bg-item-hover: hsl(220 20% 88%);
-  --bg-item-active: hsl(220 20% 84%);
-  --bg-input: hsl(222 40% 91%);
-  --border-strong: hsl(220 13% 74%);
-  --text-primary: hsl(var(--foreground));
-  --text-secondary: hsl(var(--muted-foreground));
-  --text-dim: hsl(220 12% 46%);
-  --accent: hsl(var(--primary));
-  --accent-hover: hsl(262 70% 52%);
-  --accent-soft: rgba(124, 108, 240, 0.14);
-  --success: #2fa86f;
-  --warning: #b07f13;
+  /* Legacy business variables (light) */
+  --bg-base: #f7f7f9;
+  --bg-top: #efeff4;
+  --bg-sidebar: #f1f1f6;
+  --bg-panel: #ffffff;
+  --bg-item-hover: #ececf2;
+  --bg-item-active: #e5e5ec;
+  --bg-input: #ececf2;
+  --border-strong: #d0d0dc;
+  --text-primary: #1c1c22;
+  --text-secondary: #555566;
+  --text-dim: #8a8a99;
+  --accent: #6d5df6;
+  --accent-hover: #5a4de0;
+  --accent-soft: rgba(109, 93, 246, 0.12);
+  --success: #1e9e66;
+  --warning: #c99a2e;
   --danger: #d13438;
   --glow: none;
 }
 
 [data-theme="dark"] {
-  --background: 222 47% 7%;
-  --foreground: 214 32% 91%;
-  --card: 222 47% 10%;
-  --card-foreground: 214 32% 91%;
-  --primary: 262 83% 68%;
-  --primary-foreground: 222 47% 10%;
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 214 32% 91%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  --border: 217 33% 25%;
-  --ring: 262 83% 68%;
+  --background: #0e0e16;
+  --foreground: #e6e7ee;
+  --card: #15161f;
+  --card-foreground: #e6e7ee;
+  --primary: #6d5df6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e1f2b;
+  --secondary-foreground: #e6e7ee;
+  --muted: #1b1c26;
+  --muted-foreground: #8a8da0;
+  --border: #262734;
+  --ring: #6d5df6;
 
   /* Legacy business variables (dark) */
-  --bg-base: hsl(var(--background));
-  --bg-top: #21262e;
-  --bg-sidebar: #1c2027;
-  --bg-panel: hsl(var(--card));
-  --bg-item-hover: #2a303a;
-  --bg-item-active: #2f3641;
-  --bg-input: #101318;
-  --border-strong: #3a4250;
-  --text-primary: hsl(var(--foreground));
-  --text-secondary: hsl(var(--muted-foreground));
-  --text-dim: #667080;
-  --accent: hsl(var(--primary));
-  --accent-hover: #8f7bff;
-  --accent-soft: rgba(124, 108, 240, 0.18);
-  --success: #3ecf8e;
-  --warning: #f0b429;
+  --bg-base: #0e0e16;
+  --bg-top: #15161f;
+  --bg-sidebar: #12131b;
+  --bg-panel: #15161f;
+  --bg-item-hover: #1f2130;
+  --bg-item-active: #262838;
+  --bg-input: #191a24;
+  --border-strong: #343647;
+  --text-primary: #e6e7ee;
+  --text-secondary: #a6a8bc;
+  --text-dim: #7a7d92;
+  --accent: #6d5df6;
+  --accent-hover: #7f72ff;
+  --accent-soft: rgba(109, 93, 246, 0.18);
+  --success: #2fbf7f;
+  --warning: #e0a63a;
   --danger: #e5484d;
   --glow: none;
 }
 
-/* Cyberpunk: neon cyan / magenta accents on near-black indigo. */
+/* Cyberpunk: neon magenta on near-black indigo (ui-ux-pro-max OTT/pink). */
 [data-theme="cyberpunk"] {
-  --background: 240 40% 6%;
-  --foreground: 186 100% 90%;
-  --card: 240 30% 10%;
-  --card-foreground: 186 100% 90%;
-  --primary: 320 100% 60%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 190 90% 40%;
-  --secondary-foreground: 0 0% 0%;
-  --muted: 240 25% 14%;
-  --muted-foreground: 189 40% 65%;
-  --border: 190 70% 35%;
-  --ring: 320 100% 60%;
+  --background: #0a0a14;
+  --foreground: #eaf6f8;
+  --card: #121222;
+  --card-foreground: #eaf6f8;
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --secondary: #1a2338;
+  --secondary-foreground: #eaf6f8;
+  --muted: #14151f;
+  --muted-foreground: #7f90a8;
+  --border: #2a2f4a;
+  --ring: #e11d48;
 
   /* Legacy business variables (cyberpunk) */
-  --bg-base: hsl(var(--background));
-  --bg-top: hsl(240 35% 10%);
-  --bg-sidebar: hsl(240 38% 8%);
-  --bg-panel: hsl(var(--card));
-  --bg-item-hover: hsl(240 28% 16%);
-  --bg-item-active: hsl(240 28% 20%);
-  --bg-input: hsl(240 30% 7%);
-  --border-strong: hsl(190 60% 30%);
-  --text-primary: hsl(var(--foreground));
-  --text-secondary: hsl(var(--muted-foreground));
-  --text-dim: hsl(189 40% 55%);
-  --accent: hsl(var(--primary));
-  --accent-hover: hsl(320 90% 70%);
-  --accent-soft: rgba(255, 46, 196, 0.16);
+  --bg-base: #0a0a14;
+  --bg-top: #101020;
+  --bg-sidebar: #0d0d1a;
+  --bg-panel: #121222;
+  --bg-item-hover: #1a1a30;
+  --bg-item-active: #202040;
+  --bg-input: #0f0f1c;
+  --border-strong: #3a3a5a;
+  --text-primary: #eaf6f8;
+  --text-secondary: #8fa3b8;
+  --text-dim: #6a7a92;
+  --accent: #e11d48;
+  --accent-hover: #ff2e56;
+  --accent-soft: rgba(225, 29, 72, 0.18);
   --success: #22e0e8;
   --warning: #f0b429;
   --danger: #ff4d6d;
@@ -114,34 +115,34 @@
 
 /* Chinese style: cinnabar red + ink. */
 [data-theme="chinese"] {
-  --background: 20 20% 10%;
-  --foreground: 35 50% 90%;
-  --card: 20 18% 14%;
-  --card-foreground: 35 50% 90%;
-  --primary: 6 78% 48%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 28 30% 20%;
-  --secondary-foreground: 35 50% 90%;
-  --muted: 20 16% 18%;
-  --muted-foreground: 35 20% 65%;
-  --border: 20 20% 26%;
-  --ring: 6 78% 48%;
+  --background: #171412;
+  --foreground: #efe5d8;
+  --card: #201b17;
+  --card-foreground: #efe5d8;
+  --primary: #c23a34;
+  --primary-foreground: #ffffff;
+  --secondary: #2b241f;
+  --secondary-foreground: #efe5d8;
+  --muted: #241f1b;
+  --muted-foreground: #b8a896;
+  --border: #3a312a;
+  --ring: #c23a34;
 
   /* Legacy business variables (chinese) */
-  --bg-base: hsl(var(--background));
-  --bg-top: hsl(20 18% 13%);
-  --bg-sidebar: hsl(20 20% 11%);
-  --bg-panel: hsl(var(--card));
-  --bg-item-hover: hsl(20 16% 20%);
-  --bg-item-active: hsl(20 16% 24%);
-  --bg-input: hsl(20 18% 9%);
-  --border-strong: hsl(20 20% 30%);
-  --text-primary: hsl(var(--foreground));
-  --text-secondary: hsl(var(--muted-foreground));
-  --text-dim: hsl(35 20% 58%);
-  --accent: hsl(var(--primary));
-  --accent-hover: hsl(6 72% 60%);
-  --accent-soft: rgba(214, 68, 59, 0.16);
+  --bg-base: #171412;
+  --bg-top: #201b17;
+  --bg-sidebar: #1b1714;
+  --bg-panel: #201b17;
+  --bg-item-hover: #2b241f;
+  --bg-item-active: #332a24;
+  --bg-input: #14110f;
+  --border-strong: #4a3f35;
+  --text-primary: #efe5d8;
+  --text-secondary: #c2b4a2;
+  --text-dim: #9a8c7c;
+  --accent: #c23a34;
+  --accent-hover: #d64f46;
+  --accent-soft: rgba(194, 58, 52, 0.16);
   --success: #4a9d5a;
   --warning: #c9a227;
   --danger: #c0392b;
