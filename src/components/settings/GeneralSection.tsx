@@ -16,11 +16,12 @@ export default function GeneralSection() {
 
   return (
     <div>
-      <h3 style={{ marginBottom: 14 }}>{t("settings_general_header")}</h3>
+      <h3 className="mb-3.5">{t("settings_general_header")}</h3>
 
-      <div className="field">
-        <label>{t("settings_startupBehavior")}</label>
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">{t("settings_startupBehavior")}</label>
         <select
+          className="w-full rounded-md border border-border bg-input px-2.5 py-2 text-[13px] outline-none focus:border-accent"
           value={settings.startupBehavior}
           onChange={(e) => save({ startupBehavior: e.target.value })}
         >
@@ -30,7 +31,7 @@ export default function GeneralSection() {
         </select>
       </div>
 
-      <div className="field checkbox">
+      <div className="mb-3.5 flex items-center gap-2">
         <input
           type="checkbox"
           id="tray"
@@ -40,7 +41,7 @@ export default function GeneralSection() {
         <label htmlFor="tray">{t("settings_enableTray")}</label>
       </div>
 
-      <div className="field checkbox">
+      <div className="mb-3.5 flex items-center gap-2">
         <input
           type="checkbox"
           id="closeToTray"
@@ -50,9 +51,10 @@ export default function GeneralSection() {
         <label htmlFor="closeToTray">{t("settings_closeToTray")}</label>
       </div>
 
-      <div className="field">
-        <label>{t("settings_language")}</label>
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">{t("settings_language")}</label>
         <select
+          className="w-full rounded-md border border-border bg-input px-2.5 py-2 text-[13px] outline-none focus:border-accent"
           value={settings.language}
           onChange={(e) => save({ language: e.target.value })}
         >
@@ -64,7 +66,7 @@ export default function GeneralSection() {
         </select>
       </div>
 
-      <div className="field checkbox">
+      <div className="mb-3.5 flex items-center gap-2">
         <input
           type="checkbox"
           id="autoBackup"
@@ -74,7 +76,7 @@ export default function GeneralSection() {
         <label htmlFor="autoBackup">{t("settings_autoBackup")}</label>
       </div>
 
-      <div className="field checkbox">
+      <div className="mb-3.5 flex items-center gap-2">
         <input
           type="checkbox"
           id="trackPlaytime"

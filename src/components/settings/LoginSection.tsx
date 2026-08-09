@@ -2,6 +2,7 @@
 
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useI18n } from "../../i18n";
+import { Button } from "../ui/button";
 
 export default function LoginSection() {
   const settings = useSettingsStore((s) => s.settings);
@@ -10,9 +11,9 @@ export default function LoginSection() {
 
   return (
     <div>
-      <h3 style={{ marginBottom: 14 }}>{t("settings_login_header")}</h3>
+      <h3 className="mb-3.5">{t("settings_login_header")}</h3>
 
-      <div className="field checkbox">
+      <div className="mb-3.5 flex items-center gap-2">
         <input
           type="checkbox"
           id="loginEnabled"
@@ -22,9 +23,10 @@ export default function LoginSection() {
         <label htmlFor="loginEnabled">{t("settings_loginEnable")}</label>
       </div>
 
-      <div className="field">
-        <label>{t("settings_loginMethod")}</label>
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">{t("settings_loginMethod")}</label>
         <select
+          className="w-full rounded-md border border-border bg-input px-2.5 py-2 text-[13px] outline-none focus:border-accent disabled:opacity-50"
           value={settings.loginType}
           onChange={(e) => save({ loginType: e.target.value })}
           disabled={!settings.loginEnabled}
@@ -35,15 +37,15 @@ export default function LoginSection() {
       </div>
 
       {settings.loggedIn && (
-        <div style={{ color: "var(--success)", fontSize: 13, marginTop: 8 }}>
+        <div className="mt-2 text-[13px] text-success">
           {t("settings_loginLoggedIn")} {settings.username ? `（${settings.username}）` : ""}
-          <button
-            className="link-btn"
-            style={{ marginLeft: 8 }}
+          <Button
+            variant="link"
+            className="ml-2 h-auto p-0 text-[13px] text-dim hover:text-secondary-text"
             onClick={() => save({ loggedIn: false })}
           >
             {t("settings_loginLogout")}
-          </button>
+          </Button>
         </div>
       )}
     </div>
