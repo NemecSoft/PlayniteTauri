@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Initialize i18next (imported for its side effect).
 import "./i18n/config";
 import "./styles/global.css";
+// New shadcn/Tailwind token layer (semantic CSS variables + theme mapping).
+// Loaded alongside the legacy global.css during migration.
+import "./styles/globals.css";
 
 // TanStack Query client (part of the upgraded tech stack).
 const queryClient = new QueryClient({

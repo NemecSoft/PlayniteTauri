@@ -17,6 +17,7 @@ import { useLibraryStore } from "./stores/libraryStore";
 import { useAuthStore } from "./stores/authStore";
 import { useUIStore } from "./stores/uiStore";
 import { applyTheme } from "./utils/theme";
+import { ThemeProvider } from "./providers/ThemeProvider";
 import { useI18n, type LanguageCode } from "./i18n";
 
 export default function App() {
@@ -67,14 +68,25 @@ export default function App() {
   // Show the startup announcement is managed inside AppShell (it needs the
   // announcement modal to live inside HashRouter). Skip when needs login.
 
+  // Wrap the whole app in the next-themes ThemeProvider. It manages the
+  // `data-theme` attribute / localStorage for the new shadcn token system.
+  // Note: the legacy applyTheme(theme) below still runs for now (it drives the
+  // old 12-theme CSS during migration); it will be removed in M5 once the new
+  // token themes fully take over.
   if (needsLogin) {
-    return <LoginScreen onLogin={() => undefined} />;
+    return (
+      <ThemeProvider>
+        <LoginScreen onLogin={() => undefined} />
+      </ThemeProvider>
+    );
   }
 
   return (
-    <HashRouter>
-      <AppShell />
-    </HashRouter>
+    <ThemeProvider>
+      <HashRouter>
+        <AppShell />
+      </HashRouter>
+    </ThemeProvider>
   );
 }
 
