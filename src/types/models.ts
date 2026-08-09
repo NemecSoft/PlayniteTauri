@@ -103,7 +103,6 @@ export interface AppSettings {
   enableTray: boolean;
   minimizeToTray: boolean;
   closeToTray: boolean;
-  theme: string;
   language: string;
   firstTimeWizardComplete: boolean;
   databasePath?: string;

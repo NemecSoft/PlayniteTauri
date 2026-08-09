@@ -101,7 +101,6 @@ export interface PublicUser {
 
 export interface AppSettings {
   language: string;
-  theme: string;
   loginEnabled: boolean;
   enterpriseConfigPath: string;
   gameLibraries: GameLibrary[];

@@ -9,7 +9,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   enableTray: true,
   minimizeToTray: false,
   closeToTray: false,
-  theme: "Default",
   language: "en-US",
   firstTimeWizardComplete: false,
   databasePath: undefined,
