@@ -38,6 +38,12 @@
   --warning: #f0b429;
   --danger: #e5484d;
   --glow: none;
+  /* Global text highlight: outline width/color + glow shadow color.
+     Applied on `body` (inherited by all text). Dark themes set these to give
+     every text a crisp glow+edge; light themes keep 0px/none for plain text. */
+  --text-stroke: 0px;
+  --text-stroke-color: transparent;
+  --text-glow: none;
   --font-ui: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   --radius: 6px;
   --radius-lg: 10px;
@@ -248,7 +254,9 @@
   --warning: #c8a44e;
   --danger: #b32d2d;
   --glow: 0 0 8px rgba(200, 164, 78, 0.35);
-  --text-glow: 0 0 5px rgba(232, 196, 110, 0.6), 0 1px 2px rgba(0, 0, 0, 0.8);
+  --text-glow: 0 0 4px rgba(232, 196, 110, 0.55), 0 0 8px rgba(232, 196, 110, 0.25);
+  --text-stroke: 0.5px;
+  --text-stroke-color: rgba(10, 8, 2, 0.7);
   --radius: 4px;
   --radius-lg: 8px;
   --font-ui: "Cinzel", "Trajan Pro", "Georgia", "Segoe UI", serif;
@@ -275,7 +283,9 @@
   --warning: #c8aa6e;
   --danger: #c83a3a;
   --glow: 0 0 10px rgba(120, 90, 200, 0.4);
-  --text-glow: 0 0 5px rgba(200, 170, 110, 0.55), 0 1px 2px rgba(0, 0, 0, 0.85);
+  --text-glow: 0 0 4px rgba(200, 170, 110, 0.5), 0 0 8px rgba(120, 90, 200, 0.3);
+  --text-stroke: 0.5px;
+  --text-stroke-color: rgba(4, 4, 10, 0.7);
   --radius: 4px;
   --radius-lg: 10px;
   --font-ui: "Beaufort", "Inter", "Segoe UI", system-ui, sans-serif;
@@ -302,7 +312,9 @@
   --warning: #d8a04a;
   --danger: #c84a3a;
   --glow: none;
-  --text-glow: 0 0 4px rgba(200, 185, 150, 0.45), 0 1px 2px rgba(0, 0, 0, 0.85);
+  --text-glow: 0 0 3px rgba(220, 205, 165, 0.4), 0 0 6px rgba(0, 0, 0, 0.35);
+  --text-stroke: 0.5px;
+  --text-stroke-color: rgba(15, 15, 12, 0.7);
   --radius: 2px;
   --radius-lg: 6px;
   --font-ui: "Rajdhani", "Inter", "Segoe UI", system-ui, sans-serif;
@@ -328,6 +340,34 @@ body {
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+  /* Global baseline: crisp default rendering. Glow/stroke effects are NOT
+     inherited here — applying a stroke + multi-layer glow to every text
+     node (sidebar nav, settings labels, small UI text) makes characters look
+     "neon-blurred" and reduces readability on busy backgrounds like game
+     covers. Use the `.text-emphasis` utility on the spots that actually
+     need emphasis (titles over images, brand text). */
+}
+
+/* Readable text emphasis for elements rendered on top of busy backgrounds
+   (game covers, hero banners, modal headers). A dark halo first gives a
+   crisp outline against any image, then a soft accent glow layered on top.
+   Tighter than the previous all-text glow, and explicitly opt-in. */
+.text-emphasis {
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 0 4px rgba(0, 0, 0, 0.8),
+    0 1px 1px rgba(0, 0, 0, 0.85),
+    0 0 6px var(--accent-soft);
+}
+
+/* Variant: heavier accent glow for brand/hero only. */
+.text-emphasis-glow {
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 0 4px rgba(0, 0, 0, 0.8),
+    0 1px 1px rgba(0, 0, 0, 0.85),
+    0 0 8px var(--accent-soft),
+    0 0 14px var(--accent-soft);
 }
 
 ::-webkit-scrollbar {
@@ -1199,9 +1239,24 @@ textarea {
 /* Grid view */
 .game-grid {
   display: grid;
+  /* Columns are set inline by the virtualizer (useVirtualGrid); this fallback
+     covers any other place that still relies on the plain auto-fill grid. */
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
   padding: 2px;
+}
+
+/* Windowed grid (useVirtualGrid): the scroll container stays .content. The
+   .vg-window carries the total virtual height (sets the scrollbar) and is
+   the positioning context for absolutely-placed rows. */
+.vg-window {
+  position: relative;
+  width: 100%;
+}
+
+/* Each virtual row is translated to its computed offset. */
+.vg-row {
+  will-change: transform;
 }
 
 .grid-card {
@@ -1321,6 +1376,26 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Cover-overlay text (debug index badge, etc.) — needs to read on top of
+   arbitrary cover art, so it gets its own dark backdrop. */
+.grid-card .cover .debug-badge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  z-index: 3;
 }
 
 /* Cover-image preloading: prominent modal popup with spinner + progress bar */
@@ -1461,10 +1536,6 @@ textarea {
   color: var(--text-dim);
   font-weight: 400;
 }
-.group-section {
-  margin-bottom: 22px;
-}
-
 /* Details view */
 .details-view {
   display: flex;

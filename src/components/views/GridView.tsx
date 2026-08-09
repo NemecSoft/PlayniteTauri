@@ -1,7 +1,10 @@
 // Grid view: 16:9 cover cards grouped by the active grouping.
 // Each card shows the cover (GIF supported) plus Play and Details buttons.
-// Cover images load lazily via IntersectionObserver so a 1000+ game library
-// does not flood the IPC bridge at startup.
+//
+// The grouped grid is windowed with useVirtualGrid: only the rows near the
+// viewport are mounted, so a 1000+ game library keeps the DOM small. Covers
+// additionally load lazily via IntersectionObserver (useLazyImage), so neither
+// the IPC bridge nor layout is flooded at startup.
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +18,7 @@ import { useI18n } from "../../i18n";
 import { Image as ImageIcon, Play, Info } from "lucide-react";
 import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
+import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
 
 interface Props {
   groups: Group[];
@@ -32,36 +36,79 @@ export default function GridView({ groups }: Props) {
 
   const openDetails = (game: Game) => navigate(`/game/${game.id}`);
 
-  // Dynamic grid columns based on the configured card width & gap.
-  const gap = Math.max(0, Math.min(20, cardGap ?? 8));
-  const gridStyle = {
-    gridTemplateColumns: `repeat(auto-fill, minmax(${Math.max(120, cardWidth || 180)}px, 1fr))`,
-    gap: `${gap}px`,
-  } as React.CSSProperties;
+  const { scrollRef, cols, totalSize, items, rowStartIndex } = useVirtualGrid({
+    groups,
+    cardWidth,
+    cardGap,
+  });
 
-  return (
-    <div className="content">
-      {groups.map((group) => (
-        <div className="group-section" key={group.key}>
-          <div className="group-header">
-            {group.label}
-            <span className="count">{group.games.length}</span>
-          </div>
-          <div className="game-grid" style={gridStyle}>
-            {group.games.map((game) => (
-              <GridCard
-                key={game.id}
-                game={game}
-                selected={selected.includes(game.id)}
-                onSelect={(multi) => selectGame(game.id, multi)}
-                onLaunch={() => launchGame(game.id)}
-                onDetails={() => openDetails(game)}
-                onContextMenu={(x, y) => setMenu({ game, x, y })}
-              />
-            ))}
-          </div>
+  const gap = Math.max(0, Math.min(20, cardGap ?? 8));
+
+  const renderRow = (row: VirtualGridRow, startIndex: number) => {
+    if (row.type === "header") {
+      return (
+        <div className="group-header">
+          {row.label}
+          <span className="count">{row.count}</span>
         </div>
-      ))}
+      );
+    }
+    const gridStyle = {
+      gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+      gap: `${gap}px`,
+      width: "100%",
+    } as React.CSSProperties;
+    return (
+      <div className="game-grid" style={gridStyle}>
+        {row.games.map((game, i) => (
+          <GridCard
+            key={game.id}
+            game={game}
+            index={startIndex + i}
+            selected={selected.includes(game.id)}
+            onSelect={(multi) => selectGame(game.id, multi)}
+            onLaunch={() => launchGame(game.id)}
+            onDetails={() => openDetails(game)}
+            onContextMenu={(x, y) => setMenu({ game, x, y })}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  // .vg-window is the only child of .content. Its explicit height drives the
+  // .content scrollbar, and absolutely-positioned .vg-rows are placed at the
+  // offsets returned by the virtualizer. This avoids any spacer/window ordering
+  // ambiguity (the previous structure occasionally left .content with no
+  // in-flow height and rendered only the initial rows).
+  return (
+    <div className="content" ref={scrollRef}>
+      <div
+        className="vg-window"
+        style={{ position: "relative", height: `${totalSize}px` }}
+      >
+        {items.map(({ row, offset }) => {
+          // Each row carries the global card index where its first game sits.
+          // We pre-compute the running card-count in a single pass (O(n))
+          // and look it up by row key, instead of recomputing per render.
+          const startIndex = rowStartIndex.get(row.key) ?? 0;
+          return (
+            <div
+              className="vg-row"
+              key={row.key}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                transform: `translateY(${offset}px)`,
+              }}
+            >
+              {renderRow(row, startIndex)}
+            </div>
+          );
+        })}
+      </div>
 
       {menu && (
         <GameContextMenu
@@ -77,6 +124,7 @@ export default function GridView({ groups }: Props) {
 
 function GridCard({
   game,
+  index,
   selected,
   onSelect,
   onLaunch,
@@ -84,6 +132,7 @@ function GridCard({
   onContextMenu,
 }: {
   game: Game;
+  index: number;
   selected: boolean;
   onSelect: (multi: boolean) => void;
   onLaunch: () => void;
@@ -115,6 +164,10 @@ function GridCard({
             <ImageIcon size={30} />
           </div>
         )}
+        {/* Debug badge: global card index (1-based for human readability),
+            useful while diagnosing virtualisation ordering. The internal
+            `index` prop is 0-based; we show index + 1. */}
+        <span className="debug-badge">#{index + 1}</span>
         {game.installed && <span className="installed-dot" />}
         <div className="cover-actions">
           <button

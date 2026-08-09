@@ -17,6 +17,7 @@
 
 ### 用户界面
 - [视图系统](./design/views.md) — 网格 / 列表 / 详情 + 顶层标签页（主页 / 视频 / 工具）
+- [大列表虚拟滚动](./design/virtual-scrolling.md) — 千级游戏库下只渲染视口附近的行，降低 DOM 数量与滚动开销
 - [管理端（Playnite.Admin.exe）](./design/admin.md) — 独立管理程序、游戏/用户管理、与客户端同库
 - [主题系统（多主题即时切换）](./design/theming.md) — 卡通 / 赛博朋克 / 孟菲斯 / 新拟态 / 美漫 / 吉卜力 / 中国风
 - [封面图库（CoverImages 自动匹配）](./design/covers.md) — 本地图片按中文名自动设置封面

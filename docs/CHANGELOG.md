@@ -2,14 +2,33 @@
 
 ## 2026-08-09
 
-- **弱文字荧光/描边可读性优化**：为所有主题新增统一变量 `--text-glow`（文字荧光阴影，
-  默认 `none`），并让 `wow`/`lol`/`pubg` 三个深色新主题携带主题色荧光+暗色描边的
-  `text-shadow`。对侧边栏（`.sidebar-label`/`.sidebar-title`/`.sidebar-item`/
-  `.sidebar-tag-name`/`.count`）、状态栏（`.status-item`）、工具页（`.tools-subtitle`）、
-  游戏卡片副标题（`.video-game`）等使用 `--text-secondary`/`--text-dim` 的弱文字统一应用
-  `text-shadow: var(--text-glow, none)`，使文字在深色背景下呈现"荧光描边、强反差"，解决
-  部分界面字不清。同时调亮了 `wow`/`lol`/`pubg` 的 `--text-primary`/`--text-secondary`/
-  `--text-dim`，从根本提升对比度。改动集中在 `src/styles/global.css`。
+- **优化全局文字描边/荧光造成的模糊**：原"body 级"继承 `-webkit-text-stroke + text-shadow`
+  让侧栏、设置项、卡片标题等所有文本都套上 0.5px 描边 + 多层荧光，在游戏封面等复杂背景上产生
+  "霓虹糊字"伪影，整体清晰度明显下降。改为：(1) 移除 `body` 上的全局描边/荧光继承，恢复
+  默认清爽渲染；(2) 新增 `.text-emphasis` 与 `.text-emphasis-glow` 两个工具类，
+  采用"暗色可读性 halo + 软 accent 荧光"的 `text-shadow` 栈，需要时显式 opt-in。
+- **游戏卡片加调试编号**：GridCard 左下角加 `#{index}` 半透明黑底小标签，显示该卡在
+  `get_games` 结果中的全局序号，便于调试虚拟滚动的行序。
+- **网格视图大列表虚拟滚动**：千级游戏库下不再一次性渲染所有封面卡片，改为**窗口化渲染**
+  （只挂载视口附近的行）。新增 Hook `src/hooks/useVirtualGrid.ts`：用 ResizeObserver 按容器宽度
+  推导每行列数，把"组头 + 卡片行"拍平成扁平行列表，再用 `@tanstack/react-virtual` 的
+  `useVirtualizer` 做窗口化；行高按 16:9 封面 + 标题区确定性估算（无动态测量）。`GridView.tsx`
+  改为消费该 Hook，`.vg-window`（`height: totalSize`）作为 `.content` 的唯一子节点承载
+  滚动高度，绝对定位的 `.vg-row` 摆放可见行；`useLayoutEffect` 在 mount 后强制
+  `virtualizer.measure()`，避免 ref 未及时挂载时虚拟化器卡在初始几行。修复了首版中
+  ".vg-spacer + .vg-window"双节点结构偶发导致只渲染前几行的问题。第二轮修复：
+  `getVirtualItems()` **不能** 用 `useMemo` 包——虚拟化器是外部 store，滚动触发 re-render
+  时 React 依赖未必变化，但 visible window 依赖当前 scroll offset，必须在 render 中直接调用，
+  否则滚动时窗口不更新，表现为"卡在中间 + 大片空白"。与既有的 `useLazyImage` 图片懒加载
+  互补（懒加载省图片请求，虚拟化省 DOM 数量）。依赖新增 `@tanstack/react-virtual`。
+  详见 [大列表虚拟滚动](./design/virtual-scrolling.md)。
+- **全局文字"高亮+荧光+描边边框"（主题化）**：在 `body` 上统一应用文字描边+荧光
+  （`-webkit-text-stroke` + `text-shadow`，CSS 变量驱动，可继承到所有文本节点），
+  让每个主题的文字都有"带边框的荧光高亮"效果。新增主题变量 `--text-stroke`/
+  `--text-stroke-color`（描边宽度/颜色，默认 `0px`/transparent，浅色主题不受影响）与
+  `--text-glow`（荧光 shadow，默认 `none`）。`wow`/`lol`/`pubg` 三个深色主题各配置
+  0.5px 深色描边 + 主题色双层荧光，实现游戏风的高亮文字。icon（SVG）不受描边影响。
+  改动集中在 `src/styles/global.css`（`:root` 默认变量 + `body` 应用 + 三主题配置）。
 - **新增三大游戏主题**：设置 → 主题增加 **魔兽世界（World of Warcraft）**、
   **英雄联盟（League of Legends）**、**绝地求生（PUBG）** 三个游戏风格主题，
   与现有的卡通/赛博朋克/孟菲斯/新拟态/美漫/吉卜力/中国风并列。色板与字体风格
