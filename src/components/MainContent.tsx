@@ -17,7 +17,7 @@ export default function MainContent() {
   const activeTab = useUIStore((s) => s.activeTab);
 
   return (
-    <main className="main-area">
+    <main className="flex flex-1 flex-col overflow-hidden">
       {activeTab === "videos" ? (
         <VideosView />
       ) : activeTab === "tools" ? (
@@ -28,8 +28,8 @@ export default function MainContent() {
         <>
           <Toolbar />
           {loading ? (
-            <div className="center-loading">
-              <div className="spinner" />
+            <div className="grid h-full place-items-center">
+              <div className="size-[26px] animate-spin rounded-full border-[3px] border-border border-t-accent" />
             </div>
           ) : (
             <GamesView />

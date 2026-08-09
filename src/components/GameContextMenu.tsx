@@ -26,7 +26,7 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
 
   const item = (label: string, icon: React.ReactNode, onClick: () => void, danger = false) => (
     <button
-      className={`context-menu-item ${danger ? "danger" : ""}`}
+      className={`flex w-full cursor-pointer items-center gap-2 rounded px-3 py-[7px] text-left text-[13px] text-primary-text hover:bg-item-hover ${danger ? "text-danger" : ""}`}
       onClick={() => {
         onClick();
         onClose();
@@ -38,7 +38,11 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
   );
 
   return (
-    <div ref={ref} className="context-menu" style={{ left: x, top: y }}>
+    <div
+      ref={ref}
+      className="fixed z-[1500] min-w-[180px] rounded-md border border-border-strong bg-panel p-[5px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+      style={{ left: x, top: y }}
+    >
       {item(t("menu_play"), <Play size={14} />, () => launchGame(game.id))}
       {item(t("menu_copyPath"), <Copy size={14} />, () => navigator.clipboard?.writeText(game.installDirectory || ""))}
     </div>

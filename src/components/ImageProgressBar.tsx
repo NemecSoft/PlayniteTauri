@@ -17,15 +17,18 @@ export default function ImageProgressBar() {
   const label = t("images_loading", { loaded, total });
 
   return (
-    <div className="image-progress-overlay">
-      <div className="image-progress-modal">
-        <div className="image-progress-spinner" />
-        <div className="image-progress-title">{t("images_loading_title")}</div>
-        <div className="image-progress-sub">{label}</div>
-        <div className="image-progress-track">
-          <div className="image-progress-fill" style={{ width: `${pct}%` }} />
+    <div className="fixed inset-0 z-[1500] grid place-items-center bg-black/55 backdrop-blur-[2px]">
+      <div className="flex min-w-[320px] max-w-[400px] flex-col items-center gap-3 rounded-[14px] border border-border-strong bg-panel p-[28px_30px_24px] shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+        <div className="size-[34px] animate-spin rounded-full border-[3px] border-border border-t-accent" />
+        <div className="text-[15px] font-bold text-primary-text">{t("images_loading_title")}</div>
+        <div className="text-[13px] text-secondary-text">{label}</div>
+        <div className="mt-1 h-2 w-full overflow-hidden rounded bg-item-hover">
+          <div
+            className="h-full rounded bg-accent transition-all"
+            style={{ width: `${pct}%` }}
+          />
         </div>
-        <div className="image-progress-pct">{pct}%</div>
+        <div className="text-xs tabular-nums text-dim">{pct}%</div>
       </div>
     </div>
   );

@@ -12,8 +12,8 @@ export default function AppBody() {
   const activeTab = useUIStore((s) => s.activeTab);
 
   return (
-    <div className="app-shell">
-      <div className="app-body">
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {activeTab === "home" && <Sidebar />}
         <MainContent />
       </div>
