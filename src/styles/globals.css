@@ -1,9 +1,27 @@
 /* Tailwind must be imported first — @import order is the #1 black-screen cause. */
 @import "tailwindcss";
+@import "./tokens.css";
 
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
+}
+
+/* Map shadcn semantic tokens to Tailwind color utilities (bg-primary, etc.).
+   `@theme inline` lets Tailwind resolve the hsl(var(--token)) live. */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-ring: hsl(var(--ring));
 }
