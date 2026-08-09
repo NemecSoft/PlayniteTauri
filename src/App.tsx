@@ -16,7 +16,6 @@ import { useGamesStore } from "./stores/gamesStore";
 import { useLibraryStore } from "./stores/libraryStore";
 import { useAuthStore } from "./stores/authStore";
 import { useUIStore } from "./stores/uiStore";
-import { applyTheme } from "./utils/theme";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { useI18n, type LanguageCode } from "./i18n";
 
@@ -26,7 +25,6 @@ export default function App() {
   const loadGames = useGamesStore((s) => s.load);
   const loadStats = useLibraryStore((s) => s.loadStats);
   const loadAuth = useAuthStore((s) => s.load);
-  const theme = useSettingsStore((s) => s.settings.theme);
   const language = useSettingsStore((s) => s.settings.language);
   const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
   const loggedIn = useSettingsStore((s) => s.settings.loggedIn);
@@ -41,10 +39,8 @@ export default function App() {
     loadAuth();
   }, [loadSettings, loadPlatforms, loadGames, loadStats, loadAuth]);
 
-  // Apply the active theme instantly whenever it changes.
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+  // Theme is now managed entirely by next-themes (ThemeProvider): it sets
+  // `data-theme` on <html> and persists to localStorage. No legacy applyTheme.
 
   // Apply the user-selected font instantly (no restart). Setting the inline
   // CSS variable overrides each theme's default --font-ui.
