@@ -12,6 +12,10 @@ Usage:
 """
 import csv
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from labels import palette_label
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COLORS_CSV = r"C:\Users\Administrator\.codebuddy\skills\ui-ux-pro-max\data\colors.csv"
@@ -65,10 +69,13 @@ def main():
         primary, bg, text = p["primary"], p["bg"], p["text"]
         border = p["border"]
         accent = p["cta"]  # CTA doubles as accent for games.
+        zh, category = palette_label(p["name"])
         entries.append(
             {
                 "id": f"p{i + 1}",
                 "name": p["name"],
+                "zh": zh,
+                "category": category,
                 "palette": {
                     "background": bg,
                     "foreground": text,
@@ -145,6 +152,8 @@ def main():
         "export interface ThemeEntry {",
         "  id: string;",
         "  name: string;",
+        "  zh: string;",
+        "  category: string;",
         "  palette: ThemePaletteTokens;",
         "}",
         "",
@@ -155,6 +164,8 @@ def main():
         lines.append(f"  {{")
         lines.append(f'    id: "{e["id"]}",')
         lines.append(f'    name: "{e["name"].replace(chr(34), chr(92) + chr(34))}",')
+        lines.append(f'    zh: "{e["zh"].replace(chr(34), chr(92) + chr(34))}",')
+        lines.append(f'    category: "{e["category"]}",')
         lines.append("    palette: {")
         for k, v in p.items():
             lines.append(f'      {k}: "{v}",')

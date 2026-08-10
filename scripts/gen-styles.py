@@ -12,6 +12,10 @@ Usage:
 import csv
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from labels import style_label
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STYLES_CSV = r"C:\Users\Administrator\.codebuddy\skills\ui-ux-pro-max\data\styles.csv"
@@ -63,10 +67,13 @@ def main():
             seen.add(category)
             defaults = STYLE_DEFAULTS.get(category, {"radius": "8px", "glow": "none", "shadow": "none", "font": "inherit"})
             design_vars = parse_design_vars(row.get("Design System Variables") or "")
+            zh, cat = style_label(category)
             styles.append(
                 {
                     "id": f"s{len(styles) + 1}",
                     "name": category,
+                    "zh": zh,
+                    "category": cat,
                     "vars": {
                         "radius": design_vars.get("borderradius", defaults["radius"]),
                         "glow": defaults["glow"],
@@ -92,6 +99,8 @@ def main():
         "export interface StyleEntry {",
         "  id: string;",
         "  name: string;",
+        "  zh: string;",
+        "  category: string;",
         "  vars: StyleVars;",
         "}",
         "",
@@ -101,6 +110,8 @@ def main():
         lines.append(f"  {{")
         lines.append(f'    id: "{s["id"]}",')
         lines.append(f'    name: "{s["name"].replace(chr(34), chr(92) + chr(34))}",')
+        lines.append(f'    zh: "{s["zh"].replace(chr(34), chr(92) + chr(34))}",')
+        lines.append(f'    category: "{s["category"]}",')
         lines.append("    vars: {")
         for k, v in s["vars"].items():
             lines.append(f'      {k}: "{v}",')

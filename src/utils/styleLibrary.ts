@@ -13,6 +13,8 @@ export interface StyleVars {
 export interface StyleEntry {
   id: string;
   name: string;
+  zh: string;
+  category: string;
   vars: StyleVars;
 }
 
@@ -20,6 +22,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s1",
     name: "Minimalism & Swiss Style",
+    zh: "极简瑞士",
+    category: "极简",
     vars: {
       radius: "0px",
       glow: "none",
@@ -30,6 +34,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s2",
     name: "Neumorphism",
+    zh: "软浮雕",
+    category: "圆润",
     vars: {
       radius: "14px",
       glow: "none",
@@ -40,6 +46,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s3",
     name: "Glassmorphism",
+    zh: "毛玻璃",
+    category: "圆润",
     vars: {
       radius: "12px",
       glow: "none",
@@ -50,6 +58,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s4",
     name: "Brutalism",
+    zh: "粗野硬朗",
+    category: "方正",
     vars: {
       radius: "0px",
       glow: "none",
@@ -60,6 +70,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s5",
     name: "3D & Hyperrealism",
+    zh: "3D 拟真",
+    category: "3D",
     vars: {
       radius: "8px",
       glow: "none",
@@ -70,6 +82,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s6",
     name: "Vibrant & Block-based",
+    zh: "彩色色块",
+    category: "创意",
     vars: {
       radius: "12px",
       glow: "none",
@@ -80,6 +94,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s7",
     name: "Dark Mode (OLED)",
+    zh: "纯黑 OLED",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "neon",
@@ -90,6 +106,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s8",
     name: "Accessible & Ethical",
+    zh: "无障碍",
+    category: "极简",
     vars: {
       radius: "4px",
       glow: "none",
@@ -100,6 +118,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s9",
     name: "Claymorphism",
+    zh: "黏土感",
+    category: "圆润",
     vars: {
       radius: "20px",
       glow: "none",
@@ -110,6 +130,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s10",
     name: "Aurora UI",
+    zh: "极光辉",
+    category: "未来",
     vars: {
       radius: "12px",
       glow: "aurora",
@@ -120,6 +142,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s11",
     name: "Retro-Futurism",
+    zh: "复古未来",
+    category: "复古",
     vars: {
       radius: "2px",
       glow: "neon",
@@ -130,6 +154,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s12",
     name: "Flat Design",
+    zh: "扁平",
+    category: "极简",
     vars: {
       radius: "4px",
       glow: "none",
@@ -140,6 +166,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s13",
     name: "Skeuomorphism",
+    zh: "仿真拟物",
+    category: "3D",
     vars: {
       radius: "8px",
       glow: "none",
@@ -150,6 +178,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s14",
     name: "Liquid Glass",
+    zh: "液态玻璃",
+    category: "圆润",
     vars: {
       radius: "14px",
       glow: "glass",
@@ -160,6 +190,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s15",
     name: "Motion-Driven",
+    zh: "动效驱动",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -170,6 +202,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s16",
     name: "Micro-interactions",
+    zh: "微交互",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -180,6 +214,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s17",
     name: "Inclusive Design",
+    zh: "包容设计",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -190,6 +226,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s18",
     name: "Zero Interface",
+    zh: "零界面",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -200,6 +238,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s19",
     name: "Soft UI Evolution",
+    zh: "柔和软面",
+    category: "圆润",
     vars: {
       radius: "8px",
       glow: "none",
@@ -210,6 +250,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s20",
     name: "Hero-Centric Design",
+    zh: "首屏大图",
+    category: "商务",
     vars: {
       radius: "8px",
       glow: "none",
@@ -220,6 +262,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s21",
     name: "Conversion-Optimized",
+    zh: "转化优化",
+    category: "商务",
     vars: {
       radius: "8px",
       glow: "none",
@@ -230,6 +274,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s22",
     name: "Feature-Rich Showcase",
+    zh: "功能展示",
+    category: "商务",
     vars: {
       radius: "8px",
       glow: "none",
@@ -240,6 +286,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s23",
     name: "Minimal & Direct",
+    zh: "简约直白",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -250,6 +298,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s24",
     name: "Social Proof-Focused",
+    zh: "用户证言",
+    category: "商务",
     vars: {
       radius: "8px",
       glow: "none",
@@ -260,6 +310,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s25",
     name: "Interactive Product Demo",
+    zh: "交互演示",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -270,6 +322,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s26",
     name: "Trust & Authority",
+    zh: "信任权威",
+    category: "商务",
     vars: {
       radius: "8px",
       glow: "none",
@@ -280,6 +334,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s27",
     name: "Storytelling-Driven",
+    zh: "叙事为主",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -290,6 +346,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s28",
     name: "Data-Dense Dashboard",
+    zh: "数据密集",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -300,6 +358,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s29",
     name: "Heat Map & Heatmap Style",
+    zh: "热力图",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -310,6 +370,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s30",
     name: "Executive Dashboard",
+    zh: "高管看板",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -320,6 +382,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s31",
     name: "Real-Time Monitoring",
+    zh: "实时监控",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -330,6 +394,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s32",
     name: "Drill-Down Analytics",
+    zh: "下钻分析",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -340,6 +406,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s33",
     name: "Comparative Analysis Dashboard",
+    zh: "对比分析",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -350,6 +418,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s34",
     name: "Predictive Analytics",
+    zh: "预测分析",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -360,6 +430,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s35",
     name: "User Behavior Analytics",
+    zh: "用户行为",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -370,6 +442,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s36",
     name: "Financial Dashboard",
+    zh: "财务看板",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -380,6 +454,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s37",
     name: "Sales Intelligence Dashboard",
+    zh: "销售智能",
+    category: "数据",
     vars: {
       radius: "8px",
       glow: "none",
@@ -390,6 +466,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s38",
     name: "Neubrutalism",
+    zh: "新粗野",
+    category: "方正",
     vars: {
       radius: "8px",
       glow: "none",
@@ -400,6 +478,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s39",
     name: "Bento Box Grid",
+    zh: "便当盒布局",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -410,6 +490,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s40",
     name: "Y2K Aesthetic",
+    zh: "Y2K 千禧",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",
@@ -420,6 +502,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s41",
     name: "Cyberpunk UI",
+    zh: "赛博朋克",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -430,6 +514,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s42",
     name: "Organic Biophilic",
+    zh: "自然亲生物",
+    category: "自然",
     vars: {
       radius: "8px",
       glow: "none",
@@ -440,6 +526,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s43",
     name: "AI-Native UI",
+    zh: "原生 AI",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -450,6 +538,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s44",
     name: "Memphis Design",
+    zh: "孟菲斯",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -460,6 +550,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s45",
     name: "Vaporwave",
+    zh: "蒸汽波",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",
@@ -470,6 +562,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s46",
     name: "Dimensional Layering",
+    zh: "层次堆叠",
+    category: "3D",
     vars: {
       radius: "8px",
       glow: "none",
@@ -480,6 +574,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s47",
     name: "Exaggerated Minimalism",
+    zh: "夸张极简",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -490,6 +586,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s48",
     name: "Kinetic Typography",
+    zh: "动效字",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -500,6 +598,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s49",
     name: "Parallax Storytelling",
+    zh: "视差叙事",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -510,6 +610,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s50",
     name: "Swiss Modernism 2.0",
+    zh: "瑞士 2.0",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -520,6 +622,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s51",
     name: "HUD / Sci-Fi FUI",
+    zh: "科幻 HUD",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -530,6 +634,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s52",
     name: "Pixel Art",
+    zh: "像素风",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",
@@ -540,6 +646,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s53",
     name: "Bento Grids",
+    zh: "便当网格",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -550,6 +658,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s54",
     name: "Spatial UI (VisionOS)",
+    zh: "空间 UI",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -560,6 +670,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s55",
     name: "E-Ink / Paper",
+    zh: "电子墨水",
+    category: "极简",
     vars: {
       radius: "8px",
       glow: "none",
@@ -570,6 +682,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s56",
     name: "Gen Z Chaos / Maximalism",
+    zh: "Z 世代极繁",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -580,6 +694,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s57",
     name: "Biomimetic / Organic 2.0",
+    zh: "仿生 2.0",
+    category: "自然",
     vars: {
       radius: "8px",
       glow: "none",
@@ -590,6 +706,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s58",
     name: "Anti-Polish / Raw Aesthetic",
+    zh: "不修边幅",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",
@@ -600,6 +718,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s59",
     name: "Tactile Digital / Deformable UI",
+    zh: "触感数字",
+    category: "3D",
     vars: {
       radius: "8px",
       glow: "none",
@@ -610,6 +730,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s60",
     name: "Nature Distilled",
+    zh: "自然简约",
+    category: "自然",
     vars: {
       radius: "8px",
       glow: "none",
@@ -620,6 +742,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s61",
     name: "Interactive Cursor Design",
+    zh: "交互光标",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -630,6 +754,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s62",
     name: "Voice-First Multimodal",
+    zh: "语音优先",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -640,6 +766,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s63",
     name: "3D Product Preview",
+    zh: "3D 商品",
+    category: "3D",
     vars: {
       radius: "8px",
       glow: "none",
@@ -650,6 +778,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s64",
     name: "Gradient Mesh / Aurora Evolved",
+    zh: "渐变网格",
+    category: "未来",
     vars: {
       radius: "8px",
       glow: "none",
@@ -660,6 +790,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s65",
     name: "Editorial Grid / Magazine",
+    zh: "编辑网格",
+    category: "创意",
     vars: {
       radius: "8px",
       glow: "none",
@@ -670,6 +802,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s66",
     name: "Chromatic Aberration / RGB Split",
+    zh: "RGB 分离",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",
@@ -680,6 +814,8 @@ export const styleLibrary: StyleEntry[] = [
   {
     id: "s67",
     name: "Vintage Analog / Retro Film",
+    zh: "复古胶片",
+    category: "复古",
     vars: {
       radius: "8px",
       glow: "none",

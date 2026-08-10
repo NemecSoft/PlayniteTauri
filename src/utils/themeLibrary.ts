@@ -38,6 +38,8 @@ export interface ThemePaletteTokens {
 export interface ThemeEntry {
   id: string;
   name: string;
+  zh: string;
+  category: string;
   palette: ThemePaletteTokens;
 }
 
@@ -45,6 +47,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p1",
     name: "SaaS (General)",
+    zh: "SaaS 通用",
+    category: "商务",
     palette: {
       background: "#F8FAFC",
       foreground: "#1E293B",
@@ -80,6 +84,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p2",
     name: "Micro SaaS",
+    zh: "微型 SaaS",
+    category: "科技",
     palette: {
       background: "#F5F3FF",
       foreground: "#1E1B4B",
@@ -115,6 +121,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p3",
     name: "E-commerce",
+    zh: "电商",
+    category: "商务",
     palette: {
       background: "#ECFDF5",
       foreground: "#064E3B",
@@ -150,6 +158,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p4",
     name: "E-commerce Luxury",
+    zh: "奢华电商",
+    category: "商务",
     palette: {
       background: "#FAFAF9",
       foreground: "#0C0A09",
@@ -185,6 +195,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p5",
     name: "Service Landing Page",
+    zh: "服务落地页",
+    category: "商务",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -220,6 +232,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p6",
     name: "B2B Service",
+    zh: "B2B 服务",
+    category: "商务",
     palette: {
       background: "#F8FAFC",
       foreground: "#020617",
@@ -255,6 +269,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p7",
     name: "Financial Dashboard",
+    zh: "财务看板",
+    category: "金融",
     palette: {
       background: "#020617",
       foreground: "#F8FAFC",
@@ -290,6 +306,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p8",
     name: "Analytics Dashboard",
+    zh: "分析看板",
+    category: "数据",
     palette: {
       background: "#F8FAFC",
       foreground: "#1E3A8A",
@@ -325,6 +343,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p9",
     name: "Healthcare App",
+    zh: "医疗应用",
+    category: "医疗",
     palette: {
       background: "#ECFEFF",
       foreground: "#164E63",
@@ -360,6 +380,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p10",
     name: "Educational App",
+    zh: "教育应用",
+    category: "教育",
     palette: {
       background: "#EEF2FF",
       foreground: "#1E1B4B",
@@ -395,6 +417,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p11",
     name: "Creative Agency",
+    zh: "创意机构",
+    category: "设计",
     palette: {
       background: "#FDF2F8",
       foreground: "#831843",
@@ -430,6 +454,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p12",
     name: "Portfolio/Personal",
+    zh: "个人作品集",
+    category: "设计",
     palette: {
       background: "#FAFAFA",
       foreground: "#09090B",
@@ -465,6 +491,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p13",
     name: "Gaming",
+    zh: "游戏",
+    category: "游戏",
     palette: {
       background: "#0F0F23",
       foreground: "#E2E8F0",
@@ -500,6 +528,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p14",
     name: "Government/Public Service",
+    zh: "政府公共服务",
+    category: "政府",
     palette: {
       background: "#F8FAFC",
       foreground: "#020617",
@@ -535,6 +565,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p15",
     name: "Fintech/Crypto",
+    zh: "金融科技",
+    category: "金融",
     palette: {
       background: "#0F172A",
       foreground: "#F8FAFC",
@@ -570,6 +602,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p16",
     name: "Social Media App",
+    zh: "社交应用",
+    category: "生活",
     palette: {
       background: "#FFF1F2",
       foreground: "#881337",
@@ -605,6 +639,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p17",
     name: "Productivity Tool",
+    zh: "效率工具",
+    category: "科技",
     palette: {
       background: "#F0FDFA",
       foreground: "#134E4A",
@@ -640,6 +676,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p18",
     name: "Design System/Component Library",
+    zh: "设计系统",
+    category: "设计",
     palette: {
       background: "#EEF2FF",
       foreground: "#312E81",
@@ -675,6 +713,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p19",
     name: "AI/Chatbot Platform",
+    zh: "AI 对话",
+    category: "科技",
     palette: {
       background: "#FAF5FF",
       foreground: "#1E1B4B",
@@ -710,6 +750,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p20",
     name: "NFT/Web3 Platform",
+    zh: "Web3",
+    category: "科技",
     palette: {
       background: "#0F0F23",
       foreground: "#F8FAFC",
@@ -745,6 +787,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p21",
     name: "Creator Economy Platform",
+    zh: "创作者平台",
+    category: "生活",
     palette: {
       background: "#FDF2F8",
       foreground: "#831843",
@@ -780,6 +824,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p22",
     name: "Sustainability/ESG Platform",
+    zh: "可持续 / ESG",
+    category: "政府",
     palette: {
       background: "#ECFDF5",
       foreground: "#064E3B",
@@ -815,6 +861,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p23",
     name: "Remote Work/Collaboration Tool",
+    zh: "远程协作",
+    category: "科技",
     palette: {
       background: "#F5F3FF",
       foreground: "#312E81",
@@ -850,6 +898,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p24",
     name: "Mental Health App",
+    zh: "心理健康",
+    category: "医疗",
     palette: {
       background: "#FAF5FF",
       foreground: "#4C1D95",
@@ -885,6 +935,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p25",
     name: "Pet Tech App",
+    zh: "宠物科技",
+    category: "生活",
     palette: {
       background: "#FFF7ED",
       foreground: "#9A3412",
@@ -920,6 +972,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p26",
     name: "Smart Home/IoT Dashboard",
+    zh: "智能家居",
+    category: "科技",
     palette: {
       background: "#0F172A",
       foreground: "#F8FAFC",
@@ -955,6 +1009,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p27",
     name: "EV/Charging Ecosystem",
+    zh: "电动车充电",
+    category: "生活",
     palette: {
       background: "#ECFEFF",
       foreground: "#164E63",
@@ -990,6 +1046,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p28",
     name: "Subscription Box Service",
+    zh: "订阅盒子",
+    category: "生活",
     palette: {
       background: "#FDF4FF",
       foreground: "#86198F",
@@ -1025,6 +1083,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p29",
     name: "Podcast Platform",
+    zh: "播客",
+    category: "娱乐",
     palette: {
       background: "#0F0F23",
       foreground: "#F8FAFC",
@@ -1060,6 +1120,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p30",
     name: "Dating App",
+    zh: "交友",
+    category: "生活",
     palette: {
       background: "#FFF1F2",
       foreground: "#881337",
@@ -1095,6 +1157,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p31",
     name: "Micro-Credentials/Badges Platform",
+    zh: "微证书",
+    category: "教育",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -1130,6 +1194,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p32",
     name: "Knowledge Base/Documentation",
+    zh: "知识库",
+    category: "科技",
     palette: {
       background: "#F8FAFC",
       foreground: "#1E293B",
@@ -1165,6 +1231,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p33",
     name: "Hyperlocal Services",
+    zh: "本地服务",
+    category: "生活",
     palette: {
       background: "#ECFDF5",
       foreground: "#064E3B",
@@ -1200,6 +1268,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p34",
     name: "Beauty/Spa/Wellness Service",
+    zh: "美容 SPA",
+    category: "生活",
     palette: {
       background: "#FDF2F8",
       foreground: "#831843",
@@ -1235,6 +1305,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p35",
     name: "Luxury/Premium Brand",
+    zh: "奢华品牌",
+    category: "设计",
     palette: {
       background: "#FAFAF9",
       foreground: "#0C0A09",
@@ -1270,6 +1342,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p36",
     name: "Restaurant/Food Service",
+    zh: "餐厅",
+    category: "生活",
     palette: {
       background: "#FEF2F2",
       foreground: "#450A0A",
@@ -1305,6 +1379,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p37",
     name: "Fitness/Gym App",
+    zh: "健身",
+    category: "生活",
     palette: {
       background: "#1F2937",
       foreground: "#F8FAFC",
@@ -1340,6 +1416,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p38",
     name: "Real Estate/Property",
+    zh: "房地产",
+    category: "商务",
     palette: {
       background: "#F0FDFA",
       foreground: "#134E4A",
@@ -1375,6 +1453,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p39",
     name: "Travel/Tourism Agency",
+    zh: "旅游",
+    category: "娱乐",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -1410,6 +1490,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p40",
     name: "Hotel/Hospitality",
+    zh: "酒店",
+    category: "娱乐",
     palette: {
       background: "#F8FAFC",
       foreground: "#1E40AF",
@@ -1445,6 +1527,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p41",
     name: "Wedding/Event Planning",
+    zh: "婚礼策划",
+    category: "生活",
     palette: {
       background: "#FDF2F8",
       foreground: "#831843",
@@ -1480,6 +1564,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p42",
     name: "Legal Services",
+    zh: "法律服务",
+    category: "商务",
     palette: {
       background: "#F8FAFC",
       foreground: "#0F172A",
@@ -1515,6 +1601,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p43",
     name: "Insurance Platform",
+    zh: "保险",
+    category: "金融",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -1550,6 +1638,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p44",
     name: "Banking/Traditional Finance",
+    zh: "传统银行",
+    category: "金融",
     palette: {
       background: "#F8FAFC",
       foreground: "#020617",
@@ -1585,6 +1675,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p45",
     name: "Online Course/E-learning",
+    zh: "在线课程",
+    category: "教育",
     palette: {
       background: "#F0FDFA",
       foreground: "#134E4A",
@@ -1620,6 +1712,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p46",
     name: "Non-profit/Charity",
+    zh: "公益慈善",
+    category: "政府",
     palette: {
       background: "#ECFEFF",
       foreground: "#164E63",
@@ -1655,6 +1749,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p47",
     name: "Music Streaming",
+    zh: "音乐",
+    category: "娱乐",
     palette: {
       background: "#0F0F23",
       foreground: "#F8FAFC",
@@ -1690,6 +1786,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p48",
     name: "Video Streaming/OTT",
+    zh: "视频流媒体",
+    category: "娱乐",
     palette: {
       background: "#000000",
       foreground: "#F8FAFC",
@@ -1725,6 +1823,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p49",
     name: "Job Board/Recruitment",
+    zh: "招聘",
+    category: "商务",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -1760,6 +1860,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p50",
     name: "Marketplace (P2P)",
+    zh: "P2P 市场",
+    category: "商务",
     palette: {
       background: "#FAF5FF",
       foreground: "#4C1D95",
@@ -1795,6 +1897,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p51",
     name: "Logistics/Delivery",
+    zh: "物流配送",
+    category: "生活",
     palette: {
       background: "#EFF6FF",
       foreground: "#1E40AF",
@@ -1830,6 +1934,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p52",
     name: "Agriculture/Farm Tech",
+    zh: "农业科技",
+    category: "科技",
     palette: {
       background: "#F0FDF4",
       foreground: "#14532D",
@@ -1865,6 +1971,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p53",
     name: "Construction/Architecture",
+    zh: "建筑",
+    category: "商务",
     palette: {
       background: "#F8FAFC",
       foreground: "#334155",
@@ -1900,6 +2008,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p54",
     name: "Automotive/Car Dealership",
+    zh: "汽车销售",
+    category: "生活",
     palette: {
       background: "#F8FAFC",
       foreground: "#0F172A",
@@ -1935,6 +2045,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p55",
     name: "Photography Studio",
+    zh: "摄影",
+    category: "设计",
     palette: {
       background: "#000000",
       foreground: "#FAFAFA",
@@ -1970,6 +2082,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p56",
     name: "Coworking Space",
+    zh: "联合办公",
+    category: "商务",
     palette: {
       background: "#FFFBEB",
       foreground: "#78350F",
@@ -2005,6 +2119,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p57",
     name: "Cleaning Service",
+    zh: "清洁服务",
+    category: "生活",
     palette: {
       background: "#ECFEFF",
       foreground: "#164E63",
@@ -2040,6 +2156,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p58",
     name: "Home Services (Plumber/Electrician)",
+    zh: "家居维修",
+    category: "生活",
     palette: {
       background: "#EFF6FF",
       foreground: "#1E3A8A",
@@ -2075,6 +2193,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p59",
     name: "Childcare/Daycare",
+    zh: "托儿",
+    category: "生活",
     palette: {
       background: "#FDF2F8",
       foreground: "#9D174D",
@@ -2110,6 +2230,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p60",
     name: "Senior Care/Elderly",
+    zh: "养老",
+    category: "医疗",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -2145,6 +2267,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p61",
     name: "Medical Clinic",
+    zh: "诊所",
+    category: "医疗",
     palette: {
       background: "#F0FDFA",
       foreground: "#134E4A",
@@ -2180,6 +2304,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p62",
     name: "Pharmacy/Drug Store",
+    zh: "药店",
+    category: "医疗",
     palette: {
       background: "#F0FDF4",
       foreground: "#14532D",
@@ -2215,6 +2341,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p63",
     name: "Dental Practice",
+    zh: "牙科",
+    category: "医疗",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -2250,6 +2378,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p64",
     name: "Veterinary Clinic",
+    zh: "兽医",
+    category: "医疗",
     palette: {
       background: "#F0FDFA",
       foreground: "#134E4A",
@@ -2285,6 +2415,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p65",
     name: "Florist/Plant Shop",
+    zh: "花艺",
+    category: "生活",
     palette: {
       background: "#F0FDF4",
       foreground: "#14532D",
@@ -2320,6 +2452,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p66",
     name: "Bakery/Cafe",
+    zh: "烘焙咖啡",
+    category: "生活",
     palette: {
       background: "#FEF3C7",
       foreground: "#78350F",
@@ -2355,6 +2489,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p67",
     name: "Coffee Shop",
+    zh: "咖啡店",
+    category: "生活",
     palette: {
       background: "#FEF3C7",
       foreground: "#451A03",
@@ -2390,6 +2526,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p68",
     name: "Brewery/Winery",
+    zh: "酒庄",
+    category: "生活",
     palette: {
       background: "#FEF2F2",
       foreground: "#450A0A",
@@ -2425,6 +2563,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p69",
     name: "Airline",
+    zh: "航空",
+    category: "娱乐",
     palette: {
       background: "#EFF6FF",
       foreground: "#1E40AF",
@@ -2460,6 +2600,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p70",
     name: "News/Media Platform",
+    zh: "新闻媒体",
+    category: "娱乐",
     palette: {
       background: "#FEF2F2",
       foreground: "#450A0A",
@@ -2495,6 +2637,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p71",
     name: "Magazine/Blog",
+    zh: "杂志博客",
+    category: "娱乐",
     palette: {
       background: "#FAFAFA",
       foreground: "#09090B",
@@ -2530,6 +2674,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p72",
     name: "Freelancer Platform",
+    zh: "自由职业",
+    category: "商务",
     palette: {
       background: "#EEF2FF",
       foreground: "#312E81",
@@ -2565,6 +2711,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p73",
     name: "Consulting Firm",
+    zh: "咨询",
+    category: "商务",
     palette: {
       background: "#F8FAFC",
       foreground: "#020617",
@@ -2600,6 +2748,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p74",
     name: "Marketing Agency",
+    zh: "营销机构",
+    category: "商务",
     palette: {
       background: "#FDF2F8",
       foreground: "#831843",
@@ -2635,6 +2785,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p75",
     name: "Event Management",
+    zh: "活动管理",
+    category: "商务",
     palette: {
       background: "#FAF5FF",
       foreground: "#4C1D95",
@@ -2670,6 +2822,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p76",
     name: "Conference/Webinar Platform",
+    zh: "会议直播",
+    category: "商务",
     palette: {
       background: "#EFF6FF",
       foreground: "#1E3A8A",
@@ -2705,6 +2859,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p77",
     name: "Membership/Community",
+    zh: "会员社区",
+    category: "生活",
     palette: {
       background: "#FAF5FF",
       foreground: "#4C1D95",
@@ -2740,6 +2896,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p78",
     name: "Newsletter Platform",
+    zh: "邮件简报",
+    category: "科技",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -2775,6 +2933,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p79",
     name: "Digital Products/Downloads",
+    zh: "数字产品",
+    category: "生活",
     palette: {
       background: "#EEF2FF",
       foreground: "#312E81",
@@ -2810,6 +2970,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p80",
     name: "Church/Religious Organization",
+    zh: "宗教组织",
+    category: "政府",
     palette: {
       background: "#FAF5FF",
       foreground: "#4C1D95",
@@ -2845,6 +3007,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p81",
     name: "Sports Team/Club",
+    zh: "体育俱乐部",
+    category: "娱乐",
     palette: {
       background: "#FEF2F2",
       foreground: "#7F1D1D",
@@ -2880,6 +3044,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p82",
     name: "Museum/Gallery",
+    zh: "博物馆",
+    category: "教育",
     palette: {
       background: "#FAFAFA",
       foreground: "#09090B",
@@ -2915,6 +3081,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p83",
     name: "Theater/Cinema",
+    zh: "剧院影院",
+    category: "娱乐",
     palette: {
       background: "#0F0F23",
       foreground: "#F8FAFC",
@@ -2950,6 +3118,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p84",
     name: "Language Learning App",
+    zh: "语言学习",
+    category: "教育",
     palette: {
       background: "#EEF2FF",
       foreground: "#312E81",
@@ -2985,6 +3155,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p85",
     name: "Coding Bootcamp",
+    zh: "编程训练营",
+    category: "教育",
     palette: {
       background: "#020617",
       foreground: "#F8FAFC",
@@ -3020,6 +3192,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p86",
     name: "Cybersecurity Platform",
+    zh: "网络安全",
+    category: "科技",
     palette: {
       background: "#000000",
       foreground: "#E0E0E0",
@@ -3055,6 +3229,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p87",
     name: "Developer Tool / IDE",
+    zh: "开发工具",
+    category: "科技",
     palette: {
       background: "#0F172A",
       foreground: "#F8FAFC",
@@ -3090,6 +3266,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p88",
     name: "Biotech / Life Sciences",
+    zh: "生物科技",
+    category: "科技",
     palette: {
       background: "#F0F9FF",
       foreground: "#0C4A6E",
@@ -3125,6 +3303,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p89",
     name: "Space Tech / Aerospace",
+    zh: "航天科技",
+    category: "科技",
     palette: {
       background: "#0B0B10",
       foreground: "#F8FAFC",
@@ -3160,6 +3340,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p90",
     name: "Architecture / Interior",
+    zh: "建筑室内",
+    category: "设计",
     palette: {
       background: "#FFFFFF",
       foreground: "#171717",
@@ -3195,6 +3377,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p91",
     name: "Quantum Computing",
+    zh: "量子计算",
+    category: "科技",
     palette: {
       background: "#050510",
       foreground: "#E0E0FF",
@@ -3230,6 +3414,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p92",
     name: "Biohacking / Longevity",
+    zh: "抗衰延寿",
+    category: "医疗",
     palette: {
       background: "#F5F5F7",
       foreground: "#1C1C1E",
@@ -3265,6 +3451,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p93",
     name: "Autonomous Systems",
+    zh: "自动驾驶",
+    category: "科技",
     palette: {
       background: "#0D1117",
       foreground: "#E6EDF3",
@@ -3300,6 +3488,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p94",
     name: "Generative AI Art",
+    zh: "AI 绘画",
+    category: "设计",
     palette: {
       background: "#FAFAFA",
       foreground: "#09090B",
@@ -3335,6 +3525,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p95",
     name: "Spatial / Vision OS",
+    zh: "空间 OS",
+    category: "科技",
     palette: {
       background: "#888888",
       foreground: "#000000",
@@ -3370,6 +3562,8 @@ export const themeLibrary: ThemeEntry[] = [
   {
     id: "p96",
     name: "Climate Tech",
+    zh: "气候科技",
+    category: "科技",
     palette: {
       background: "#ECFDF5",
       foreground: "#064E3B",

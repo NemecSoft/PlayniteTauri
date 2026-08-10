@@ -199,6 +199,8 @@
   "settings_themes_search": "Search palettes…",
   "settings_themes_noMatch": "No palettes match your search.",
   "settings_styles_search": "Search styles…",
+  "settings_styles_label": "Style",
+  "settings_palettes_label": "Palette",
   "settings_themeCartoon": "Cartoon",
   "settings_themeCartoonDesc": "Bright, colorful, rounded — playful cartoon vibes",
   "settings_themeCyberpunk": "Cyberpunk",
