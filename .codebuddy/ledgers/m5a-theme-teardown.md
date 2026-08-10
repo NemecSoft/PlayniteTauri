@@ -12,4 +12,4 @@ Reason: deleting the backend `theme` field makes the legacy value unreadable, so
 | 1 | Remove theme field from backend AppSettings | done | - | cargo check pass; no Rust refs |
 | 2 | Remove theme from frontend; ThemesSection → next-themes useTheme | done | - | tsc + admin tsc pass; 8 new i18n keys added to 3 locales |
 | 3 | Delete utils/theme.ts + remove applyTheme from App | done | - | npm build pass |
-| 5 | Full verify (cargo + build) + GUI smoke (theme switching) | pending | - | - |
+| 5 | Full verify (cargo + build) + GUI smoke (theme switching) | code-done | - | cargo+tsc+build pass. GUI found: light theme no-op → fixed by adding legacy business vars to tokens.css |
