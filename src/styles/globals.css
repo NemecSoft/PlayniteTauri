@@ -46,6 +46,15 @@ body,
   --color-dim: var(--text-dim);
   --color-primary-text: var(--text-primary);
   --color-secondary-text: var(--text-secondary);
+
+  /* Let the chosen style's radius drive Tailwind's rounded-* scale, so cards,
+     buttons and panels everywhere follow the selected style. rounded-full is
+     left as-is for pills. */
+  --radius-sm: calc(var(--radius, 10px) * 0.5);
+  --radius-md: var(--radius, 10px);
+  --radius-lg: calc(var(--radius, 10px) * 1.5);
+  --radius-xl: calc(var(--radius, 10px) * 2);
+  --radius-2xl: calc(var(--radius, 10px) * 2.5);
 }
 
 /* Style-driven design variables (injected by applyStyleVars on :root).
@@ -53,7 +62,7 @@ body,
 :root {
   --radius: 10px;
   --glow: none;
-  --shadow: none;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* Let the chosen style's font apply app-wide (falls back to inherited). */
@@ -76,4 +85,18 @@ body {
 .toast-container,
 .detail-page {
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Make the chosen style's glow visible on headings & emphasized text app-wide
+   (keyframes/shadows kept subtle; default --glow is "none"). */
+h1,
+h2,
+h3,
+.group-header,
+.tb-title,
+.detail-404-code,
+.news-title-row .news-name,
+.grid-card .title {
+  text-shadow: var(--glow);
 }

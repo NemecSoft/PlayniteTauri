@@ -21,24 +21,54 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STYLES_CSV = r"C:\Users\Administrator\.codebuddy\skills\ui-ux-pro-max\data\styles.csv"
 OUT = os.path.join(ROOT, "src", "utils", "styleLibrary.ts")
 
-# Map a style category to safe non-color variables (sane defaults derived from
-# the ui-ux-pro-max "Design System Variables" guidance).
-STYLE_DEFAULTS = {
-    "Minimalism & Swiss Style": {"radius": "0px", "glow": "none", "shadow": "none", "font": "inherit"},
-    "Neumorphism": {"radius": "14px", "glow": "none", "shadow": "soft", "font": "inherit"},
-    "Glassmorphism": {"radius": "12px", "glow": "none", "shadow": "glass", "font": "inherit"},
-    "Brutalism": {"radius": "0px", "glow": "none", "shadow": "hard", "font": "monospace"},
-    "3D & Hyperrealism": {"radius": "8px", "glow": "none", "shadow": "deep", "font": "inherit"},
-    "Vibrant & Block-based": {"radius": "12px", "glow": "none", "shadow": "none", "font": "inherit"},
-    "Dark Mode (OLED)": {"radius": "8px", "glow": "neon", "shadow": "none", "font": "inherit"},
-    "Accessible & Ethical": {"radius": "4px", "glow": "none", "shadow": "none", "font": "inherit"},
-    "Claymorphism": {"radius": "20px", "glow": "none", "shadow": "soft", "font": "inherit"},
-    "Aurora UI": {"radius": "12px", "glow": "aurora", "shadow": "none", "font": "inherit"},
-    "Retro-Futurism": {"radius": "2px", "glow": "neon", "shadow": "neon", "font": "monospace"},
-    "Flat Design": {"radius": "4px", "glow": "none", "shadow": "none", "font": "inherit"},
-    "Skeuomorphism": {"radius": "8px", "glow": "none", "shadow": "deep", "font": "inherit"},
-    "Liquid Glass": {"radius": "14px", "glow": "glass", "shadow": "glass", "font": "inherit"},
+# Radius by top-level category (from labels.py) so every style is distinct.
+CATEGORY_RADIUS = {
+    "方正": "0px",
+    "极简": "0px",
+    "复古": "2px",
+    "未来": "8px",
+    "数据": "6px",
+    "商务": "8px",
+    "创意": "12px",
+    "圆润": "16px",
+    "3D": "14px",
+    "自然": "14px",
+    "其他": "8px",
 }
+
+# Styles that get a glowing accent (name-based).
+GLOW_STYLES = [
+    "Cyberpunk UI", "Vaporwave", "Retro-Futurism", "HUD / Sci-Fi FUI",
+    "Dark Mode (OLED)", "Aurora UI", "Liquid Glass", "Gradient Mesh",
+    "Chromatic Aberration", "RGB Split", "Vintage Analog", "Retro Film",
+]
+
+# Styles that use a monospace/retro font.
+MONO_STYLES = [
+    "Brutalism", "Pixel Art", "Retro-Futurism", "HUD / Sci-Fi FUI",
+    "Cyberpunk UI", "Vaporwave", "Neubrutalism", "Chromatic Aberration",
+]
+
+# Shadow by name keyword (none unless a style suggests a distinct one).
+SHADOW_STYLES = {
+    "Neumorphism": "soft",
+    "Glassmorphism": "glass",
+    "Liquid Glass": "glass",
+    "Brutalism": "hard",
+    "3D & Hyperrealism": "deep",
+    "Skeuomorphism": "deep",
+    "Claymorphism": "soft",
+    "Retro-Futurism": "neon",
+}
+
+
+def infer_style_vars(name: str, category: str) -> dict:
+    """Derive distinct non-color vars for every style (no uniform fallback)."""
+    radius = CATEGORY_RADIUS.get(category, "8px")
+    glow = "neon" if any(g in name for g in GLOW_STYLES) else "none"
+    font = "monospace" if any(m in name for m in MONO_STYLES) else "inherit"
+    shadow = SHADOW_STYLES.get(name, "none")
+    return {"radius": radius, "glow": glow, "shadow": shadow, "font": font}
 
 
 def parse_design_vars(raw: str) -> dict:
@@ -65,21 +95,19 @@ def main():
             if not category or category in seen:
                 continue
             seen.add(category)
-            defaults = STYLE_DEFAULTS.get(category, {"radius": "8px", "glow": "none", "shadow": "none", "font": "inherit"})
-            design_vars = parse_design_vars(row.get("Design System Variables") or "")
             zh, cat = style_label(category)
+            vars_map = infer_style_vars(category, cat)
+            # Prefer the CSV's own radius if it parsed a usable --border-radius.
+            design_vars = parse_design_vars(row.get("Design System Variables") or "")
+            if design_vars.get("borderradius") and design_vars["borderradius"].rstrip("px").isdigit():
+                vars_map["radius"] = design_vars["borderradius"]
             styles.append(
                 {
                     "id": f"s{len(styles) + 1}",
                     "name": category,
                     "zh": zh,
                     "category": cat,
-                    "vars": {
-                        "radius": design_vars.get("borderradius", defaults["radius"]),
-                        "glow": defaults["glow"],
-                        "shadow": defaults["shadow"],
-                        "font": defaults["font"],
-                    },
+                    "vars": vars_map,
                 }
             )
 

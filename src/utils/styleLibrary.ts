@@ -37,7 +37,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "软浮雕",
     category: "圆润",
     vars: {
-      radius: "14px",
+      radius: "16px",
       glow: "none",
       shadow: "soft",
       font: "inherit",
@@ -49,7 +49,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "毛玻璃",
     category: "圆润",
     vars: {
-      radius: "12px",
+      radius: "16px",
       glow: "none",
       shadow: "glass",
       font: "inherit",
@@ -73,7 +73,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "3D 拟真",
     category: "3D",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "deep",
       font: "inherit",
@@ -109,7 +109,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "无障碍",
     category: "极简",
     vars: {
-      radius: "4px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -121,7 +121,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "黏土感",
     category: "圆润",
     vars: {
-      radius: "20px",
+      radius: "16px",
       glow: "none",
       shadow: "soft",
       font: "inherit",
@@ -133,8 +133,8 @@ export const styleLibrary: StyleEntry[] = [
     zh: "极光辉",
     category: "未来",
     vars: {
-      radius: "12px",
-      glow: "aurora",
+      radius: "8px",
+      glow: "neon",
       shadow: "none",
       font: "inherit",
     },
@@ -157,7 +157,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "扁平",
     category: "极简",
     vars: {
-      radius: "4px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -169,7 +169,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "仿真拟物",
     category: "3D",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "deep",
       font: "inherit",
@@ -181,8 +181,8 @@ export const styleLibrary: StyleEntry[] = [
     zh: "液态玻璃",
     category: "圆润",
     vars: {
-      radius: "14px",
-      glow: "glass",
+      radius: "16px",
+      glow: "neon",
       shadow: "glass",
       font: "inherit",
     },
@@ -193,7 +193,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "动效驱动",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -205,7 +205,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "微交互",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -217,7 +217,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "包容设计",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -229,7 +229,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "零界面",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -241,7 +241,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "柔和软面",
     category: "圆润",
     vars: {
-      radius: "8px",
+      radius: "16px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -289,7 +289,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "简约直白",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -313,7 +313,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "交互演示",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -337,7 +337,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "叙事为主",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -349,7 +349,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "数据密集",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -361,7 +361,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "热力图",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -373,7 +373,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "高管看板",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -385,7 +385,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "实时监控",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -397,7 +397,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "下钻分析",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -409,7 +409,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "对比分析",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -421,7 +421,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "预测分析",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -433,7 +433,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "用户行为",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -445,7 +445,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "财务看板",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -457,7 +457,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "销售智能",
     category: "数据",
     vars: {
-      radius: "8px",
+      radius: "6px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -469,10 +469,10 @@ export const styleLibrary: StyleEntry[] = [
     zh: "新粗野",
     category: "方正",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -481,7 +481,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "便当盒布局",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -493,7 +493,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "Y2K 千禧",
     category: "复古",
     vars: {
-      radius: "8px",
+      radius: "2px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -506,9 +506,9 @@ export const styleLibrary: StyleEntry[] = [
     category: "未来",
     vars: {
       radius: "8px",
-      glow: "none",
+      glow: "neon",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -517,7 +517,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "自然亲生物",
     category: "自然",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -541,7 +541,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "孟菲斯",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -553,10 +553,10 @@ export const styleLibrary: StyleEntry[] = [
     zh: "蒸汽波",
     category: "复古",
     vars: {
-      radius: "8px",
-      glow: "none",
+      radius: "2px",
+      glow: "neon",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -565,7 +565,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "层次堆叠",
     category: "3D",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -577,7 +577,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "夸张极简",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -589,7 +589,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "动效字",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -601,7 +601,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "视差叙事",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -613,7 +613,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "瑞士 2.0",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -626,9 +626,9 @@ export const styleLibrary: StyleEntry[] = [
     category: "未来",
     vars: {
       radius: "8px",
-      glow: "none",
+      glow: "neon",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -637,10 +637,10 @@ export const styleLibrary: StyleEntry[] = [
     zh: "像素风",
     category: "复古",
     vars: {
-      radius: "8px",
+      radius: "2px",
       glow: "none",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -649,7 +649,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "便当网格",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -673,7 +673,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "电子墨水",
     category: "极简",
     vars: {
-      radius: "8px",
+      radius: "0px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -685,7 +685,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "Z 世代极繁",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -697,7 +697,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "仿生 2.0",
     category: "自然",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -709,7 +709,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "不修边幅",
     category: "复古",
     vars: {
-      radius: "8px",
+      radius: "2px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -721,7 +721,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "触感数字",
     category: "3D",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -733,7 +733,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "自然简约",
     category: "自然",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -745,7 +745,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "交互光标",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -769,7 +769,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "3D 商品",
     category: "3D",
     vars: {
-      radius: "8px",
+      radius: "14px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -782,7 +782,7 @@ export const styleLibrary: StyleEntry[] = [
     category: "未来",
     vars: {
       radius: "8px",
-      glow: "none",
+      glow: "neon",
       shadow: "none",
       font: "inherit",
     },
@@ -793,7 +793,7 @@ export const styleLibrary: StyleEntry[] = [
     zh: "编辑网格",
     category: "创意",
     vars: {
-      radius: "8px",
+      radius: "12px",
       glow: "none",
       shadow: "none",
       font: "inherit",
@@ -805,10 +805,10 @@ export const styleLibrary: StyleEntry[] = [
     zh: "RGB 分离",
     category: "复古",
     vars: {
-      radius: "8px",
-      glow: "none",
+      radius: "2px",
+      glow: "neon",
       shadow: "none",
-      font: "inherit",
+      font: "monospace",
     },
   },
   {
@@ -817,8 +817,8 @@ export const styleLibrary: StyleEntry[] = [
     zh: "复古胶片",
     category: "复古",
     vars: {
-      radius: "8px",
-      glow: "none",
+      radius: "2px",
+      glow: "neon",
       shadow: "none",
       font: "inherit",
     },
