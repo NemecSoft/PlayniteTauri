@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { api } from "./api/client";
+import { restoreLibraryTheme } from "./utils/themeApply";
+import { themeLibrary } from "./utils/themeLibrary";
 // Initialize i18next (imported for its side effect).
 import "./i18n/config";
 import "./styles/global.css";
@@ -77,6 +79,10 @@ try {
   // Migrate the legacy config.json theme to localStorage BEFORE React mounts,
   // so next-themes picks up the correct theme on first paint.
   await migrateLegacyTheme();
+
+  // Restore the user's previously chosen library palette (injected on :root)
+  // before first paint, if any.
+  restoreLibraryTheme(themeLibrary);
 
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
