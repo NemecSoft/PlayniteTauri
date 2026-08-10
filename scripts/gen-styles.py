@@ -61,6 +61,26 @@ SHADOW_STYLES = {
     "Retro-Futurism": "neon",
 }
 
+# Styles that cannot be realised with CSS variables (they require 3D/WebGL,
+# voice/AI, cursor tracking or a motion engine). Kept out of the library so the
+# picker only offers effects we actually implement (radius/glow/font/shadow).
+REMOVE_STYLES = {
+    "3D & Hyperrealism",
+    "Spatial UI (VisionOS)",
+    "3D Product Preview",
+    "Voice-First Multimodal",
+    "AI-Native UI",
+    "Dimensional Layering",
+    "Tactile Digital / Deformable UI",
+    "Interactive Cursor Design",
+    "Kinetic Typography",
+    "Motion-Driven",
+    "Interactive Product Demo",
+    "Micro-interactions",
+    "Zero Interface",
+    "Liquid Glass",
+}
+
 
 def infer_style_vars(name: str, category: str) -> dict:
     """Derive distinct non-color vars for every style (no uniform fallback)."""
@@ -95,6 +115,9 @@ def main():
             if not category or category in seen:
                 continue
             seen.add(category)
+            if category in REMOVE_STYLES:
+                print(f"skipped (not CSS-realizable): {category}")
+                continue
             zh, cat = style_label(category)
             vars_map = infer_style_vars(category, cat)
             # Prefer the CSV's own radius if it parsed a usable --border-radius.
