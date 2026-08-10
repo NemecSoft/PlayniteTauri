@@ -12,13 +12,20 @@ import type { StyleVars } from "./styleLibrary";
 const STORAGE_KEY = "app-theme";
 const STYLE_KEY = "app-style";
 
-/** Shadow presets (enum from styleLibrary) → concrete box-shadow. */
+/**
+ * Shadow presets (enum from styleLibrary) → concrete box-shadow.
+ * `soft` is a Neumorphism-style dual-sided shadow (highlight top-left, shade
+ * bottom-right) so surfaces read as softly extruded. Best paired with a
+ * near-single-colour palette (card ≈ background) for the classic soft UI.
+ */
 const SHADOW_MAP: Record<string, string> = {
   none: "none",
-  soft: "0 4px 16px rgba(0,0,0,0.18)",
+  soft:
+    "-6px -6px 14px rgba(255,255,255,0.28), 6px 6px 16px rgba(0,0,0,0.32), inset -1px -1px 2px rgba(255,255,255,0.22), inset 1px 1px 2px rgba(0,0,0,0.12)",
   hard: "4px 4px 0 rgba(0,0,0,0.28)",
   deep: "0 20px 60px rgba(0,0,0,0.4)",
-  glass: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+  glass:
+    "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
   neon: "0 0 12px var(--accent-soft), 0 0 24px var(--accent-soft)",
   aurora: "0 0 8px var(--accent-soft), 0 0 24px var(--accent-soft)",
 };

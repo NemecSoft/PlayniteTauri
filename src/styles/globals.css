@@ -79,12 +79,35 @@ body {
     var(--glow);
 }
 
-/* Default radius token so unmigrated components share the chosen style. */
+/* Default radius + shadow so surfaces (cards, panels, buttons, inputs) share
+   the chosen style's radius and Neumorphism-style shadow across the app. */
 .btn,
 .context-menu,
 .toast-container,
-.detail-page {
+.detail-page,
+.grid-card,
+.grid-card .cover,
+.context-menu-item,
+.field input,
+.field select,
+.field textarea,
+[class*="card"],
+[class*="modal"],
+[class*="panel"],
+[class*="tool-card"],
+[class*="video-card"],
+[class*="toast"] {
   border-radius: var(--radius);
+}
+.btn,
+.context-menu,
+.toast-container,
+.detail-page,
+[class*="card"],
+[class*="modal"],
+[class*="panel"],
+[class*="tool-card"],
+[class*="video-card"] {
   box-shadow: var(--shadow);
 }
 
