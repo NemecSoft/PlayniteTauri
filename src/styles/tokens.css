@@ -1,48 +1,14 @@
-/* tokens.css — semantic design tokens (shadcn naming), concrete hex values.
-   Palettes sourced from the ui-ux-pro-max design system (premium dark gaming,
-   luxury light, neon cyberpunk, chinese ink) and tuned for a game-library app.
+/* tokens.css — default semantic design tokens (shadcn naming), hex values.
+   These are the first-paint defaults; the 96-palette + 67-style library
+   (themeLibrary.ts / styleLibrary.ts) injects over :root at runtime.
 
-   Applied on :root (light default) and [data-theme="..."]. Legacy business
-   variables (--bg-base, --text-primary, --accent, ...) are defined here too so
-   un-migrated components (GridView/TopBar/Sidebar) follow the active theme. */
+   Legacy business variables (--bg-base, --text-primary, --accent, ...) are
+   defined here so un-migrated components (GridView/TopBar/Sidebar) follow the
+   active palette. */
 
-:root,
-[data-theme="light"] {
-  --background: #f7f7f9;
-  --foreground: #1c1c22;
-  --card: #ffffff;
-  --card-foreground: #1c1c22;
-  --primary: #6d5df6;
-  --primary-foreground: #ffffff;
-  --secondary: #ececf2;
-  --secondary-foreground: #1c1c22;
-  --muted: #efeff4;
-  --muted-foreground: #6e6e80;
-  --border: #e2e2ea;
-  --ring: #6d5df6;
-
-  /* Legacy business variables (light) */
-  --bg-base: #f7f7f9;
-  --bg-top: #efeff4;
-  --bg-sidebar: #f1f1f6;
-  --bg-panel: #ffffff;
-  --bg-item-hover: #ececf2;
-  --bg-item-active: #e5e5ec;
-  --bg-input: #ececf2;
-  --border-strong: #d0d0dc;
-  --text-primary: #1c1c22;
-  --text-secondary: #555566;
-  --text-dim: #8a8a99;
-  --accent: #6d5df6;
-  --accent-hover: #5a4de0;
-  --accent-soft: rgba(109, 93, 246, 0.12);
-  --success: #1e9e66;
-  --warning: #c99a2e;
-  --danger: #d13438;
-  --glow: none;
-}
-
-[data-theme="dark"] {
+/* Default theme = dark (game-library friendly). The 96-palette library
+   injects over :root at runtime; this is just the first-paint default. */
+:root {
   --background: #0e0e16;
   --foreground: #e6e7ee;
   --card: #15161f;
@@ -56,7 +22,7 @@
   --border: #262734;
   --ring: #6d5df6;
 
-  /* Legacy business variables (dark) */
+  /* Legacy business variables (dark default) */
   --bg-base: #0e0e16;
   --bg-top: #15161f;
   --bg-sidebar: #12131b;
@@ -74,77 +40,5 @@
   --success: #2fbf7f;
   --warning: #e0a63a;
   --danger: #e5484d;
-  --glow: none;
-}
-
-/* Cyberpunk: neon magenta on near-black indigo (ui-ux-pro-max OTT/pink). */
-[data-theme="cyberpunk"] {
-  --background: #0a0a14;
-  --foreground: #eaf6f8;
-  --card: #121222;
-  --card-foreground: #eaf6f8;
-  --primary: #e11d48;
-  --primary-foreground: #ffffff;
-  --secondary: #1a2338;
-  --secondary-foreground: #eaf6f8;
-  --muted: #14151f;
-  --muted-foreground: #7f90a8;
-  --border: #2a2f4a;
-  --ring: #e11d48;
-
-  /* Legacy business variables (cyberpunk) */
-  --bg-base: #0a0a14;
-  --bg-top: #101020;
-  --bg-sidebar: #0d0d1a;
-  --bg-panel: #121222;
-  --bg-item-hover: #1a1a30;
-  --bg-item-active: #202040;
-  --bg-input: #0f0f1c;
-  --border-strong: #3a3a5a;
-  --text-primary: #eaf6f8;
-  --text-secondary: #8fa3b8;
-  --text-dim: #6a7a92;
-  --accent: #e11d48;
-  --accent-hover: #ff2e56;
-  --accent-soft: rgba(225, 29, 72, 0.18);
-  --success: #22e0e8;
-  --warning: #f0b429;
-  --danger: #ff4d6d;
-  --glow: 0 0 6px rgba(34, 224, 232, 0.35);
-}
-
-/* Chinese style: cinnabar red + ink. */
-[data-theme="chinese"] {
-  --background: #171412;
-  --foreground: #efe5d8;
-  --card: #201b17;
-  --card-foreground: #efe5d8;
-  --primary: #c23a34;
-  --primary-foreground: #ffffff;
-  --secondary: #2b241f;
-  --secondary-foreground: #efe5d8;
-  --muted: #241f1b;
-  --muted-foreground: #b8a896;
-  --border: #3a312a;
-  --ring: #c23a34;
-
-  /* Legacy business variables (chinese) */
-  --bg-base: #171412;
-  --bg-top: #201b17;
-  --bg-sidebar: #1b1714;
-  --bg-panel: #201b17;
-  --bg-item-hover: #2b241f;
-  --bg-item-active: #332a24;
-  --bg-input: #14110f;
-  --border-strong: #4a3f35;
-  --text-primary: #efe5d8;
-  --text-secondary: #c2b4a2;
-  --text-dim: #9a8c7c;
-  --accent: #c23a34;
-  --accent-hover: #d64f46;
-  --accent-soft: rgba(194, 58, 52, 0.16);
-  --success: #4a9d5a;
-  --warning: #c9a227;
-  --danger: #c0392b;
   --glow: none;
 }

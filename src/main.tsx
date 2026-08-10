@@ -2,51 +2,15 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { api } from "./api/client";
-import { restoreLibraryTheme } from "./utils/themeApply";
+import { restoreLibraryTheme, restoreStyle } from "./utils/themeApply";
 import { themeLibrary } from "./utils/themeLibrary";
+import { styleLibrary } from "./utils/styleLibrary";
 // Initialize i18next (imported for its side effect).
 import "./i18n/config";
 import "./styles/global.css";
 // New shadcn/Tailwind token layer (semantic CSS variables + theme mapping).
 // Loaded alongside the legacy global.css during migration.
 import "./styles/globals.css";
-
-/**
- * One-time migration: legacy config.json `theme` value → next-themes
- * localStorage `theme` key.
- *
- * Must run BEFORE React mounts (and before next-themes reads localStorage), so
- * the new token theme is applied from the very first frame. Reads the still
- * present `theme` field from the backend AppSettings, maps it to the new 4-theme
- * vocabulary, and writes it to localStorage. Runs once — afterwards the
- * `theme` key exists and this is a no-op.
- */
-const LEGACY_THEME_MAP: Record<string, string> = {
-  cyberpunk: "cyberpunk",
-  Cyberpunk: "cyberpunk",
-  chinese: "chinese",
-  Chinese: "chinese",
-  Dark: "dark",
-  Light: "light",
-  Default: "dark",
-};
-
-async function migrateLegacyTheme(): Promise<void> {
-  try {
-    const STORAGE_KEY = "theme";
-    if (localStorage.getItem(STORAGE_KEY) !== null) return; // already migrated
-    const settings = await api.getSettings();
-    const legacy = (settings as any).theme as string | undefined;
-    if (!legacy) {
-      localStorage.setItem(STORAGE_KEY, "dark");
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, LEGACY_THEME_MAP[legacy] || "dark");
-  } catch {
-    localStorage.setItem("theme", "dark");
-  }
-}
 
 // TanStack Query client (part of the upgraded tech stack).
 const queryClient = new QueryClient({
@@ -76,13 +40,10 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 
 try {
-  // Migrate the legacy config.json theme to localStorage BEFORE React mounts,
-  // so next-themes picks up the correct theme on first paint.
-  await migrateLegacyTheme();
-
-  // Restore the user's previously chosen library palette (injected on :root)
-  // before first paint, if any.
+  // Restore the user's previously chosen library palette + style before first
+  // paint, if any (both are injected on :root).
   restoreLibraryTheme(themeLibrary);
+  restoreStyle(styleLibrary);
 
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>

@@ -16,7 +16,6 @@ import { useGamesStore } from "./stores/gamesStore";
 import { useLibraryStore } from "./stores/libraryStore";
 import { useAuthStore } from "./stores/authStore";
 import { useUIStore } from "./stores/uiStore";
-import { ThemeProvider } from "./providers/ThemeProvider";
 import { useI18n, type LanguageCode } from "./i18n";
 
 export default function App() {
@@ -39,8 +38,8 @@ export default function App() {
     loadAuth();
   }, [loadSettings, loadPlatforms, loadGames, loadStats, loadAuth]);
 
-  // Theme is now managed entirely by next-themes (ThemeProvider): it sets
-  // `data-theme` on <html> and persists to localStorage. No legacy applyTheme.
+  // Theme is fully driven by the 96-palette + 67-style library (injected on
+  // :root by themeApply.ts). No next-themes / legacy applyTheme.
 
   // Apply the user-selected font instantly (no restart). Setting the inline
   // CSS variable overrides each theme's default --font-ui.
@@ -64,25 +63,14 @@ export default function App() {
   // Show the startup announcement is managed inside AppShell (it needs the
   // announcement modal to live inside HashRouter). Skip when needs login.
 
-  // Wrap the whole app in the next-themes ThemeProvider. It manages the
-  // `data-theme` attribute / localStorage for the new shadcn token system.
-  // Note: the legacy applyTheme(theme) below still runs for now (it drives the
-  // old 12-theme CSS during migration); it will be removed in M5 once the new
-  // token themes fully take over.
   if (needsLogin) {
-    return (
-      <ThemeProvider>
-        <LoginScreen onLogin={() => undefined} />
-      </ThemeProvider>
-    );
+    return <LoginScreen onLogin={() => undefined} />;
   }
 
   return (
-    <ThemeProvider>
-      <HashRouter>
-        <AppShell />
-      </HashRouter>
-    </ThemeProvider>
+    <HashRouter>
+      <AppShell />
+    </HashRouter>
   );
 }
 

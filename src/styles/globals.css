@@ -47,3 +47,33 @@ body,
   --color-primary-text: var(--text-primary);
   --color-secondary-text: var(--text-secondary);
 }
+
+/* Style-driven design variables (injected by applyStyleVars on :root).
+   Defaults keep the app's existing look when no style is selected. */
+:root {
+  --radius: 10px;
+  --glow: none;
+  --shadow: none;
+}
+
+/* Let the chosen style's font apply app-wide (falls back to inherited). */
+body {
+  font-family: var(--font-ui, inherit);
+}
+
+/* Glow styles (neon/aurora/glass) layer on top of the readable halo for
+   emphasized text — keeps contrast while adding the style's ambience. */
+.text-emphasis {
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 1px 1px rgba(0, 0, 0, 0.85),
+    var(--glow);
+}
+
+/* Default radius token so unmigrated components share the chosen style. */
+.btn,
+.context-menu,
+.toast-container,
+.detail-page {
+  border-radius: var(--radius);
+}

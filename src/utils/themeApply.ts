@@ -7,8 +7,29 @@
 // or not (legacy --bg-base/--text-primary) — follows the chosen palette.
 
 import type { ThemePaletteTokens } from "./themeLibrary";
+import type { StyleVars } from "./styleLibrary";
 
 const STORAGE_KEY = "app-theme";
+const STYLE_KEY = "app-style";
+
+/** Shadow presets (enum from styleLibrary) → concrete box-shadow. */
+const SHADOW_MAP: Record<string, string> = {
+  none: "none",
+  soft: "0 4px 16px rgba(0,0,0,0.18)",
+  hard: "4px 4px 0 rgba(0,0,0,0.28)",
+  deep: "0 20px 60px rgba(0,0,0,0.4)",
+  glass: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+  neon: "0 0 12px var(--accent-soft), 0 0 24px var(--accent-soft)",
+  aurora: "0 0 8px var(--accent-soft), 0 0 24px var(--accent-soft)",
+};
+
+/** Glow presets (enum) → concrete text-shadow. */
+const GLOW_MAP: Record<string, string> = {
+  none: "none",
+  neon: "0 0 6px var(--accent-soft), 0 0 12px var(--accent-soft)",
+  aurora: "0 0 8px var(--accent-soft), 0 0 20px var(--accent-soft)",
+  glass: "0 1px 2px rgba(255,255,255,0.3)",
+};
 
 /** Map a ThemePaletteTokens key to the CSS variable name it sets. */
 const KEY_TO_VAR: Record<keyof ThemePaletteTokens, string> = {
@@ -78,4 +99,32 @@ export function restoreLibraryTheme(library: {
   if (!id) return;
   const entry = library.find((t) => t.id === id);
   if (entry) applyPaletteTheme(entry.palette);
+}
+
+/* ---- Style application (non-color design variables) ---- */
+
+/** Apply a style's non-color variables onto :root. */
+export function applyStyleVars(vars: StyleVars): void {
+  const root = document.documentElement;
+  root.style.setProperty("--radius", vars.radius);
+  root.style.setProperty("--glow", GLOW_MAP[vars.glow] || "none");
+  root.style.setProperty("--shadow", SHADOW_MAP[vars.shadow] || "none");
+  root.style.setProperty("--font-ui", vars.font);
+}
+
+export function getStoredStyleId(): string | null {
+  return localStorage.getItem(STYLE_KEY);
+}
+
+export function storeStyleId(id: string | null): void {
+  if (id) localStorage.setItem(STYLE_KEY, id);
+  else localStorage.removeItem(STYLE_KEY);
+}
+
+/** Restore the previously chosen style on startup. */
+export function restoreStyle(styles: { id: string; vars: StyleVars }[]): void {
+  const id = getStoredStyleId();
+  if (!id) return;
+  const entry = styles.find((s) => s.id === id);
+  if (entry) applyStyleVars(entry.vars);
 }
