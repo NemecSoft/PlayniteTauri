@@ -18,8 +18,7 @@ import {
   Copy,
   X,
   Settings as SettingsIcon,
-  Tags as TagsIcon,
-  RefreshCw as RefreshIcon,
+  Info,
   Home,
   Clapperboard,
   Wrench,
@@ -27,9 +26,9 @@ import {
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
 import { useAuthStore } from "../stores/authStore";
-import { useGamesStore } from "../stores/gamesStore";
 import { useUIStore, type ActiveTab } from "../stores/uiStore";
 import { resolveEditionName } from "../utils/edition";
+import AboutModal from "./AboutModal";
 
 const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
   { key: "home", labelKey: "tab_home", icon: Home },
@@ -40,7 +39,6 @@ const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
 export default function TopBar() {
   const { t } = useI18n();
   const currentUser = useAuthStore((s) => s.currentUser);
-  const loadGames = useGamesStore((s) => s.load);
 
   const menuOpen = useUIStore((s) => s.menuOpen);
   const toggleMenu = useUIStore((s) => s.toggleMenu);
@@ -50,7 +48,7 @@ export default function TopBar() {
   const setTab = useUIStore((s) => s.setTab);
 
   const menuRef = useRef<HTMLDivElement>(null);
-  const [regenBusy, setRegenBusy] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // Window state for the maximize/restore & fullscreen toggle buttons.
   const [isMaximized, setIsMaximized] = useState(false);
@@ -141,25 +139,6 @@ export default function TopBar() {
     titleText = PREFIX + titleText;
   }
 
-  async function regenerateTags() {
-    if (regenBusy) return;
-    setRegenBusy(true);
-    closeMenu();
-    try {
-      const n = await api.regenerateTags();
-      await loadGames();
-      await api.showNotification(
-        t("titlebar_menu_regen_tags_done"),
-        t("titlebar_menu_regen_tags_done_body", { count: n })
-      );
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      await api.showNotification(t("titlebar_menu_regen_tags_failed"), msg);
-    } finally {
-      setRegenBusy(false);
-    }
-  }
-
   return (
     <header className="topbar" onDoubleClick={onDoubleClick}>
       {/* Far left: settings / app menu (circle 2 in the reference image) */}
@@ -187,27 +166,17 @@ export default function TopBar() {
             </button>
             <button
               className="titlebar-menu-item"
-              disabled={regenBusy}
-              onClick={regenerateTags}
-              title={t("titlebar_menu_regen_tags_title")}
-            >
-              <TagsIcon size={14} />
-              <span>{t("titlebar_menu_regen_tags")}</span>
-            </button>
-            <button
-              className="titlebar-menu-item"
-              disabled={regenBusy}
-              onClick={async () => {
+              onClick={() => {
+                setAboutOpen(true);
                 closeMenu();
-                await loadGames();
               }}
-              title={t("titlebar_menu_reload_title")}
             >
-              <RefreshIcon size={14} />
-              <span>{t("titlebar_menu_reload")}</span>
+              <Info size={14} />
+              <span>{t("titlebar_menu_about")}</span>
             </button>
           </div>
         )}
+        {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}
       </div>
 
       {/* Middle: top-level tabs */}
