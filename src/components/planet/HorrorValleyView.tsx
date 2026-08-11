@@ -7,7 +7,10 @@ import { useNavigate } from "react-router-dom";
 import HorrorValleyTerrain from "./HorrorValleyTerrain";
 import HorrorValleyVehicle from "./HorrorValleyVehicle";
 import HorrorValleyCaves from "./HorrorValleyCaves";
+import HorrorValleyTrees from "./HorrorValleyTrees";
 import { generateValleyHeightMap } from "../../utils/planet/valleyTerrain";
+import { generateValleyRoads } from "../../utils/planet/valleyRoads";
+import { generateValleyTrees } from "../../utils/planet/valleyTrees";
 import { layoutCaves } from "../../utils/planet/valleyLayout";
 import { useI18n } from "../../i18n";
 import type { Game } from "../../types/models";
@@ -23,11 +26,25 @@ export default function HorrorValleyView({ games, onBack }: Props) {
   // 车辆当前位置（由 Vehicle 每帧更新），传给山洞判断触发。
   const [vehiclePos, setVehiclePos] = useState<[number, number, number]>([0, 0, 30]);
 
-  // 高度图：地形和车辆共用同一份，保证视觉和物理一致。
-  const heightMap = useMemo(() => generateValleyHeightMap(128, 100), []);
+  // 先确定道路，再把道路传给高度图生成器，这样地形在道路带会自动抹平。
+  // 道路、树、山洞用同一个种子稳定生成，所以每次进入恐怖谷都是同一张地图。
+  const roads = useMemo(() => generateValleyRoads(100, 3), []);
+  // 高度图：地形和车辆共用同一份，道路带已经压平，物理车辆能平稳开。
+  const heightMap = useMemo(() => generateValleyHeightMap(128, 100, roads), [roads]);
   // 山洞布局：每个游戏一个山洞。
   const caves = useMemo(() => layoutCaves(games), [games]);
   const gamesById = useMemo(() => new Map(games.map((g) => [g.id, g])), [games]);
+  // 沿道路两侧散布一些树，避开道路和山洞。
+  const trees = useMemo(
+    () =>
+      generateValleyTrees({
+        count: 120,
+        half: 100,
+        roads,
+        avoidPoints: caves.map((c) => ({ x: c.x, z: c.z, radius: 4 })),
+      }),
+    [roads, caves],
+  );
 
   const enterCave = (game: Game) => navigate(`/game/${game.id}`);
 
@@ -41,6 +58,7 @@ export default function HorrorValleyView({ games, onBack }: Props) {
         <ambientLight intensity={0.5} />
         <directionalLight position={[30, 40, 20]} intensity={1} />
         <HorrorValleyTerrain heightMap={heightMap} />
+        <HorrorValleyTrees trees={trees} heightMap={heightMap} />
         <HorrorValleyVehicle heightMap={heightMap} onPosition={setVehiclePos} />
         <HorrorValleyCaves
           caves={caves}
