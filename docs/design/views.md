@@ -16,13 +16,23 @@
 - 视频播放：`videos.type === "youtube"` 时转换为 `https://www.youtube.com/embed/<id>`
   内嵌 iframe；`file` / `url` 类型作为外链卡片展示。
 
-## 三种视图
+## 四种视图
 
 | 视图 | 组件 | 说明 |
 | --- | --- | --- |
 | 网格视图 | `GridView` | 封面卡片，支持收藏角标、已安装圆点、双击启动、右键菜单 |
 | 列表视图 | `ListView` | 表格，可排序（名称/平台/时长/最近游玩），状态图标 |
 | 详情视图 | `DetailsView` | 展示首个选中游戏的完整元数据 + 开始游戏按钮 |
+| 星球视图 | `PlanetView`（3D） | 把游戏按 7 个分区渲染到自转 3D 星球，悬停放大封面、点击进详情 |
+
+## 星球视图（`PlanetView`）
+
+- 基于 `three.js` + `@react-three/fiber` + `@react-three/drei`，工具栏切换。
+- 分区归类：`src/utils/planet/zoneMapper.ts`（固定 7 类 + genre/名称关键词映射）。
+- 球面分布：`src/utils/planet/fibonacciSphere.ts`（Fibonacci 均匀分布，按纬度带分区）。
+- 封面懒加载：只有悬停某游戏点时才 `imageUrlAsync` 加载封面纹理，避免 1000+ 封面拖垮主线程。
+- 代码分割：`PlanetView` 用 `React.lazy` 懒加载，three.js 只在切到星球视图时按需加载。
+- WebGL 不可用时自动降级，提示用户使用网格视图。
 
 ## 分组与排序（`src/utils/selectors.ts`）
 
