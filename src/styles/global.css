@@ -1153,6 +1153,35 @@ textarea {
   flex-shrink: 0;
 }
 
+/* 视图切换按钮（网格 / 星球） */
+.view-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted, inherit);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.view-btn:hover {
+  background: var(--surface-hover, rgba(128, 128, 128, 0.15));
+}
+.view-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+}
+
 .toolbar .spacer {
   flex: 1;
 }

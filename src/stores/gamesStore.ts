@@ -6,7 +6,7 @@ import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
 import type { Game } from "../types/models";
 
-export type ViewMode = "grid" | "list" | "details";
+export type ViewMode = "grid" | "list" | "details" | "planet";
 export type SortOrder = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate";
 export type SortDirection = "ascending" | "descending";
 

@@ -6,12 +6,15 @@
 // so the user can start typing a pinyin search at any time.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { LayoutGrid, Globe } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 
 export default function Toolbar() {
   const searchQuery = useGamesStore((s) => s.searchQuery);
   const setSearch = useGamesStore((s) => s.setSearch);
+  const viewMode = useGamesStore((s) => s.viewMode);
+  const setViewMode = useGamesStore((s) => s.setViewMode);
   const loading = useGamesStore((s) => s.loading);
   const games = useGamesStore((s) => s.games);
   const { t } = useI18n();
@@ -84,6 +87,26 @@ export default function Toolbar() {
           value={searchQuery}
           onChange={(e) => setSearch(e.target.value)}
         />
+      </div>
+      <div className="view-switcher">
+        <button
+          type="button"
+          className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+          title={t("view_grid")}
+          onClick={() => setViewMode("grid")}
+        >
+          <LayoutGrid size={15} />
+          <span>{t("view_grid")}</span>
+        </button>
+        <button
+          type="button"
+          className={`view-btn ${viewMode === "planet" ? "active" : ""}`}
+          title={t("view_planet")}
+          onClick={() => setViewMode("planet")}
+        >
+          <Globe size={15} />
+          <span>{t("view_planet")}</span>
+        </button>
       </div>
     </div>
   );
