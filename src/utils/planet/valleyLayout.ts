@@ -2,7 +2,7 @@
 // 思路：用"从中心向外一圈一圈铺"的简化方案，让山洞围成一圈一圈的，中间留一条
 // 进出的通道。这样开车沿路绕圈，就能一路看到各个游戏的山洞，彼此不挤在一起。
 
-import type { Game } from "../types/models";
+import type { Game } from "../../types/models";
 
 export interface CaveSpot {
   gameId: string;
