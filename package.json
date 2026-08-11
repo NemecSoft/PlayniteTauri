@@ -15,6 +15,8 @@
     "build:admin": "tsc -p tsconfig.admin.json && vite build --config vite.admin.config.ts"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-virtual": "^3.14.9",
@@ -35,6 +37,7 @@
     "react-router-dom": "^6.26.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
+    "three": "^0.185.1",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
