@@ -51,6 +51,7 @@
   "planet_zone_sports": "Sports Arena",
   "planet_zone_other": "Uncategorized",
   "planet_empty": "No games to show yet",
+  "planet_loading": "Loading planet…",
   "planet_webgl_unsupported": "3D view is not supported here. Please use Grid View.",
   "toolbar_addGames": "Add Games",
   "toolbar_settings": "Settings",

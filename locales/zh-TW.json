@@ -51,6 +51,7 @@
   "planet_zone_sports": "體育場",
   "planet_zone_other": "未分類",
   "planet_empty": "還沒有可展示的遊戲",
+  "planet_loading": "正在載入星球…",
   "planet_webgl_unsupported": "目前環境不支援 3D 視圖，請使用網格視圖",
   "toolbar_addGames": "新增遊戲",
   "toolbar_settings": "設定",
