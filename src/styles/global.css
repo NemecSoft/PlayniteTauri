@@ -1201,6 +1201,13 @@ textarea {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   pointer-events: none;
 }
+.planet-zone-label.clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.planet-zone-label.clickable:hover {
+  filter: brightness(1.15);
+}
 .planet-empty,
 .planet-fallback {
   display: grid;
@@ -1208,6 +1215,35 @@ textarea {
   place-items: center;
   color: var(--text-muted, inherit);
   font-size: 14px;
+}
+
+/* 恐怖谷地图 */
+.valley-back-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+.valley-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 12px;
+  pointer-events: none;
 }
 
 .toolbar .spacer {

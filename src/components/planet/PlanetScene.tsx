@@ -14,6 +14,8 @@ interface Props {
   zones: Zone[];
   /** WebGL 初始化失败时回调，让上层显示降级提示。 */
   onWebGLFailed?: () => void;
+  /** 点击某个分区时回调（恐怖谷进入地图）。 */
+  onEnterZone?: (zoneId: ZoneId) => void;
 }
 
 const RADIUS = 5;
@@ -29,7 +31,7 @@ const ZONE_COLORS: Record<ZoneId, string> = {
   other: "#7f8c8d",
 };
 
-export default function PlanetScene({ zones, onWebGLFailed }: Props) {
+export default function PlanetScene({ zones, onWebGLFailed, onEnterZone }: Props) {
   // 把 0~π 的纬度按分区数均分，每个分区占一段，段与段之间留一点空隙，
   // 看起来像"大陆板块"。空隙用 padding 控制。
   const zonesWithBands = useMemo(() => {
@@ -69,7 +71,13 @@ export default function PlanetScene({ zones, onWebGLFailed }: Props) {
       />
       <PlanetMesh radius={RADIUS} />
       {zonesWithBands.map((z) => (
-        <ContinentBand key={z.id} zone={z} radius={RADIUS} color={ZONE_COLORS[z.id]} />
+        <ContinentBand
+          key={z.id}
+          zone={z}
+          radius={RADIUS}
+          color={ZONE_COLORS[z.id]}
+          onEnter={onEnterZone ? () => onEnterZone(z.id) : undefined}
+        />
       ))}
     </Canvas>
   );

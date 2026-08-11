@@ -13,9 +13,11 @@ interface Props {
   zone: Zone;
   radius: number;
   color: string;
+  /** 点击分区时回调（目前只恐怖谷能进入地图）。 */
+  onEnter?: (zoneId: Zone["id"]) => void;
 }
 
-export default function ContinentBand({ zone, radius, color }: Props) {
+export default function ContinentBand({ zone, radius, color, onEnter }: Props) {
   const { t } = useI18n();
 
   // 每个游戏一个球面坐标，铺在本分区对应的纬度带内。半径略大于星球本体，
@@ -38,7 +40,12 @@ export default function ContinentBand({ zone, radius, color }: Props) {
     <group>
       {zone.games.length > 0 && (
         <Html position={labelPos} center distanceFactor={14}>
-          <div className="planet-zone-label">{t(zone.labelKey)}</div>
+          <div
+            className={`planet-zone-label ${onEnter ? "clickable" : ""}`}
+            onClick={() => onEnter?.(zone.id)}
+          >
+            {t(zone.labelKey)}
+          </div>
         </Html>
       )}
       {zone.games.map((g, i) => (
