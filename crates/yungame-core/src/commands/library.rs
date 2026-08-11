@@ -1,56 +1,8 @@
-//! Library import & statistics commands.
+//! Library statistics commands.
 
-use crate::models::{LibraryStats, PlatformCount, ScannedGame};
+use crate::models::{LibraryStats, PlatformCount};
 use crate::AppState;
 use tauri::State;
-
-#[tauri::command]
-pub fn scan_directory_command(
-    _state: State<AppState>,
-    root: String,
-    depth: Option<u32>,
-) -> crate::Result<Vec<ScannedGame>> {
-    Ok(crate::library::scan_directory(&root, depth.unwrap_or(2)))
-}
-
-#[tauri::command]
-pub fn import_scanned_games(
-    state: State<AppState>,
-    scanned: Vec<ScannedGame>,
-) -> crate::Result<usize> {
-    let db = state.db.lock().unwrap();
-    Ok(crate::library::import_games(&db, scanned)?)
-}
-
-#[tauri::command]
-pub fn scan_steam_command(_state: State<AppState>) -> crate::Result<Vec<ScannedGame>> {
-    let dirs = crate::library::scan_steam_library();
-    let mut games = Vec::new();
-    for dir in dirs {
-        if let Some((path, _wd)) = crate::process::find_game_executable(&dir) {
-            let name = path
-                .file_stem()
-                .map(|s| s.to_string_lossy().to_string())
-                .unwrap_or_else(|| "Unknown".into());
-            games.push(ScannedGame {
-                path: path.to_string_lossy().to_string(),
-                name,
-                install_directory: dir,
-                is_installed: true,
-            });
-        }
-    }
-    Ok(games)
-}
-
-#[tauri::command]
-pub fn import_steam_games(
-    state: State<AppState>,
-    games: Vec<ScannedGame>,
-) -> crate::Result<usize> {
-    let db = state.db.lock().unwrap();
-    Ok(crate::library::import_games(&db, games)?)
-}
 
 /// Computes library statistics across all games.
 #[tauri::command]

@@ -82,6 +82,20 @@ REMOVE_STYLES = {
 }
 
 
+# Effect feature tag by style name — drives strong style-specific CSS in
+# globals.css via `:root[data-fx="..."]`. Kept stable so re-running the
+# generator preserves the curated visual identity for signature styles.
+FX_STYLES = {
+    "Neumorphism": "soft",
+    "Glassmorphism": "glass",
+    "Brutalism": "brutal",
+    "Cyberpunk UI": "cyber",
+    "HUD / Sci-Fi FUI": "hud",
+    "Pixel Art": "pixel",
+    "Retro-Futurism": "retro",
+    "Vaporwave": "retro",
+}
+
 def infer_style_vars(name: str, category: str) -> dict:
     """Derive distinct non-color vars for every style (no uniform fallback)."""
     radius = CATEGORY_RADIUS.get(category, "8px")
@@ -89,7 +103,14 @@ def infer_style_vars(name: str, category: str) -> dict:
     font = "monospace" if any(m in name for m in MONO_STYLES) else "inherit"
     shadow = SHADOW_STYLES.get(name, "none")
     blur = "12px" if name == "Glassmorphism" or name == "Liquid Glass" else "0px"
-    return {"radius": radius, "glow": glow, "shadow": shadow, "font": font, "blur": blur}
+    return {
+        "radius": radius,
+        "glow": glow,
+        "shadow": shadow,
+        "font": font,
+        "blur": blur,
+        "fx": FX_STYLES.get(name, ""),
+    }
 
 
 def parse_design_vars(raw: str) -> dict:
@@ -147,6 +168,7 @@ def main():
         "  shadow: string;",
         "  font: string;",
         "  blur: string;",
+        "  fx?: string;",
         "}",
         "",
         "export interface StyleEntry {",
@@ -184,11 +206,26 @@ def main():
     lines.append('      shadow: "glass",')
     lines.append('      font: "inherit",')
     lines.append('      blur: "16px",')
+    lines.append('      fx: "apple",')
     lines.append("    },")
     lines.append("  },")
 
     lines.append("];")
     lines.append("")
+
+    # Guard: styleLibrary.ts is now a hand-curated set of 7 signature styles
+    # (Apple / Neumorphism / Glassmorphism / Brutalism / Cyberpunk / Pixel /
+    # Retro-Futurism). Refuse to overwrite it with the 67 CSV-derived styles so
+    # the curated set survives accidental re-runs of this generator.
+    if os.path.exists(OUT):
+        with open(OUT, encoding="utf-8") as f:
+            cur = f.read()
+        if "id: \"apple\"" in cur and "复古未来 / 蒸汽波" in cur and len(cur.split("id:")) < 12:
+            print(
+                "SKIP: styleLibrary.ts is the hand-curated 7-style set. "
+                "This generator is retired — refusing to overwrite it."
+            )
+            return
 
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

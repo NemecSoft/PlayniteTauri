@@ -6,9 +6,10 @@
 // additionally load lazily via IntersectionObserver (useLazyImage), so neither
 // the IPC bridge nor layout is flooded at startup.
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGamesStore } from "../../stores/gamesStore";
+import { useScrollStore } from "../../stores/scrollStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Group } from "../../utils/selectors";
 import type { Game } from "../../types/models";
@@ -34,13 +35,38 @@ export default function GridView({ groups }: Props) {
 
   const [menu, setMenu] = useState<{ game: Game; x: number; y: number } | null>(null);
 
-  const openDetails = (game: Game) => navigate(`/game/${game.id}`);
+  const saveGridScroll = useScrollStore((s) => s.saveGridScroll);
+  const takeGridScroll = useScrollStore((s) => s.takeGridScroll);
 
-  const { scrollRef, cols, totalSize, items, rowStartIndex } = useVirtualGrid({
-    groups,
-    cardWidth,
-    cardGap,
-  });
+  // 进详情页之前，先把当前的滚动位置记下来；等用户从详情页返回时再恢复，
+  // 这样就不会一回来就跳到最顶上。
+  const openDetails = (game: Game) => {
+    const top = scrollRef.current?.scrollTop ?? 0;
+    saveGridScroll(top);
+    navigate(`/game/${game.id}`);
+  };
+
+  const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex } =
+    useVirtualGrid({ groups, cardWidth, cardGap });
+
+  // 等虚拟列表准备好之后，把记下来的滚动位置恢复回去。
+  // 这里用 useLayoutEffect + virtualizer.scrollToOffset()（而不是直接改 scrollTop）
+  // 是为了让虚拟列表在同一帧里就切换到该显示的那几行，顶部不会闪一下。
+  // restoredRef 用来防止 totalSize 在挂载时变好几次而重复恢复。
+  const restoredRef = useRef(false);
+  useLayoutEffect(() => {
+    if (restoredRef.current) return;
+    if (totalSize <= 0) return;
+    const saved = takeGridScroll();
+    if (saved == null || saved <= 0) return;
+    restoredRef.current = true;
+    requestAnimationFrame(() => {
+      const el = scrollRef.current;
+      if (el) virtualizer.scrollToOffset(saved);
+    });
+    // takeGridScroll 这个函数是稳定的；真正等的是 totalSize（列表准备好了没）。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalSize]);
 
   const gap = Math.max(0, Math.min(20, cardGap ?? 8));
 

@@ -36,7 +36,6 @@ export const zhTW = {
   sidebar_categories: "分類",
   sidebar_genres: "類型",
   sidebar_developers: "開發商",
-  sidebar_scanLibrary: "掃描遊戲庫",
   sidebar_handle_hint: "把滑鼠移到此處依標籤挑選遊戲",
   sidebar_tagSearch: "篩選標籤...",
 
@@ -60,19 +59,6 @@ export const zhTW = {
   group_favorites: "收藏",
   group_other: "其他",
 
-  // --- Import wizard ---
-  import_title: "新增遊戲",
-  import_scanFolder: "掃描資料夾",
-  import_scanSteam: "掃描 Steam 遊戲庫",
-  import_scanning: "正在掃描...",
-  import_scanningSteam: "正在掃描 Steam 遊戲庫...",
-  import_importing: "正在匯入 {count} 個遊戲...",
-  import_imported: "已匯入 {count} 個遊戲。",
-  import_found: "找到 {count} 個遊戲。請選擇要匯入的項目：",
-  import_scanHint: "掃描資料夾或你的 Steam 遊戲庫以尋找遊戲。",
-  import_importBtn: "匯入 ({count})",
-  import_cancel: "取消",
-
   // --- News (recently added) ---
   news_title: "最近新增",
   news_empty: "尚未新增任何遊戲。",
@@ -81,8 +67,7 @@ export const zhTW = {
   empty_noMatch: "沒有符合篩選條件的遊戲",
   empty_libraryEmpty: "你的遊戲庫是空的",
   empty_noMatchHint: "嘗試清除篩選條件以查看所有遊戲。",
-  empty_libraryEmptyHint: "掃描資料夾或你的 Steam 遊戲庫開始使用。",
-  empty_addGames: "新增遊戲",
+  empty_libraryEmptyHint: "遊戲由管理端新增，請聯絡管理員或於管理端中新增遊戲。",
 
   // --- Details view ---
   details_favorite: "收藏",

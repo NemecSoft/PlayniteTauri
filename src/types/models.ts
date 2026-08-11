@@ -193,13 +193,6 @@ export interface LibraryPluginInfo {
   enabled: boolean;
 }
 
-export interface ScannedGame {
-  path: string;
-  name: string;
-  installDirectory: string;
-  isInstalled: boolean;
-}
-
 export interface RunningGame {
   gameId: string;
   gameName: string;

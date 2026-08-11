@@ -1,16 +1,14 @@
-// Local-image URL helpers.
+// 本地图片地址的处理工具。
 //
-// `cover_image` on a game may be either:
-//   - a remote HTTP(S) URL — passed through unchanged, or
-//   - a local absolute file path (CoverImages / library/images).
+// 游戏里的 `cover_image` 可能是两种情况：
+//   - 网上的 http(s) 地址——原样用，不用处理；
+//   - 本地文件的绝对路径（在 CoverImages 或 library/images 目录里）。
 //
-// Tauri 2's asset protocol (`convertFileSrc`) is unreliable for absolute
-// filesystem paths on Windows (scope glob matching differences across patch
-// versions). The reliable approach is to load local images via the
-// `read_images_batch` backend command, which returns raw bytes + MIME type
-// for many paths in a single IPC call. We turn the bytes into `blob:` URLs on
-// the frontend and cache them (LRU) so each file is only read once and the
-// memory footprint stays bounded.
+// Tauri 2 自带的资源协议（convertFileSrc）在 Windows 上对绝对路径不太可靠
+// （不同补丁版本的匹配规则不一样）。所以更稳妥的做法是走后端的
+// `read_images_batch` 命令，一次能把多张图的原始字节和类型一起读回来。
+// 前端再把字节转成 `blob:` 地址，并用 LRU 缓存，保证每个文件只读一次，
+// 占用的内存也有上限，不会越攒越多。
 
 import { api } from "../api/client";
 import { useImageProgressStore } from "../stores/imageProgressStore";
@@ -19,9 +17,8 @@ const isRemote = (s: string) => /^https?:\/\//i.test(s) || /^asset:\/\//i.test(s
 const isLocalPath = (s: string) => /^[a-zA-Z]:[\\/]/i.test(s) || s.startsWith("/") || s.startsWith("\\");
 
 /**
- * Decode a base64 string into bytes backed by a standard `ArrayBuffer` (the
- * WebView2 runtime always provides `atob`). The result is safe to hand to
- * `new Blob(...)`.
+ * 把 base64 字符串还原成字节数组（WebView2 运行时一定支持 atob）。
+ * 转出来的结果可以直接拿去 new Blob(...) 用。
  */
 function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(b64);
@@ -31,11 +28,72 @@ function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-/** How many paths we send in one IPC call (keeps each round-trip fast). */
+/**
+ * 把一张 base64 图片解码成 `blob:` 地址，并且先让出浏览器的空闲/渲染帧。
+ * 因为 atob、复制到 Uint8Array、建 Blob 这些操作都会卡住主线程；如果一次性
+ * 连续解码很多张（比如一下子滚动进视口几十张封面），就会把 React 的动画帧
+ * 堵住，让公告这类弹窗明显卡顿。改成让浏览器"有空再解码"，这样图片加载和
+ * 界面动画就不会互相抢主线程了。
+ */
+function decodeBlobInIdle(
+  b64: string,
+  mime: string,
+): Promise<string> {
+  return new Promise((resolve) => {
+    const run = () => {
+      const bytes = base64ToBytes(b64);
+      const blob = new Blob([bytes], { type: mime });
+      resolve(URL.createObjectURL(blob));
+    };
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(run, { timeout: 900 });
+    } else {
+      // 兜底：至少让出一个任务，好让浏览器先画一帧。
+      setTimeout(run, 0);
+    }
+  });
+}
+
+// ---- 挂起机制（让后台加载别和弹窗动画抢资源） -----------------------------
+//
+// 当有弹窗（比如公告弹窗）显示时，我们希望它能顺畅地开出来、也能顺畅地看，
+// 不被主界面封面的加载干扰。所以允许在弹窗打开期间把图片加载"挂起"：
+// 已经开始的、和排着队的封面解码都先暂停，等弹窗关掉后再恢复。这样就把
+// 界面动画和后台加载彻底分开了。
+
+let suspended = false;
+let resumeWait: Promise<void> | null = null;
+let resumeResolvers: Array<() => void> = [];
+
+/** Suspend all local-image loading (covers) until {@link resumeImageLoading}. */
+export function suspendImageLoading(): void {
+  suspended = true;
+}
+
+/** 恢复之前被挂起的图片加载。 */
+export function resumeImageLoading(): void {
+  if (!suspended) return;
+  suspended = false;
+  const resolvers = resumeResolvers;
+  resumeResolvers = [];
+  resumeWait = null;
+  for (const r of resolvers) r();
+}
+
+/** 没挂起就直接通过；挂起中就先等着，直到恢复。 */
+function waitIfSuspended(): Promise<void> {
+  if (!suspended) return Promise.resolve();
+  if (!resumeWait) {
+    resumeWait = new Promise((resolve) => resumeResolvers.push(resolve));
+  }
+  return resumeWait;
+}
+
+/** 一次 IPC 调用里带多少张图的路径（太多会让单次往返变慢）。 */
 const BATCH_SIZE = 24;
-/** How many concurrent batches to keep in flight. */
+/** 同时能并发几批请求。 */
 const BATCH_CONCURRENCY = 2;
-/** Max number of blob URLs to keep resident in the frontend cache. */
+/** 前端缓存里最多保留多少个 blob 地址（防止内存越攒越多）。 */
 const BLOB_LRU_CAP = 220;
 
 // ---- LRU blob URL cache ---------------------------------------------------
@@ -113,12 +171,11 @@ async function loadOne(path: string): Promise<string | undefined> {
   const existing = inflight.get(path);
   if (existing) return existing;
   const p = (async () => {
+    await waitIfSuspended(); // pause while an overlay is shown
     await acquireSingle();
     try {
       const res = await api.readImage(path);
-      const arr = base64ToBytes(res.data);
-      const blob = new Blob([arr], { type: res.mime });
-      const url = URL.createObjectURL(blob);
+      const url = await decodeBlobInIdle(res.data, res.mime);
       putBlob(path, url);
       return url;
     } catch {
@@ -138,12 +195,14 @@ async function loadBatch(paths: string[]): Promise<void> {
   if (paths.length === 0) return;
   try {
     const results = await api.readImagesBatch(paths);
+    // Decode one payload at a time through idle scheduling so a large batch
+    // never blocks the main thread / animation frames in one synchronous burst.
+    // Also pause while an overlay is shown so the overlay animates smoothly.
+    await waitIfSuspended();
     for (let i = 0; i < paths.length; i++) {
       const r = results[i];
       if (!r) continue;
-      const arr = base64ToBytes(r.data);
-      const blob = new Blob([arr], { type: r.mime });
-      const url = URL.createObjectURL(blob);
+      const url = await decodeBlobInIdle(r.data, r.mime);
       putBlob(paths[i], url);
     }
   } catch {

@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+    text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+    .t { fill: #ffffff; font-size: 11px; font-weight: 600; text-anchor: middle; }
+    .s { fill: #94a3b8; font-size: 9px; text-anchor: middle; }
+    .s2 { fill: #94a3b8; font-size: 8px; text-anchor: middle; }
+    .reg { fill: #94a3b8; font-size: 9px; font-weight: 600; }
+    .lbl { fill: #e2e8f0; font-size: 8px; font-weight: 600; text-anchor: middle; }
+  </style>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="30" y="30" fill="#ffffff" font-size="16" font-weight="700" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">PlayniteTauri — 系统架构</text>
+  <text x="30" y="50" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">Monorepo · Tauri v2 · React 19 · Rust + SQLite · 绿色存储</text>
+
+  <!-- ============ Region 1: Frontend ============ -->
+  <rect x="20" y="64" width="920" height="112" rx="12" fill="none" stroke="#22d3ee" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="34" y="80" fill="#22d3ee" font-size="9" font-weight="600" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">前端层 · 客户端 / 管理端（嵌入各自 Tauri 应用）</text>
+
+  <!-- Desktop app -->
+  <rect x="60" y="94" width="380" height="66" rx="6" fill="#0f172a"/>
+  <rect x="60" y="94" width="380" height="66" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="250" y="116" class="t">Playnite.DesktopApp（客户端）</text>
+  <text x="250" y="132" class="s">React 19 · TypeScript 6 · Vite · Zustand · TanStack Query</text>
+  <text x="250" y="148" class="s">i18n(中/英/繁) · 主题(7 风格×6 配色) · 封面图库 · 搜索(拼音)</text>
+
+  <!-- Admin app -->
+  <rect x="520" y="94" width="380" height="66" rx="6" fill="#0f172a"/>
+  <rect x="520" y="94" width="380" height="66" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="710" y="116" class="t">Playnite.AdminApp（管理端）</text>
+  <text x="710" y="132" class="s">React 19 · TypeScript 6 · Vite</text>
+  <text x="710" y="148" class="s">游戏 / 用户(权限) / 企业配置 管理</text>
+
+  <!-- ============ Region 2: Tauri IPC ============ -->
+  <rect x="20" y="190" width="920" height="62" rx="12" fill="none" stroke="#fb923c" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="34" y="206" fill="#fb923c" font-size="9" font-weight="600" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">Tauri IPC（invoke 命令桥）</text>
+
+  <!-- invoke arrows -->
+  <path d="M 250 160 L 250 206" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 710 160 L 710 206" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="262" y="186" fill="#fb923c" font-size="8" font-family="'JetBrains Mono',monospace">invoke</text>
+  <text x="700" y="186" fill="#fb923c" font-size="8" font-family="'JetBrains Mono',monospace" text-anchor="end">invoke</text>
+
+  <!-- invoke chips -->
+  <rect x="205" y="214" width="90" height="26" rx="6" fill="#0f172a"/>
+  <rect x="205" y="214" width="90" height="26" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.2"/>
+  <text x="250" y="231" class="lbl">命令调用</text>
+  <rect x="665" y="214" width="90" height="26" rx="6" fill="#0f172a"/>
+  <rect x="665" y="214" width="90" height="26" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.2"/>
+  <text x="710" y="231" class="lbl">命令调用</text>
+
+  <!-- ============ Region 3: Rust Core ============ -->
+  <rect x="20" y="266" width="920" height="204" rx="12" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="34" y="282" fill="#34d399" font-size="9" font-weight="600" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">Rust 后端 · crates/yungame-core（共享核心库）</text>
+
+  <!-- core arrows -->
+  <path d="M 250 240 L 250 292" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 710 240 L 710 292" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- commands box -->
+  <rect x="40" y="296" width="880" height="70" rx="6" fill="#0f172a"/>
+  <rect x="40" y="296" width="880" height="70" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="480" y="316" class="t">commands/ · Tauri 命令层</text>
+  <text x="480" y="334" class="s">games · auth(权限/企业) · covers(封面) · library(统计) · settings(绿色) · plugins</text>
+  <text x="480" y="350" class="s">process · tags · system · announcement · admin · game_html · sample_data</text>
+
+  <!-- AppState box -->
+  <rect x="40" y="392" width="880" height="60" rx="6" fill="#0f172a"/>
+  <rect x="40" y="392" width="880" height="60" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="480" y="412" class="t">AppState（共享状态）</text>
+  <text x="480" y="428" class="s">Mutex&lt;Database&gt; · ProcessManager · PluginHost · Config</text>
+  <text x="480" y="444" class="s">process(启动/游玩时长) · game_server(axum 静态详情页) · autotags · covers 索引缓存</text>
+
+  <!-- commands -> AppState -->
+  <path d="M 480 366 L 480 390" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ Region 4: Storage ============ -->
+  <rect x="20" y="484" width="920" height="88" rx="12" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="34" y="500" fill="#a78bfa" font-size="9" font-weight="600" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">数据存储 · 绿色（便携）存储 = exe 所在目录</text>
+
+  <!-- AppState -> storage arrows -->
+  <path d="M 480 452 L 210 508" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+  <path d="M 480 452 L 630 508" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+  <!-- SQLite cylinder -->
+  <g transform="translate(120,510)">
+    <rect x="0" y="12" width="180" height="44" fill="#0f172a"/>
+    <ellipse cx="90" cy="12" rx="90" ry="12" fill="#0f172a"/>
+    <rect x="0" y="12" width="180" height="44" fill="rgba(76,29,149,0.4)"/>
+    <ellipse cx="90" cy="12" rx="90" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <ellipse cx="90" cy="56" rx="90" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="0" y1="12" x2="0" y2="56" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="180" y1="12" x2="180" y2="56" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="90" y="36" fill="#ffffff" font-size="11" font-weight="600" text-anchor="middle" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">SQLite</text>
+  </g>
+  <text x="210" y="590" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">library/library.db</text>
+  <text x="210" y="602" fill="#64748b" font-size="8" text-anchor="middle" font-family="'JetBrains Mono','Noto Sans SC',sans-serif">游戏 / 用户 / 设置 / 平台 / 插件</text>
+
+  <!-- Green storage box -->
+  <rect x="400" y="508" width="460" height="48" rx="6" fill="#0f172a"/>
+  <rect x="400" y="508" width="460" height="48" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="630" y="528" class="t">绿色存储目录（exe 旁）</text>
+  <text x="630" y="544" class="s">config.json(设置) · CoverImages(封面库) · games/ · 插件 · WebView2 数据</text>
+
+  <!-- ============ Legend ============ -->
+  <g font-family="'JetBrains Mono','Noto Sans SC',sans-serif">
+    <rect x="120" y="606" width="12" height="12" fill="rgba(8,51,68,0.6)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="137" y="616" fill="#94a3b8" font-size="9">前端层</text>
+    <rect x="230" y="606" width="12" height="12" fill="rgba(251,146,60,0.4)" stroke="#fb923c" stroke-width="1"/>
+    <text x="247" y="616" fill="#94a3b8" font-size="9">Tauri IPC</text>
+    <rect x="340" y="606" width="12" height="12" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1"/>
+    <text x="357" y="616" fill="#94a3b8" font-size="9">Rust 后端</text>
+    <rect x="460" y="606" width="12" height="12" fill="rgba(120,53,15,0.4)" stroke="#fbbf24" stroke-width="1"/>
+    <text x="477" y="616" fill="#94a3b8" font-size="9">共享状态</text>
+    <rect x="580" y="606" width="12" height="12" fill="rgba(76,29,149,0.5)" stroke="#a78bfa" stroke-width="1"/>
+    <text x="597" y="616" fill="#94a3b8" font-size="9">持久化存储</text>
+    <rect x="710" y="606" width="12" height="12" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+    <text x="727" y="616" fill="#94a3b8" font-size="9">文件系统 / 外部</text>
+  </g>
+</svg>

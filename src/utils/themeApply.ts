@@ -121,6 +121,8 @@ export function applyStyleVars(vars: StyleVars): void {
   // Toggle frosted-glass mode for surfaces when the style has a blur.
   const glassOn = (vars.blur || "0px") !== "0px";
   root.dataset.glass = glassOn ? "1" : "";
+  // Effect feature tag → :root[data-fx] drives style-specific CSS effects.
+  root.dataset.fx = vars.fx || "";
 }
 
 export function getStoredStyleId(): string | null {

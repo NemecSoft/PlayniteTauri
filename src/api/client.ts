@@ -10,7 +10,6 @@ import type {
   LibraryStats,
   Platform,
   PublicUser,
-  ScannedGame,
 } from "../types/models";
 
 export const api = {
@@ -25,12 +24,6 @@ export const api = {
   regenerateTags: () => call<number>("regenerate_tags"),
 
   // library
-  scanDirectory: (root: string, depth?: number) =>
-    call<ScannedGame[]>("scan_directory_command", { root, depth }),
-  importScannedGames: (scanned: ScannedGame[]) =>
-    call<number>("import_scanned_games", { scanned }),
-  scanSteam: () => call<ScannedGame[]>("scan_steam_command"),
-  importSteamGames: (games: ScannedGame[]) => call<number>("import_steam_games", { games }),
   libraryStats: () => call<LibraryStats>("library_stats"),
 
   // settings

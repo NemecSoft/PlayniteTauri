@@ -37,7 +37,6 @@ export const en = {
   sidebar_categories: "Categories",
   sidebar_genres: "Genres",
   sidebar_developers: "Developers",
-  sidebar_scanLibrary: "Scan Library",
   sidebar_handle_hint: "Move the mouse here to filter games by tag",
   sidebar_tagSearch: "Filter tags...",
 
@@ -63,19 +62,6 @@ export const en = {
   group_favorites: "Favorites",
   group_other: "Other",
 
-  // --- Import wizard ---
-  import_title: "Add Games",
-  import_scanFolder: "Scan Folder",
-  import_scanSteam: "Scan Steam Library",
-  import_scanning: "Scanning...",
-  import_scanningSteam: "Scanning Steam library...",
-  import_importing: "Importing {count} games...",
-  import_imported: "Imported {count} games.",
-  import_found: "Found {count} games. Select the ones to import:",
-  import_scanHint: "Scan a folder or your Steam library to find games.",
-  import_importBtn: "Import ({count})",
-  import_cancel: "Cancel",
-
   // --- News (recently added) ---
   news_title: "Recently Added",
   news_empty: "No games have been added yet.",
@@ -84,8 +70,7 @@ export const en = {
   empty_noMatch: "No games match your filters",
   empty_libraryEmpty: "Your library is empty",
   empty_noMatchHint: "Try clearing filters to see all your games.",
-  empty_libraryEmptyHint: "Scan a folder or your Steam library to get started.",
-  empty_addGames: "Add Games",
+  empty_libraryEmptyHint: "Games are added via the admin console. Ask an administrator or add them there.",
 
   // --- Details view ---
   details_favorite: "Favorite",

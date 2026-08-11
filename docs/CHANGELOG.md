@@ -2,19 +2,108 @@
 
 ## 2026-08-12
 
-- **新增恐怖谷 3D 地图**：星球视图的"恐怖谷"分区升级为一块**可开车探索的 3D 地图**
-  （道路/河流/山脉/森林/草地），点击星球上的恐怖谷分区进入。每个恐怖谷游戏是一个
-  **山洞洞口**，游戏封面作为洞口贴图。用 `cannon-es` 物理引擎实现真车辆驾驶
+- **彻底修复公告弹窗交互（点击可立即停止倒计时 / 立即关闭）**：
+  - **公告延迟到主界面加载完成后弹出**（`App.tsx`）：公告不再一进 App 就弹，而是等游戏数据
+    `loading` 变 false 且延迟 600ms（让首屏渲染稳定）后再显示。之前公告和主界面加载同时进行，
+    主线程被占用，导致鼠标点击要"使劲按"很久才响应。现在公告打开时主线程空闲，点击立即生效。
+  - **交互改用 document 捕获阶段原生 `mousedown` 监听**：点"关闭"按钮（`data-action="close"`）
+    → 立即关闭；点公告其它任何地方 → 停止倒计时。不再依赖 React 合成事件（在 WebView2 里嵌在
+    页面中的层偶尔失效）。
+  - **移除公告遮罩的 `backdrop-filter`**：在 WebView2/Chromium 里，`backdrop-filter` +
+    `position: fixed` 全屏元素会导致点击命中测试异常（点了没反应），改用具象深色背景。
+  - **公告用 `createPortal` 挂到 `<body>`**：脱离主界面 DOM 树和样式影响，事件更可靠。
+  - 移除测试用的"停止计时器"按钮，恢复干净界面：底部居中"倒计时状态 + 关闭按钮"。
+  - 行为：默认 5 秒自动关闭；点公告任意处（除"关闭"按钮）→ 停止倒计时并显示"已停止自动关闭"；
+    点"关闭"按钮 / Esc → 立即关闭。
+
+## 2026-08-12
+
+- **新增恐怖谷 3D 地图（低多边形风格）**：星球视图的"恐怖谷"分区升级为一块**可开车探索的
+  低多边形 3D 地图**（道路/河流/山脉/森林/草地），点击星球上的恐怖谷分区进入。每个恐怖谷游戏
+  是一个**山洞洞口**，游戏封面作为洞口贴图。用 `cannon-es` 物理引擎实现真车辆驾驶
   （WASD/方向键，第三人称相机跟随），**开车开进山洞 → 跳转该游戏详情页**。地图角落
-  有"返回星球"按钮。封面走懒加载（车接近才加载），恐怖谷场景用 `React.lazy` 代码
-  分割，three.js 和 cannon-es 都只在进入时加载。
+  有"返回星球"按钮。封面走懒加载（车接近才加载）。视觉参考"低多边形森林公园"：flatShading
+  平面着色、3 层锥形低多边形松树、柔和自然配色、太阳光 + 阴影 + 雾 + 天空背景。
+  恐怖谷场景用 `React.lazy` 代码分割，three.js 和 cannon-es 都只在进入时加载。
 - **新增 3D 虚拟星球视图**：主页工具栏新增"星球视图"切换按钮。全部游戏按 7 个分区
   （恐怖谷/射击场/赛车场/角色扮演城/益智区/体育场/未分类）渲染到一颗自转 3D 星球上，
   每个分区是一段大陆带。悬停游戏点放大显示封面，点击进入详情页。基于
   `three.js` + `@react-three/fiber` + `@react-three/drei`。封面走懒加载（悬停才加载），
   星球视图用 `React.lazy` 代码分割，three.js 只在使用星球视图时才加载，不拖慢主界面启动。
-- **新增 vitest 测试基础设施**：为纯函数（球面分布、分区归类、地形、山洞布局）补充
-  单元测试，`npm test` 运行。
+- **新增 vitest 测试基础设施**：为纯函数（球面分布、分区归类、地形、道路、树木、山洞布局）
+  补充单元测试，`npm test` 运行。
+
+## 2026-08-11
+
+- **网格滚动位置恢复（改进版）**：进入游戏详情页返回时，网格**恢复到原滚动位置**而非重置到
+  顶部。新增 `scrollStore`（`gridScrollTop` 保存/一次性取出），GridView 在 `openDetails` 导航前
+  保存 `scrollRef.scrollTop`，返回挂载后等 `totalSize` 就绪，用 `useLayoutEffect`（绘制前）+
+  `virtualizer.scrollToOffset()` 恢复到原位置（rAF 后执行，避免闪跳，`restoredRef` 防重复）。
+
+## 2026-08-11
+
+- **公告弹窗与主界面游戏加载彻底隔离 + 交互优化**：
+  - `assets.ts` 新增**图片加载挂起机制**（`suspendImageLoading` / `resumeImageLoading`）：
+    `loadOne`/`loadBatch` 在挂起时等待（`waitIfSuspended`），公告挂载时挂起、卸载时恢复。
+    公告显示期间主界面封面**完全不加载/解码**，动画流畅，真正互不干扰。
+  - 公告交互：移除右上角 X 关闭按钮，改为底部居中**「关闭」按钮** + **5 秒自动倒计时关闭**
+    （显示"N 秒后自动关闭"）。点击窗口内除「关闭」按钮以外的任意区域**永久停止倒计时**
+    （取消自动关闭，显示"已停止自动关闭"），方便认真阅读；窗口保持打开直到点击「关闭」或
+    Escape。
+
+## 2026-08-11
+
+- **统一窗口关闭路径，减少退出时 WebView2 良性警告**：`on_window_event` 的 `CloseRequested`
+  由"直接销毁窗口"改为 `prevent_close()` + 读取 `close_to_tray` 设置——开启时隐藏到托盘（不
+  销毁 WebView2 窗口，避免 Chromium 窗口类注销与事件循环退出的竞态），关闭时才 `app.exit(0)`。
+  修复"点窗口 X 绕过托盘设置直接销毁窗口"的不一致。注：真正 `exit` 时
+  `Failed to unregister class Chrome_WidgetWin_0 (Error 1412)` 是 WebView2 框架层的良性退出
+  日志，不影响功能，本改动减少了其最常见的触发场景。
+
+## 2026-08-11
+
+- **优化公告弹窗与后台加载的相互影响（消除卡顿）**：
+  - 封面图 base64 → blob 解码改为 `requestIdleCallback` 空闲调度（`assets.ts` 新增
+    `decodeBlobInIdle`，`loadOne`/`loadBatch` 逐张空闲解码），不再一次性同步解码阻塞主线程，
+    与动画帧错开执行。
+  - 公告 overlay / card 提升为独立合成层（`will-change: transform, opacity` +
+    `contain: layout paint` + `translateZ(0)`），动画走 GPU 合成线程。
+  - 移除公告 CSS 与 framer-motion 双重冲突的动画（`announceFadeIn/Out`、`announcePop/PopOut`
+    keyframes），完全由 framer-motion 统一控制打开/关闭，消除抖动源。
+
+## 2026-08-11
+
+- **移除游戏库扫描导入，改为纯管理端手工添加**：删除目录扫描（`scan_directory`）与 Steam 库
+  扫描（`scan_steam_library`）及对应 Tauri 命令（`scan_directory_command` /
+  `import_scanned_games` / `scan_steam_command` / `import_steam_games`）。删除 `library.rs`
+  模块、`ScannedGame` 模型。游戏统一由管理端控制台的「+ 新增游戏」手工添加（保留 `library_stats`
+  统计命令）。前端移除 `scanFolder` / `scanSteam` / `importResults` 等 API 与 store 方法，
+  清理三份 i18n 的导入向导文案与空状态提示（改为"游戏由管理端添加"）。
+
+## 2026-08-11
+
+- **新增系统架构图文档**：新增 `docs/architecture-diagram.md`（分层说明 + 数据流 + 关键决策），
+  并配 `docs/diagram/architecture.svg` 可视化架构图（前端层 / Tauri IPC / Rust 核心库 /
+  绿色存储 四层）。`docs/README.md` 文档索引同步补充。
+- **新增 HTML 版架构图**：使用 `html-architecture-diagrams` skill 生成
+  `docs/diagram/playnite-architecture.html` —— 自包含、响应式、可打印的交互式架构图
+  （内联 SVG + 图例 + 数据流 + 关键决策，页脚带时间戳）。浏览器直接打开即可查看。
+
+## 2026-08-11
+
+- **配色库精简为 6 个精选方案**：`themeLibrary.ts` 从 96 个行业 palette 精简为 6 个手工设计的
+  签名配色——明亮（`p-light`）、暗黑（`p-dark`）、中国红（`p-cn-red`）、中国蓝（`p-cn-blue`）、
+  中国绿（`p-cn-green`）、中国水墨（`p-cn-ink`）。每个方案提供完整 shadcn token + 旧业务变量。
+  `scripts/gen-themes.py` 加守卫，检测到精选库即拒绝覆盖，避免误重建 96 palette。
+- **签名风格专属视觉特效（`data-fx`）**：`styleLibrary.ts` 的 `StyleVars` 新增可选 `fx` 字段，
+  `applyStyleVars` 写入 `:root[data-fx]`，`globals.css` 用 `:root[data-fx="..."]` 提供强辨识度
+  特效。
+- **风格库精简为 7 个精选签名风格**：`styleLibrary.ts` 从 67 个风格精简为 7 个——苹果、软浮雕、
+  毛玻璃、粗野硬朗、赛博朋克/科幻HUD、像素风、复古未来/蒸汽波。每个都有专属视觉：苹果（毛玻璃
+  面板）、软浮雕（凹凸双投影）、毛玻璃（半透明面板 + blur）、粗野硬朗（粗黑边框 + 硬阴影 + 直角）、
+  赛博朋克/科幻HUD（霓虹 + 扫描线网格）、像素风（锯齿像素边框 + 像素字体）、复古未来/蒸汽波
+  （霓虹渐变文字）。`scripts/gen-styles.py` 加守卫，检测到 7 个精选风格即拒绝覆盖，避免误重建
+  67 个风格。
 
 ## 2026-08-11
 

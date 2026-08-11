@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlayniteTauri — 系统架构图</title>
+<style>
+  :root {
+    /* theme tokens */
+    --bg: #0b1220;
+    --bg-band: #0f1a2e;
+    --panel: #131e33;
+    --panel-2: #17233b;
+    --ink: #e6edf7;
+    --muted: #8aa0bc;
+    --dim: #5d7390;
+    --line: #2a3a55;
+    /* layer accents */
+    --frontend: #22d3ee;
+    --ipc: #fb923c;
+    --core: #34d399;
+    --state: #fbbf24;
+    --storage: #a78bfa;
+    --fs: #94a3b8;
+    --spof: #f87171;
+    --radius: 12px;
+    --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+    --sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.55;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px; }
+  header.top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; padding-bottom: 16px;
+    border-bottom: 1px solid var(--line); margin-bottom: 20px;
+  }
+  h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+  h1 .mono { color: var(--frontend); font-family: var(--mono); }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 6px; font-family: var(--mono); }
+  h2 {
+    font-size: 14px; font-weight: 700; color: var(--ink);
+    text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 12px;
+  }
+  h2 .bar { display: inline-block; width: 8px; height: 14px; margin-right: 8px; vertical-align: -2px; border-radius: 2px; }
+  .legend-tag { color: var(--dim); font-size: 12px; font-family: var(--mono); }
+
+  /* diagram */
+  .diagram {
+    background: var(--bg-band); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px; overflow-x: auto;
+  }
+  svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+  .band {
+    fill: none; stroke: var(--l, var(--line)); stroke-width: 1; stroke-dasharray: 6,4;
+  }
+  .band-label { fill: var(--l, var(--muted)); font-size: 12px; font-weight: 700; font-family: var(--mono); }
+  .comp {
+    fill: var(--bg-band); stroke: var(--l, var(--line)); stroke-width: 1.5;
+  }
+  .comp-title { fill: var(--ink); font-size: 13px; font-weight: 700; }
+  .comp-sub { fill: var(--muted); font-size: 10.5px; }
+  .comp-sub2 { fill: var(--dim); font-size: 9.5px; }
+  .edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+  .edge-txt { fill: var(--ipc); font-size: 9px; font-family: var(--mono); }
+  .note-line { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 3,3; }
+  .note { fill: var(--spof); font-size: 9.5px; font-weight: 600; }
+
+  /* legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 14px;
+    font-size: 12px; color: var(--muted); font-family: var(--mono);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { display: inline-block; width: 22px; height: 12px; border-radius: 3px; }
+  .sw.line { height: 2px; background: transparent; }
+  .sw.line.solid { border-top: 2px solid var(--muted); }
+  .sw.line.dashed { border-top: 2px dashed var(--muted); }
+  .sw.line.dotted { border-top: 2px dotted var(--muted); }
+
+  /* flow + notes */
+  .flow, .notes {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; margin-top: 18px;
+  }
+  .flow code, .notes code {
+    font-family: var(--mono); font-size: 12px; background: var(--panel-2);
+    padding: 2px 6px; border-radius: 5px; color: var(--frontend);
+  }
+  .flow .step { display: flex; gap: 10px; align-items: baseline; padding: 5px 0; font-size: 13px; }
+  .flow .n {
+    flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--panel-2);
+    border: 1px solid var(--frontend); color: var(--frontend); text-align: center;
+    font-size: 12px; font-weight: 700; line-height: 20px; font-family: var(--mono);
+  }
+  .notes ul { margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: var(--muted); }
+  .notes li { margin: 6px 0; }
+  .notes li b { color: var(--ink); font-weight: 700; }
+
+  footer {
+    margin-top: 26px; padding-top: 12px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    color: var(--dim); font-size: 11px; font-family: var(--mono);
+  }
+  /* responsive: allow horizontal scroll on narrow, keep diagram legible */
+  @media (max-width: 700px) {
+    .diagram svg { min-width: 760px; }
+    header.top h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>PlayniteTauri — <span class="mono">系统架构</span></h1>
+      <div class="sub">Monorepo · Tauri v2 · React 19 · Rust + SQLite · 绿色存储</div>
+    </div>
+    <span class="legend-tag">自顶向下：前端 → IPC → Rust 核心 → 存储</span>
+  </header>
+
+  <!-- ============ DIAGRAM ============ -->
+  <div class="diagram">
+    <svg viewBox="0 0 1000 700" role="img" aria-label="PlayniteTauri 系统架构图，四层：前端、Tauri IPC、Rust 核心库、绿色存储">
+      <defs>
+        <marker id="a" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+        </marker>
+        <marker id="a-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+        </marker>
+      </defs>
+      <!-- ===== Layer 1: Frontend ===== -->
+      <rect class="band" x="10" y="40" width="980" height="130" rx="12" style="--l:var(--frontend)"/>
+      <text class="band-label" x="26" y="60" style="fill:var(--frontend)">1 · 前端层 — 客户端 / 管理端</text>
+
+      <!-- Desktop app -->
+      <foreignObject x="30" y="70" width="450" height="88">
+        <div style="width:100%;height:100%;background:var(--bg-band);border:1.5px solid var(--frontend);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--ink)">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">Playnite.DesktopApp（客户端）</div>
+          <div style="color:var(--muted);font-size:10.5px">React 19 · TypeScript 6 · Vite · Zustand · TanStack Query</div>
+          <div style="color:var(--dim);font-size:10px">i18n(中/英/繁) · 主题(7风格×6配色) · 封面图库 · 搜索(拼音)</div>
+        </div>
+      </foreignObject>
+
+      <!-- Admin app -->
+      <foreignObject x="520" y="70" width="450" height="88">
+        <div style="width:100%;height:100%;background:var(--bg-band);border:1.5px solid var(--frontend);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--ink)">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">Playnite.AdminApp（管理端）</div>
+          <div style="color:var(--muted);font-size:10.5px">React 19 · TypeScript 6 · Vite</div>
+          <div style="color:var(--dim);font-size:10px">游戏 / 用户(权限) / 企业配置 管理</div>
+        </div>
+      </foreignObject>
+
+      <!-- ===== Layer 2: IPC ===== -->
+      <rect class="band" x="10" y="180" width="980" height="80" rx="12" style="--l:var(--ipc)"/>
+      <text class="band-label" x="26" y="200" style="fill:var(--ipc)">2 · Tauri IPC（invoke 命令桥）</text>
+
+      <path class="edge" d="M 255 158 L 255 205" marker-end="url(#a)"/>
+      <path class="edge" d="M 745 158 L 745 205" marker-end="url(#a)"/>
+      <text class="edge-txt" x="272" y="185">invoke</text>
+      <text class="edge-txt" x="733" y="185" text-anchor="end">invoke</text>
+      <rect class="comp" x="205" y="212" width="100" height="32" rx="6" style="--l:var(--ipc)"/>
+      <text x="255" y="232" text-anchor="middle" fill="#e6edf7" font-size="11" font-weight="600">命令调用</text>
+      <rect class="comp" x="695" y="212" width="100" height="32" rx="6" style="--l:var(--ipc)"/>
+      <text x="745" y="232" text-anchor="middle" fill="#e6edf7" font-size="11" font-weight="600">命令调用</text>
+
+      <!-- ===== Layer 3: Rust core ===== -->
+      <rect class="band" x="10" y="270" width="980" height="200" rx="12" style="--l:var(--core)"/>
+      <text class="band-label" x="26" y="290" style="fill:var(--core)">3 · Rust 后端 — crates/yungame-core（共享核心库）</text>
+
+      <path class="edge" d="M 255 244 L 255 300" marker-end="url(#a)"/>
+      <path class="edge" d="M 745 244 L 745 300" marker-end="url(#a)"/>
+
+      <!-- commands box -->
+      <foreignObject x="30" y="306" width="940" height="76">
+        <div style="width:100%;height:100%;background:var(--bg-band);border:1.5px solid var(--core);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink)">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">commands/ · Tauri 命令层</div>
+          <div style="color:var(--muted);font-size:10.5px">games · auth(权限/企业) · covers(封面) · library(统计) · settings(绿色) · plugins</div>
+          <div style="color:var(--dim);font-size:10px">process · tags · system · announcement · admin · game_html · sample_data</div>
+        </div>
+      </foreignObject>
+
+      <path class="edge" d="M 500 382 L 500 404" marker-end="url(#a)"/>
+
+      <!-- AppState box -->
+      <foreignObject x="30" y="410" width="940" height="50">
+        <div style="width:100%;height:100%;background:var(--bg-band);border:1.5px solid var(--state);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--ink)">
+          <div style="font-weight:700;font-size:13px;display:inline-block;margin-right:14px;color:var(--state)">AppState（共享状态）</div>
+          <span style="color:var(--muted);font-size:10.5px">Mutex&lt;Database&gt; · ProcessManager · PluginHost · Config</span>
+        </div>
+      </foreignObject>
+
+      <!-- ===== Layer 4: Storage ===== -->
+      <rect class="band" x="10" y="480" width="980" height="180" rx="12" style="--l:var(--storage)"/>
+      <text class="band-label" x="26" y="500" style="fill:var(--storage)">4 · 数据存储 — 绿色（便携）存储 = exe 所在目录</text>
+
+      <path class="edge" d="M 500 460 L 230 505" marker-end="url(#a-violet)"/>
+      <path class="edge" d="M 500 460 L 700 505" marker-end="url(#a-violet)"/>
+
+      <!-- SQLite cylinder -->
+      <g transform="translate(120,508)">
+        <rect x="0" y="10" width="210" height="58" fill="rgba(76,29,149,0.25)"/>
+        <ellipse cx="105" cy="10" rx="105" ry="14" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1.5"/>
+        <ellipse cx="105" cy="68" rx="105" ry="14" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1.5"/>
+        <line x1="0" y1="10" x2="0" y2="68" stroke="#a78bfa" stroke-width="1.5"/>
+        <line x1="210" y1="10" x2="210" y2="68" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="105" y="34" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="var(--mono)">SQLite</text>
+        <text x="105" y="52" text-anchor="middle" fill="#c4b5fd" font-size="9.5" font-family="var(--mono)">library/library.db</text>
+      </g>
+      <text x="225" y="612" text-anchor="middle" fill="#8aa0bc" font-size="10" font-family="var(--mono)">游戏 · 用户 · 设置</text>
+      <text x="225" y="626" text-anchor="middle" fill="#5d7390" font-size="10" font-family="var(--mono)">平台 · 插件元数据</text>
+
+      <!-- green storage box -->
+      <foreignObject x="470" y="508" width="460" height="72">
+        <div style="width:100%;height:100%;background:var(--bg-band);border:1.5px solid var(--fs);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink)">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--fs)">绿色存储目录（exe 旁）</div>
+          <div style="color:var(--muted);font-size:10px">config.json(设置) · CoverImages/ · games/ · 插件</div>
+        </div>
+      </foreignObject>
+      <text x="700" y="610" text-anchor="middle" fill="#5d7390" font-size="10" font-family="var(--mono)">不写注册表 · 不占用 C 盘 / %LOCALAPPDATA%</text>
+
+      <!-- SPOF / note -->
+      <path class="note-line" d="M 640 90 L 700 108"/>
+      <text class="note" x="700" y="112">monorepo 隔离：</text>
+      <text x="700" y="126" fill="#f87171" font-size="9.5">各 Tauri 应用独立嵌前端</text>
+    </svg>
+
+    <!-- legend -->
+    <div class="legend">
+      <span><i class="sw" style="background:rgba(8,51,68,.6);border:1px solid var(--frontend)"></i>前端层</span>
+      <span><i class="sw" style="background:rgba(251,146,60,.35);border:1px solid var(--ipc)"></i>Tauri IPC</span>
+      <span><i class="sw" style="background:rgba(6,78,59,.5);border:1px solid var(--core)"></i>Rust 核心</span>
+      <span><i class="sw" style="background:rgba(120,53,15,.4);border:1px solid var(--state)"></i>共享状态</span>
+      <span><i class="sw" style="background:rgba(76,29,149,.5);border:1px solid var(--storage)"></i>持久化存储</span>
+      <span><i class="sw" style="background:rgba(30,41,59,.6);border:1px solid var(--fs)"></i>文件系统 / 外部</span>
+      <span><i class="sw line solid"></i>同步调用</span>
+      <span><i class="sw line dashed"></i>异步 / 事件</span>
+    </div>
+  </div>
+
+  <!-- ============ DATA FLOW ============ -->
+  <h2><span class="bar" style="background:var(--frontend)"></span>数据流</h2>
+  <div class="flow">
+    <div class="step"><span class="n">1</span><span>React UI（<code>src/components</code>）</span></div>
+    <div class="step"><span class="n">2</span><span>Tauri 命令（<code>src/api/client.ts</code> → <code>invoke</code>）</span></div>
+    <div class="step"><span class="n">3</span><span>Rust 命令（<code>crates/yungame-core/src/commands/*.rs</code>）</span></div>
+    <div class="step"><span class="n">4</span><span>AppState（<code>Mutex&lt;Database&gt;</code> · <code>ProcessManager</code> · <code>PluginHost</code>）</span></div>
+    <div class="step"><span class="n">5</span><span>SQLite（<code>library/library.db</code>）/ 进程启动 / 文件系统</span></div>
+  </div>
+
+  <!-- ============ KEY DECISIONS ============ -->
+  <h2><span class="bar" style="background:var(--state)"></span>关键设计决策</h2>
+  <div class="notes">
+    <ul>
+      <li><b>Monorepo 隔离</b>：每个 Tauri 应用（desktop / admin）各自独立的 <code>tauri.conf.json</code> / <code>frontendDist</code>，只嵌入各自前端，避免"管理端误加载客户端前端"、双窗口、cdylib 链接失败。</li>
+      <li><b>DB 用 Mutex 包裹</b>：<code>rusqlite::Connection</code> 是 <code>Send</code> 但非 <code>Sync</code>，需 <code>Mutex</code> 提供内部可变性。</li>
+      <li><b>完全绿色存储</b>：<code>settings.rs</code> 用 <code>current_exe()</code> 定位数据根；debug 构建固定指向项目根 <code>release/</code>。</li>
+      <li><b>共享核心库</b>：<code>yungame-core</code> 提供 <code>run_client</code> / <code>run_admin</code> 两个 Builder 工厂，供两个 Tauri 应用复用。</li>
+      <li><b>前端相对路径</b>（<code>base: "./"</code>）：保证资源在 <code>tauri://localhost</code> 下可解析。</li>
+    </ul>
+  </div>
+
+  <footer>
+    <span>PlayniteTauri · 系统架构图</span>
+    <span>更新于 2026-08-11</span>
+  </footer>
+
+</div>
+</body>
+</html>

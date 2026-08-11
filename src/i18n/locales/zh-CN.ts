@@ -36,7 +36,6 @@ export const zhCN = {
   sidebar_categories: "分类",
   sidebar_genres: "类型",
   sidebar_developers: "开发商",
-  sidebar_scanLibrary: "扫描游戏库",
   sidebar_handle_hint: "鼠标移到这里来按标签挑选游戏",
   sidebar_tagSearch: "筛选标签...",
 
@@ -61,19 +60,6 @@ export const zhCN = {
   group_favorites: "收藏",
   group_other: "其他",
 
-  // --- Import wizard ---
-  import_title: "添加游戏",
-  import_scanFolder: "扫描文件夹",
-  import_scanSteam: "扫描 Steam 游戏库",
-  import_scanning: "正在扫描...",
-  import_scanningSteam: "正在扫描 Steam 游戏库...",
-  import_importing: "正在导入 {count} 个游戏...",
-  import_imported: "已导入 {count} 个游戏。",
-  import_found: "找到 {count} 个游戏。请选择要导入的项：",
-  import_scanHint: "扫描文件夹或你的 Steam 游戏库以查找游戏。",
-  import_importBtn: "导入 ({count})",
-  import_cancel: "取消",
-
   // --- News (recently added) ---
   news_title: "最近新增",
   news_empty: "还没有添加任何游戏。",
@@ -82,8 +68,7 @@ export const zhCN = {
   empty_noMatch: "没有符合筛选条件的游戏",
   empty_libraryEmpty: "你的游戏库是空的",
   empty_noMatchHint: "尝试清除筛选条件以查看所有游戏。",
-  empty_libraryEmptyHint: "扫描文件夹或你的 Steam 游戏库开始使用。",
-  empty_addGames: "添加游戏",
+  empty_libraryEmptyHint: "游戏由管理端添加，请联系管理员或在管理端中新增游戏。",
 
   // --- Details view ---
   details_favorite: "收藏",

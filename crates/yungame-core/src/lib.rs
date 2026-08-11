@@ -11,7 +11,6 @@ pub mod config;
 pub mod game_server;
 pub mod covers;
 pub mod db;
-pub mod library;
 pub mod models;
 pub mod plugins;
 pub mod process;
@@ -482,10 +481,6 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             // tags
             commands::tags::regenerate_tags,
             // library
-            commands::library::scan_directory_command,
-            commands::library::import_scanned_games,
-            commands::library::scan_steam_command,
-            commands::library::import_steam_games,
             commands::library::library_stats,
             // covers
             commands::covers::scan_covers,
@@ -517,9 +512,35 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             commands::system::show_notification,
             commands::system::quit,
         ])
-        .on_window_event(|_window, event| {
+        .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                let _ = api;
+                // Unify every close path through the "close to tray" setting
+                // instead of letting the window be destroyed directly.
+                //
+                // When the window is destroyed while a tray session keeps the
+                // app alive, Chromium's window-class teardown races with Tauri's
+                // event-loop shutdown and logs the benign
+                //   "Failed to unregister class Chrome_WidgetWin_0 (Error 1412)".
+                // Honoring close_to_tray here (hide instead of destroy) removes
+                // that race for the common close-X flow.
+                api.prevent_close();
+                let app = window.app_handle();
+                let close_to_tray = app
+                    .try_state::<AppState>()
+                    .map(|s| {
+                        s.db
+                            .lock()
+                            .ok()
+                            .and_then(|db| db.load_settings().ok())
+                            .map(|st| st.close_to_tray)
+                            .unwrap_or(false)
+                    })
+                    .unwrap_or(false);
+                if close_to_tray {
+                    let _ = window.hide();
+                } else {
+                    app.exit(0);
+                }
             }
         })
 }

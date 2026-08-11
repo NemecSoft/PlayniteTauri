@@ -217,6 +217,20 @@ def main():
     lines.append("];")
     lines.append("")
 
+    # Guard: themeLibrary.ts is now a hand-curated set of 6 signature palettes
+    # (Light / Dark / Chinese Red / Chinese Blue / Chinese Green / Ink-wash).
+    # Refuse to overwrite it with the 96 CSV-derived palettes so the curated
+    # set survives accidental re-runs of this generator.
+    if os.path.exists(OUT):
+        with open(OUT, encoding="utf-8") as f:
+            cur = f.read()
+        if "p-light" in cur and "p-cn-ink" in cur:
+            print(
+                "SKIP: themeLibrary.ts is the hand-curated 6-palette set. "
+                "This generator is retired — refusing to overwrite it."
+            )
+            return
+
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(f"Wrote {len(entries)} themes -> {OUT}")

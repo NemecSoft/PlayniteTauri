@@ -44,14 +44,13 @@ apps/admin/            管理端 Tauri 应用（Playnite.Admin.exe，嵌入 ./di
 | `models.rs` | 数据模型（`Game`、`GameName`、`GameAction`、`AppSettings`、`Platform` 等） |
 | `db.rs` | SQLite 数据访问层（CRUD、序列化） |
 | `auth.rs` | 登录 / 权限（用户等级）/ 企业用户解析 |
-| `library.rs` | 目录扫描（识别可执行文件）、Steam 库导入 |
 | `process.rs` | 进程启动（含相对路径解析）、游玩时长追踪 |
 | `plugins.rs` | 插件发现与库插件元数据 |
 | `settings.rs` | ★ 应用路径（绿色，指向 exe 所在目录） |
 | `covers.rs` | 封面图库匹配 + 图片读取 |
 | `game_server.rs` | 静态详情页容器（`axum` + `tower-http::ServeDir`，见 [game-detail](./game-detail.md)） |
 | `autotags.rs` / `config.rs` / `sample_data.rs` / `system.rs` | 自动标签 / 配置 / 示例数据 / 系统命令 |
-| `commands/` | Tauri 命令模块（games / auth / admin / covers / library / settings / plugins / system / tags / announcement / game_html） |
+| `commands/` | Tauri 命令模块（games / auth / admin / covers / library(统计) / settings / plugins / system / tags / announcement / game_html）。游戏由管理端（admin 控制台）手工添加，无目录/Steam 扫描导入 |
 
 ### 应用壳（`apps/desktop`、`apps/admin`）
 

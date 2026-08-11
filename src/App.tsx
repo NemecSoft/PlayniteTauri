@@ -1,7 +1,7 @@
 // Root application shell: loads settings & data, wires the title bar and
 // optional login screen.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 import TopBar from "./components/TopBar";
@@ -85,25 +85,38 @@ function AppShell() {
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const closeSettings = useUIStore((s) => s.closeSettings);
 
-  // Show the startup announcement once the main UI is visible.
-  // The announcement HTML is statically inlined into the bundle (see
-  // AnnouncementModal), so we can show it immediately — no IPC, no
-  // "Loading announcement..." flash.
-  const [showAnnouncement, setShowAnnouncement] = useState(true);
+  // 需要登录时，不显示公告。
+  const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
+  const loggedIn = useAuthStore((s) => s.currentUser !== null);
+  const needsLogin = loginEnabled && !loggedIn;
+
+  // 公告的显示时机。
+  // 之前公告一进 App 就弹出来，正好赶上主界面在加载游戏数据、渲染游戏网格，
+  // 这些活很占主线程，导致公告打开时鼠标点了要好一会儿才反应（用户觉得"要使劲
+  // 按才能停止"）。所以这里改成：等主界面的游戏数据加载完成、界面稳定之后，
+  // 再弹出公告。这样公告打开时主线程是空闲的，点击立即响应。
+  const loading = useGamesStore((s) => s.loading);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const announceTimer = useRef<number | null>(null);
+  useEffect(() => {
+    // 还在加载数据，先等。
+    if (loading) return;
+    // 需要登录时，不弹公告。
+    if (needsLogin) return;
+    // 数据加载完了，再稍微等一下，让界面先渲染稳定，然后弹出公告。
+    announceTimer.current = window.setTimeout(() => {
+      setShowAnnouncement(true);
+    }, 600);
+    return () => {
+      if (announceTimer.current !== null) window.clearTimeout(announceTimer.current);
+    };
+  }, [loading, needsLogin]);
 
   // Close the announcement and hand focus back to the search box.
   const closeAnnouncement = () => {
     setShowAnnouncement(false);
     window.dispatchEvent(new Event("yungame:focus-search"));
   };
-
-  // Auto-hide the announcement once the user is logged in.
-  const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
-  const loggedIn = useAuthStore((s) => s.currentUser !== null);
-  const needsLogin = loginEnabled && !loggedIn;
-  useEffect(() => {
-    if (needsLogin) setShowAnnouncement(false);
-  }, [needsLogin]);
 
   // When a game has just been launched, jump to its detail page so the user
   // can read the guide / instructions while playing (Steam / Playnite-style).

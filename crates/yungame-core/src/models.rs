@@ -407,12 +407,3 @@ pub struct LibraryPluginInfo {
     pub enabled: bool,
 }
 
-/// Describes a discovered executable in the import scan.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ScannedGame {
-    pub path: String,
-    pub name: String,
-    pub install_directory: String,
-    pub is_installed: bool,
-}

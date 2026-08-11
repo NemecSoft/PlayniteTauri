@@ -14,7 +14,6 @@ PlayniteTauri/
 │        ├─ models.rs          #   数据模型（Game / AppUser / AppSettings / Platform ...）
 │        ├─ db.rs              #   SQLite 数据访问
 │        ├─ auth.rs            #   登录 / 权限 / 企业用户解析
-│        ├─ library.rs         #   目录扫描 / Steam 导入
 │        ├─ process.rs         #   进程启动（含相对路径）/ 游玩追踪
 │        ├─ plugins.rs         #   插件发现
 │        ├─ settings.rs        #   ★ 绿色路径（exe 目录）+ config.json

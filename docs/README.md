@@ -6,6 +6,9 @@
 
 ### 架构与总体设计
 - [整体架构](./design/architecture.md) — 技术栈、模块划分、数据流
+- [系统架构图](./architecture-diagram.md) — 可视化架构图 + 分层说明
+- [HTML 架构图](./diagram/playnite-architecture.html) — 自包含 HTML 交互式架构图（浏览器打开）
+- [SVG 架构图](./diagram/architecture.svg) — 架构图矢量版
 - [目录结构](./design/directory-structure.md) — 前后端目录职责
 
 ### 数据模型（Game 核心）

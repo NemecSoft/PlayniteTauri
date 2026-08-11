@@ -83,11 +83,41 @@
 - 内存：blob LRU + Rust 缓存共同限制，海量图片不撑爆 WebView
 - 复用：同一图片二次进入视口零成本（双缓存命中）
 
+## 弹窗期间隔离图片加载（挂起机制）
+
+文件：`src/utils/assets.ts`
+
+当有全屏弹窗（如公告弹窗）显示时，我们不想让主界面网格的封面解码继续和弹窗动画抢主线程。
+`assets.ts` 提供两个开关：
+
+- **`suspendImageLoading()`**：挂起所有本地图片加载。`loadOne`/`loadBatch` 在解码前会
+  `await waitIfSuspended()`，处于挂起时一直等待，不解码。
+- **`resumeImageLoading()`**：恢复加载。把等待中的解码一次性放行。
+
+用法：弹窗组件挂载时调用 `suspendImageLoading()`，卸载（弹窗关闭）时调用 `resumeImageLoading()`。
+这样弹窗显示期间主线程完全空闲给弹窗动画，两者互不干扰。
+
+## 公告弹窗交互可靠性
+
+公告弹窗（`src/components/AnnouncementModal.tsx`）经历多次交互失效问题，最终确立以下成熟做法：
+
+1. **公告延迟到主界面加载完成后再弹出**（`src/App.tsx`）：公告不再一进 App 就弹，而是等游戏
+   数据 `loading` 变 false 且延迟约 600ms（让首屏渲染稳定）后再显示。之前公告与主界面加载同时
+   进行，主线程被占用，导致鼠标点击要"使劲按"很久才响应。
+2. **交互走 document 捕获阶段原生 `mousedown` 监听**：点"关闭"按钮（`data-action="close"`）
+   → 立即关闭；点公告其它任何地方 → 停止倒计时。不依赖 React 合成事件（在 WebView2 里嵌在
+   页面中的层偶尔失效）。
+3. **移除公告遮罩的 `backdrop-filter`**：在 WebView2/Chromium 里，`backdrop-filter` +
+   `position: fixed` 全屏元素会导致点击命中测试异常（点了没反应），改用具象深色背景。
+4. **公告用 `createPortal` 挂到 `<body>`**：脱离主界面 DOM 树和样式影响，事件更可靠。
+
 ## 相关文件
 
 - `src-tauri/src/commands/covers.rs` — 批量读取、进程缓存、spawn_blocking
-- `src/utils/assets.ts` — LRU blob 缓存、并发控制、imageUrl
+- `src/utils/assets.ts` — LRU blob 缓存、并发控制、imageUrl、suspendImageLoading/resumeImageLoading
 - `src/hooks/useLazyImage.ts` — IntersectionObserver + requestIdleCallback
 - `src/components/views/GridView.tsx` — GridCard + 懒加载 ref
 - `src/stores/gamesStore.ts` — 移除启动全量预加载
+- `src/App.tsx` — 公告延迟到加载完成后再弹出
+- `src/components/AnnouncementModal.tsx` — 公告弹窗（挂起图片加载、document 捕获交互、createPortal）
 - `src/styles/global.css` — 图片淡入动画

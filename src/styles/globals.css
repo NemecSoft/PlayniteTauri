@@ -234,3 +234,303 @@ h3,
 /* NOTE: no card entrance animation here — GridView is virtualized, so cards
    mount/unmount constantly while scrolling; a fade would flash on every row.
    Keep ambience to background + hover effects only. */
+
+/* ============================================================
+   Style effect features — strong, recognizable visual identity.
+   Driven by `:root[data-fx="..."]` (set by applyStyleVars).
+   These layer on top of the base aurora ambience (#root::before) and
+   the shared radius/shadow/glass variables from the style's vars.
+   ============================================================ */
+
+/* ---- Apple: frosted-glass surfaces, soft rounded, airy blur ---- */
+:root[data-fx="apple"] #root::before {
+  background:
+    radial-gradient(42% 42% at 22% 18%, rgba(120, 160, 255, 0.30), transparent 60%),
+    radial-gradient(38% 38% at 78% 72%, rgba(255, 140, 220, 0.22), transparent 60%),
+    radial-gradient(30% 30% at 60% 30%, rgba(90, 220, 255, 0.18), transparent 60%);
+  filter: blur(48px);
+  opacity: 0.6;
+}
+:root[data-fx="apple"] .grid-card {
+  border-radius: 18px;
+}
+:root[data-fx="apple"] .grid-card .cover {
+  border-radius: 14px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+:root[data-fx="apple"] .tb-btn,
+:root[data-fx="apple"] .btn,
+:root[data-fx="apple"] .sidebar-item {
+  border-radius: 12px;
+}
+:root[data-fx="apple"] .topbar,
+:root[data-fx="apple"] .sidebar {
+  background: color-mix(in srgb, var(--bg-top) 62%, transparent);
+  backdrop-filter: blur(var(--blur, 16px));
+  -webkit-backdrop-filter: blur(var(--blur, 16px));
+}
+
+/* ---- Neumorphism (soft): dual-sided extruded shadows + near-bg cards ---- */
+:root[data-fx="soft"] #root::before {
+  background: none;
+  opacity: 0;
+}
+:root[data-fx="soft"] .grid-card {
+  border-radius: 16px;
+}
+:root[data-fx="soft"] .grid-card .cover {
+  border: none;
+  box-shadow:
+    8px 8px 16px rgba(0, 0, 0, 0.22),
+    -8px -8px 16px rgba(255, 255, 255, 0.55),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.35),
+    inset 1px 1px 2px rgba(0, 0, 0, 0.10);
+  background: color-mix(in srgb, var(--bg-panel) 85%, white);
+}
+:root[data-fx="soft"] .sidebar,
+:root[data-fx="soft"] .topbar,
+:root[data-fx="soft"] .btn,
+:root[data-fx="soft"] .field input,
+:root[data-fx="soft"] .field select,
+:root[data-fx="soft"] .field textarea {
+  box-shadow:
+    5px 5px 12px rgba(0, 0, 0, 0.18),
+    -5px -5px 12px rgba(255, 255, 255, 0.45);
+}
+:root[data-fx="soft"] .btn.primary {
+  box-shadow:
+    4px 4px 10px rgba(0, 0, 0, 0.25),
+    -4px -4px 10px rgba(255, 255, 255, 0.30);
+}
+
+/* ---- Glassmorphism: translucent panels + backdrop blur + high-light edge ---- */
+:root[data-fx="glass"] #root::before {
+  background:
+    radial-gradient(40% 40% at 30% 25%, var(--accent-soft), transparent 60%),
+    radial-gradient(36% 36% at 70% 75%, var(--accent-soft), transparent 65%);
+  filter: blur(40px);
+  opacity: 0.7;
+}
+:root[data-fx="glass"] .grid-card .cover,
+:root[data-fx="glass"] .sidebar,
+:root[data-fx="glass"] .topbar,
+:root[data-fx="glass"] .btn,
+:root[data-fx="glass"] .modal,
+:root[data-fx="glass"] .context-menu,
+:root[data-fx="glass"] .toast,
+:root[data-fx="glass"] .news-item {
+  background: color-mix(in srgb, var(--card) 50%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: color-mix(in srgb, var(--border) 75%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 32px rgba(0, 0, 0, 0.20);
+}
+
+/* ---- Brutalism: thick black borders, hard offset shadows, squared ---- */
+:root[data-fx="brutal"] #root::before {
+  background: none;
+  opacity: 0;
+}
+:root[data-fx="brutal"] .grid-card {
+  border-radius: 0;
+}
+:root[data-fx="brutal"] .grid-card .cover {
+  border: 3px solid var(--text-primary);
+  border-radius: 0;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
+}
+:root[data-fx="brutal"] .grid-card .title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+:root[data-fx="brutal"] .btn,
+:root[data-fx="brutal"] .tb-btn,
+:root[data-fx="brutal"] .sidebar-item,
+:root[data-fx="brutal"] .sidebar-tag,
+:root[data-fx="brutal"] .field input,
+:root[data-fx="brutal"] .field select {
+  border: 2px solid var(--text-primary);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+:root[data-fx="brutal"] .btn.primary {
+  border: 2px solid var(--text-primary);
+  box-shadow: 4px 4px 0 var(--text-primary);
+}
+:root[data-fx="brutal"] .group-header {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 3px solid var(--text-primary);
+  border-radius: 0;
+}
+:root[data-fx="brutal"] .sidebar,
+:root[data-fx="brutal"] .topbar {
+  border-right: 2px solid var(--text-primary);
+  border-bottom: 2px solid var(--text-primary);
+}
+
+/* ---- Cyberpunk: neon glow, scanlines, high-saturation dark ---- */
+:root[data-fx="cyber"] #root::before {
+  background:
+    linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 200, 0.05) 1px, transparent 1px),
+    radial-gradient(40% 40% at 25% 20%, rgba(0, 240, 255, 0.18), transparent 60%),
+    radial-gradient(40% 40% at 75% 70%, rgba(255, 0, 200, 0.15), transparent 60%);
+  background-size: 42px 42px, 42px 42px, auto, auto;
+  filter: none;
+  opacity: 0.9;
+}
+:root[data-fx="cyber"] .grid-card .cover {
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent-soft), inset 0 0 12px rgba(0, 240, 255, 0.08);
+}
+:root[data-fx="cyber"] .grid-card .title {
+  text-shadow: 0 0 6px var(--accent-soft);
+}
+:root[data-fx="cyber"] .btn.primary {
+  box-shadow: 0 0 12px var(--accent-soft), 0 0 24px var(--accent-soft);
+}
+:root[data-fx="cyber"] .group-header {
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-soft);
+  border-bottom: 1px solid var(--accent);
+}
+:root[data-fx="cyber"] .tb-btn.active,
+:root[data-fx="cyber"] .sidebar-item.active,
+:root[data-fx="cyber"] .view-toggle button.active {
+  box-shadow: 0 0 10px var(--accent-soft), 0 0 20px var(--accent-soft);
+}
+
+/* ---- Sci-Fi HUD: techno grid bg, corner brackets, glow, mono ---- */
+:root[data-fx="hud"] #root::before {
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0, transparent 55%, rgba(0, 240, 255, 0.10) 100%),
+    linear-gradient(rgba(0, 200, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 200, 255, 0.07) 1px, transparent 1px);
+  background-size: auto, 34px 34px, 34px 34px;
+  filter: none;
+  opacity: 0.85;
+}
+:root[data-fx="hud"] .grid-card .cover {
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.20), inset 0 0 18px rgba(0, 200, 255, 0.06);
+}
+:root[data-fx="hud"] .grid-card .cover::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 22px;
+  height: 22px;
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  z-index: 4;
+  pointer-events: none;
+}
+:root[data-fx="hud"] .grid-card .cover::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 22px;
+  height: 22px;
+  border-bottom: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  z-index: 4;
+  pointer-events: none;
+}
+:root[data-fx="hud"] .topbar,
+:root[data-fx="hud"] .sidebar,
+:root[data-fx="hud"] .group-header {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+:root[data-fx="hud"] .group-header {
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-soft);
+  border-bottom: 1px dashed var(--accent);
+}
+:root[data-fx="hud"] .status-bar {
+  border-top: 1px dashed var(--accent);
+}
+
+/* ---- Pixel Art: chunky hard pixels, pixel font, stepped borders ---- */
+:root[data-fx="pixel"] #root::before {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 8px 8px, 8px 8px;
+  filter: none;
+  opacity: 0.7;
+}
+:root[data-fx="pixel"] .grid-card .cover,
+:root[data-fx="pixel"] .btn,
+:root[data-fx="pixel"] .tb-btn,
+:root[data-fx="pixel"] .sidebar-item,
+:root[data-fx="pixel"] .sidebar-tag,
+:root[data-fx="pixel"] .field input,
+:root[data-fx="pixel"] .field select,
+:root[data-fx="pixel"] .context-menu,
+:root[data-fx="pixel"] .modal {
+  border-radius: 0;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  image-rendering: pixelated;
+}
+:root[data-fx="pixel"] .grid-card .cover {
+  border: 2px solid var(--text-primary);
+}
+:root[data-fx="pixel"] .grid-card .title,
+:root[data-fx="pixel"] .group-header,
+:root[data-fx="pixel"] .tb-title,
+:root[data-fx="pixel"] h1,
+:root[data-fx="pixel"] h2,
+:root[data-fx="pixel"] h3 {
+  font-family: "Courier New", ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+:root[data-fx="pixel"] .btn.primary {
+  box-shadow: 4px 4px 0 var(--text-primary);
+}
+
+/* ---- Retro-Futurism / Vaporwave: neon gradient text, magenta-cyan ---- */
+:root[data-fx="retro"] #root::before {
+  background:
+    linear-gradient(180deg, rgba(255, 0, 128, 0.12), transparent 45%),
+    radial-gradient(40% 40% at 25% 30%, rgba(255, 0, 160, 0.20), transparent 60%),
+    radial-gradient(40% 40% at 75% 65%, rgba(0, 255, 240, 0.16), transparent 60%);
+  filter: none;
+  opacity: 0.85;
+}
+:root[data-fx="retro"] .grid-card .cover {
+  border: 1px solid rgba(255, 0, 160, 0.5);
+  box-shadow: 0 0 14px rgba(255, 0, 160, 0.30), 0 0 28px rgba(0, 255, 240, 0.12);
+}
+:root[data-fx="retro"] .grid-card .title,
+:root[data-fx="retro"] .group-header,
+:root[data-fx="retro"] .tb-title {
+  background: linear-gradient(90deg, #ff2ec4, #00ffe0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Courier New", ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+:root[data-fx="retro"] .btn.primary {
+  background: linear-gradient(90deg, #ff2ec4, #7a00ff);
+  box-shadow: 0 0 16px rgba(255, 46, 196, 0.5);
+}
+:root[data-fx="retro"] .group-header {
+  border-bottom: 1px solid rgba(255, 46, 196, 0.4);
+}
+:root[data-fx="retro"] .status-bar {
+  border-top: 1px dashed rgba(0, 255, 240, 0.4);
+}
