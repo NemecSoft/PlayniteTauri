@@ -89,12 +89,12 @@ export default function HorrorValleyVehicle({ heightMap, onPosition }: Props) {
       {/* 底盘 */}
       <mesh>
         <boxGeometry args={[CHASSIS.w, CHASSIS.h, CHASSIS.l]} />
-        <meshStandardMaterial color="#8b0000" />
+        <meshStandardMaterial color="#8b0000" roughness={0.8} metalness={0} flatShading />
       </mesh>
       {/* 车厢 */}
       <mesh position={[0, CHASSIS.h * 0.6, -0.3]}>
         <boxGeometry args={[CHASSIS.w * 0.8, CHASSIS.h * 0.7, CHASSIS.l * 0.6]} />
-        <meshStandardMaterial color="#2c2c2c" />
+        <meshStandardMaterial color="#2c2c2c" roughness={0.8} metalness={0} flatShading />
       </mesh>
     </group>
   );
