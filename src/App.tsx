@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import ParticleBackground from "./components/ParticleBackground";
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import LoginScreen from "./components/LoginScreen";
@@ -116,6 +117,7 @@ function AppShell() {
 
   return (
       <div className="app">
+        <ParticleBackground />
         <TopBar />
         <Routes>
           <Route path="/" element={<AppBody />} />

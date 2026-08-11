@@ -7,6 +7,9 @@
   影响 GridView 虚拟化与懒加载性能。
 - **界面炫酷化（阶段 B：Framer Motion）**：引入 `framer-motion`，为设置弹窗、公告弹窗增加
   打开/关闭的淡入缩放过渡，设置弹窗内 section 切换淡入上移，主内容区顶部 tab 切换淡入滑动。
+- **界面炫酷化（阶段 C：WebGL 粒子背景）**：引入 `three.js`，主界面加入全屏固定 Three.js
+  粒子星云背景（独立 canvas，z-index 0，pointer-events none，不干扰虚拟化网格与点击）。
+  粒子颜色跟随主题强调色，低 GPU 占用、失焦暂停、卸载清理、无 WebGL 时自动降级。
 - **主题系统重构为 96 配色 × 53 风格**：移除 next-themes 与 4 个基础主题，改为独立的两维
   选择器（96 配色 + 53 风格，均来自 ui-ux-pro-max 设计系统），点击即注入 `:root` CSS 变量并
   持久化。风格含圆角/发光/阴影/字体差异；移除了 14 个需 3D/WebGL/语音/AI 无法用 CSS 实现的

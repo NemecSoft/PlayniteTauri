@@ -171,7 +171,14 @@ h3,
   }
 }
 
-/* Keep app shell above the aurora layer. */
+/* Keep app content above the aurora layer and the WebGL particle canvas.
+   .app carries the whole UI; give it its own stacking context so everything
+   inside sits above the fixed background layers (z-index 0). */
+.app {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
 .app-shell,
 .login-card {
   position: relative;
