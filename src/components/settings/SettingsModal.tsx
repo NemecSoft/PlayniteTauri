@@ -1,6 +1,7 @@
 // Settings dialog with sections mirroring Playnite's settings window.
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Settings, Palette, Database, Plug, Brush, Lock } from "lucide-react";
 import GeneralSection from "./GeneralSection";
 import AppearanceSection from "./AppearanceSection";
@@ -30,9 +31,41 @@ export default function SettingsModal({ onClose }: Props) {
     { id: "plugins", label: t("settings_plugins"), icon: <Plug size={15} /> },
   ];
 
+  const sectionContent = () => {
+    switch (section) {
+      case "general":
+        return <GeneralSection />;
+      case "appearance":
+        return <AppearanceSection />;
+      case "themes":
+        return <ThemesSection />;
+      case "login":
+        return <LoginSection />;
+      case "library":
+        return <LibrarySection />;
+      case "plugins":
+        return <PluginsSection />;
+    }
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ minWidth: 720, maxWidth: 860, height: "82vh" }} onClick={(e) => e.stopPropagation()}>
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal"
+        style={{ minWidth: 720, maxWidth: 860, height: "82vh" }}
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>{t("settings_title")}</h2>
           <Button
@@ -58,15 +91,20 @@ export default function SettingsModal({ onClose }: Props) {
             ))}
           </div>
           <div className="settings-content">
-            {section === "general" && <GeneralSection />}
-            {section === "appearance" && <AppearanceSection />}
-            {section === "themes" && <ThemesSection />}
-            {section === "login" && <LoginSection />}
-            {section === "library" && <LibrarySection />}
-            {section === "plugins" && <PluginsSection />}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={section}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.14, ease: "easeOut" }}
+              >
+                {sectionContent()}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

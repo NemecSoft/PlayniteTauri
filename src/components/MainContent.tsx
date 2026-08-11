@@ -3,6 +3,7 @@
 //   videos -> videos tab
 //   tools  -> extra tools tab
 
+import { motion, AnimatePresence } from "framer-motion";
 import Toolbar from "./Toolbar";
 import GamesView from "./views/GamesView";
 import NewsView from "./views/NewsView";
@@ -16,26 +17,52 @@ export default function MainContent() {
   const activePage = useGamesStore((s) => s.activePage);
   const activeTab = useUIStore((s) => s.activeTab);
 
-  return (
-    <main className="flex flex-1 flex-col overflow-hidden">
-      {activeTab === "videos" ? (
-        <VideosView />
-      ) : activeTab === "tools" ? (
-        <ToolsView />
-      ) : activePage === "news" ? (
-        <NewsView />
-      ) : (
+  // Identify the active view so switching tabs animates a fade/slide. The
+  // animation is cheap (opacity + small y) and only runs on tab switch — it
+  // does not affect scrolling within the virtualized GamesView.
+  let viewKey: string;
+  let view: React.ReactNode;
+  if (activeTab === "videos") {
+    viewKey = "videos";
+    view = <VideosView />;
+  } else if (activeTab === "tools") {
+    viewKey = "tools";
+    view = <ToolsView />;
+  } else if (activePage === "news") {
+    viewKey = "news";
+    view = <NewsView />;
+  } else {
+    viewKey = loading ? "loading" : "home";
+    view =
+      activeTab === "home" && !loading ? (
         <>
           <Toolbar />
-          {loading ? (
-            <div className="grid h-full place-items-center">
-              <div className="size-[26px] animate-spin rounded-full border-[3px] border-border border-t-accent" />
-            </div>
-          ) : (
-            <GamesView />
-          )}
+          <GamesView />
         </>
-      )}
+      ) : activeTab === "home" ? (
+        <>
+          <Toolbar />
+          <div className="grid h-full place-items-center">
+            <div className="size-[26px] animate-spin rounded-full border-[3px] border-border border-t-accent" />
+          </div>
+        </>
+      ) : null;
+  }
+
+  return (
+    <main className="flex flex-1 flex-col overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={viewKey}
+          className="flex flex-1 flex-col overflow-hidden"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+        >
+          {view}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 }

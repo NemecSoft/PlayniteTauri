@@ -2,6 +2,7 @@
 // optional login screen.
 
 import { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
@@ -122,10 +123,12 @@ function AppShell() {
         </Routes>
         <ToastContainer />
         <ImageProgressBar />
-        {settingsOpen && <SettingsModal onClose={closeSettings} />}
-        {showAnnouncement && (
-          <AnnouncementModal onClose={closeAnnouncement} />
-        )}
+        <AnimatePresence>
+          {settingsOpen && <SettingsModal onClose={closeSettings} />}
+          {showAnnouncement && (
+            <AnnouncementModal onClose={closeAnnouncement} />
+          )}
+        </AnimatePresence>
       </div>
   );
 }
