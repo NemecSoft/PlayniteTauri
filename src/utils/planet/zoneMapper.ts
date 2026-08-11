@@ -3,7 +3,7 @@
 // 里的关键词（中文/英文）来判断。一个游戏只进一个分区，按 ZONE_ORDER 从上到
 // 下先命中先归属；都不命中就归到"未分类"。这样观感统一、好控制。
 
-import type { Game } from "../types/models";
+import type { Game } from "../../types/models";
 import { ZONE_ORDER, type Zone, type ZoneId } from "./types";
 
 // 每个分区对应一组关键词。游戏名或 genre 里出现任一关键词就算命中。

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mapGamesToZones, matchZone } from "../zoneMapper";
 import { ZONE_ORDER } from "../types";
-import type { Game } from "../../types/models";
+import type { Game } from "../../../types/models";
 
 // 构造最小 Game 对象
 function makeGame(over: Partial<Game>): Game {
@@ -11,6 +11,7 @@ function makeGame(over: Partial<Game>): Game {
     installed: false,
     otherTasks: [],
     playCount: 0,
+    playtime: 0,
     added: "",
     modified: "",
     category: [],
@@ -29,6 +30,7 @@ function makeGame(over: Partial<Game>): Game {
     userScoreSet: false,
     manualGame: false,
     actions: [],
+    links: [],
     featuresEnabled: false,
     gameLevel: 1,
     ...over,
