@@ -103,23 +103,29 @@ export default function HorrorValleyVehicle({ heightMap, onPosition }: Props) {
 /** 创建物理世界、地形碰撞体（Heightfield）、车辆，返回引用。 */
 function createPhysics(heightMap: ValleyHeightMap) {
   const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
-  // Heightfield 内部把 data 当成 [x][z] 的二维数组，元素间距 elementSize。
-  // 我们的 heights 是行主序 heights[z*size+x]，要转成 [x][z] 形式赋给 data。
+  // cannon-es 的 Heightfield：网格默认平铺在局部 XY 平面，高度沿局部 Z。要让高度场
+  // 变成"水平地形、高度朝上（世界 Y）"，必须把 body 绕 X 轴旋转 -90°。
+  // 旋转后局部 x → 世界 x，局部 y → 世界 -z。为了让 data 覆盖世界 z 从 -half 到
+  // +half，需要 body 摆在地图右上方（z=+half），并把高度图的 z 方向反过来。
+  // 我们的 heights 是行主序 heights[z*size+x]（z 行、x 列），z 从 0 到 size-1
+  // 对应世界 z 从 -half 到 +half。
   const { size, half, heights } = heightMap;
   const cell = (half * 2) / size;
   const data: number[][] = [];
   for (let x = 0; x < size; x++) {
     const col: number[] = [];
-    for (let z = 0; z < size; z++) {
-      // heights[z*size + x]：行 z、列 x
-      col.push(heights[z * size + x]);
+    for (let yi = 0; yi < size; yi++) {
+      // yi 对应世界 z = half - yi*cell，所以高度图的行号 gz = size-1-yi（z 反向）
+      const gz = size - 1 - yi;
+      col.push(heights[gz * size + x]);
     }
     data.push(col);
   }
   const shape = new CANNON.Heightfield(data, { elementSize: cell });
   const terrainBody = new CANNON.Body({ mass: 0, shape });
-  // Heightfield body 的位置是高度场左下角，世界坐标 (x=-half, z=-half)
-  terrainBody.position.set(-half, 0, -half);
+  // 旋转 -90° 把高度场放平，位置放到地图左上（x=-half, z=+half）让网格覆盖全图。
+  terrainBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+  terrainBody.position.set(-half, 0, half);
   world.addBody(terrainBody);
 
   // 底盘刚体（初始放在地图中心偏前的位置，y 高一些让车落到地面）
