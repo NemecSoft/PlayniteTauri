@@ -106,7 +106,7 @@ function CaveMesh({
   return (
     <group position={[spot.x, y, spot.z]}>
       {/* 拱形门：一个低多边形半圆环，朝向洞口 */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]} castShadow receiveShadow>
         <torusGeometry args={[2, 0.6, 6, 12, Math.PI]} />
         <meshStandardMaterial color="#3a2b25" roughness={0.9} metalness={0} flatShading />
       </mesh>

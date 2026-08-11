@@ -84,13 +84,13 @@ export default function HorrorValleyTrees({ trees, heightMap }: Props) {
   return (
     <group>
       {/* 树干 */}
-      <instancedMesh ref={trunkRef} args={[undefined, undefined, count]}>
+      <instancedMesh ref={trunkRef} args={[undefined, undefined, count]} castShadow>
         <cylinderGeometry args={[TRUNK_R, TRUNK_R * 1.3, TRUNK_H, 7]} />
         <meshStandardMaterial color={0x8a5a34} roughness={0.8} metalness={0} flatShading />
       </instancedMesh>
       {/* 3 层树冠 */}
       {LAYERS.map((l, li) => (
-        <instancedMesh key={li} ref={crownRefs[li]} args={[undefined, undefined, count]}>
+        <instancedMesh key={li} ref={crownRefs[li]} args={[undefined, undefined, count]} castShadow>
           <coneGeometry args={[l.radius, l.height, 8]} />
           <meshStandardMaterial roughness={0.85} metalness={0} flatShading vertexColors />
         </instancedMesh>

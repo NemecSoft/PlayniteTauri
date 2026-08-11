@@ -54,9 +54,40 @@ export default function HorrorValleyView({ games, onBack }: Props) {
 
   return (
     <div className="planet-container">
-      <Canvas camera={{ position: [0, 20, 40], fov: 60 }} dpr={[1, 2]} gl={{ antialias: true }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[30, 40, 20]} intensity={1} />
+      {/* shadows 开启阴影（柔和），配合方向光让低多边形每个面有明暗对比 */}
+      <Canvas
+        shadows
+        camera={{ position: [0, 20, 40], fov: 60 }}
+        dpr={[1, 2]}
+        gl={{ antialias: true }}
+      >
+        {/* 天空背景 + 雾（暖白，远处渐变消失），参考"低多边形森林公园" */}
+        <color attach="background" args={["#dff0ff"]} />
+        <fog attach="fog" args={["#eef4f8", 120, 460]} />
+        {/* 太阳光：暖橙色，带阴影，是低多边形明暗对比的主角 */}
+        <directionalLight
+          castShadow
+          color="#ffd9a0"
+          intensity={2.6}
+          position={[80, 90, 40]}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-near={1}
+          shadow-camera-far={260}
+          shadow-camera-left={-95}
+          shadow-camera-right={95}
+          shadow-camera-top={95}
+          shadow-camera-bottom={-95}
+          shadow-bias={-0.0004}
+          shadow-normalBias={0.05}
+        />
+        {/* 补光：冷蓝色，照亮阴影面 */}
+        <directionalLight color="#b0d0ff" intensity={0.6} position={[-60, 40, -50]} />
+        {/* 半球光：天空蓝 + 地面暖橙的环境漫反射 */}
+        <hemisphereLight color="#b8dcff" groundColor="#ffd9b0" intensity={0.5} />
+        {/* 环境光：暖米色兜底 */}
+        <ambientLight color="#ffe8d0" intensity={0.4} />
+
         <HorrorValleyTerrain heightMap={heightMap} />
         <HorrorValleyTrees trees={trees} heightMap={heightMap} />
         <HorrorValleyVehicle heightMap={heightMap} onPosition={setVehiclePos} />
