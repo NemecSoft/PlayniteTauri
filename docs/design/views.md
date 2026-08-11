@@ -34,6 +34,16 @@
 - 代码分割：`PlanetView` 用 `React.lazy` 懒加载，three.js 只在切到星球视图时按需加载。
 - WebGL 不可用时自动降级，提示用户使用网格视图。
 
+### 恐怖谷 3D 地图（`HorrorValleyView`）
+
+- 点击星球上的"恐怖谷"分区 → 进入一块独立的 3D 地图（独立 Canvas）。
+- 地形：噪声生成的高度图，含草地/山脉/河流（`src/utils/planet/valleyTerrain.ts`）。
+- 车辆：`cannon-es` 物理引擎（`RaycastVehicle`），WASD/方向键驾驶，第三人称相机跟随，
+  能翻越起伏地形（`HorrorValleyVehicle`）。
+- 山洞：每个恐怖谷游戏一个拱形洞口，封面作贴图，沿道路布局（`src/utils/planet/valleyLayout.ts`）。
+- 开车到洞口 → 跳转该游戏详情页；角落"返回星球"按钮回到星球视图。
+- 封面懒加载（车接近才加载），恐怖谷场景 `React.lazy` 懒加载，three + cannon 按需加载。
+
 ## 分组与排序（`src/utils/selectors.ts`）
 
 - `filterGames(games, opts)`：按可见性（隐藏/仅已安装/收藏）、平台/分类/类型/开发商过滤器、
