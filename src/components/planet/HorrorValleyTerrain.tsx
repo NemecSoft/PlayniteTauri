@@ -20,25 +20,26 @@ export default function HorrorValleyTerrain({ heightMap }: Props) {
     geometry.rotateX(-Math.PI / 2); // 把平面从 XY 翻到 XZ，让 Y 朝上
     const pos = geometry.attributes.position as THREE.BufferAttribute;
     const colors = new Float32Array(pos.count * 3);
-    // 河流：一条对角线的低洼带，用蓝色；山脉：高处用灰褐；其余是草地绿。
+    // 优先级：道路 > 河流 > 山脉 > 草地
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const z = pos.getZ(i);
-      // 从世界坐标换算回高度图下标（居中），取对应高度
       const gx = Math.round((x + half) / cell);
       const gz = Math.round((z + half) / cell);
       const gi = gz * size + gx;
       const h = heights[gi] ?? 0;
       pos.setY(i, h);
-      // 上色：先看是否在河床（沿一条对角线的低洼带），再看高度分山脉/草地
-      const riverDist = Math.abs((x + z) / (half * 2)); // 对角线距离
+      const isRoad = heightMap.isRoadMask[gi] === 1;
+      const riverDist = Math.abs((x + z) / (half * 2));
       let col: [number, number, number];
-      if (riverDist < 0.06) {
-        col = [0.2, 0.4, 0.7]; // 河流蓝
+      if (isRoad) {
+        col = [0.45, 0.42, 0.38]; // 道路深灰
+      } else if (riverDist < 0.06) {
+        col = [0.2, 0.4, 0.7];
       } else if (h > 6) {
-        col = [0.4, 0.36, 0.32]; // 山脉灰褐
+        col = [0.4, 0.36, 0.32];
       } else {
-        col = [0.3, 0.55, 0.3]; // 草地绿
+        col = [0.3, 0.55, 0.3];
       }
       colors[i * 3] = col[0];
       colors[i * 3 + 1] = col[1];
@@ -47,7 +48,7 @@ export default function HorrorValleyTerrain({ heightMap }: Props) {
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     geometry.computeVertexNormals();
     return geometry;
-  }, [size, half, heights]);
+  }, [size, half, heights, heightMap.isRoadMask]);
 
   return (
     <mesh geometry={geo} receiveShadow>
