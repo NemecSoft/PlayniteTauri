@@ -58,7 +58,7 @@ export default function AboutModal({ onClose }: Props) {
                 marginBottom: 12,
               }}
             >
-              {t("about_version", { version: "v10.0.0" })}
+              {t("about_version", { version: "v0.2.0" })}
             </div>
             <div
               style={{

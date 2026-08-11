@@ -1,6 +1,6 @@
 [package]
 name = "yungame-core"
-version = "10.0.0"
+version = "0.2.0"
 description = "YunGame shared core library: data models, db, auth, process, settings, covers, commands"
 edition = "2021"
 rust-version = "1.74"

@@ -1,6 +1,6 @@
 [package]
 name = "yungame-admin"
-version = "10.0.0"
+version = "0.2.0"
 description = "YunGame admin console (Playnite.Admin.exe)"
 authors = ["YunGame"]
 edition = "2021"
