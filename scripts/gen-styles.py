@@ -88,7 +88,8 @@ def infer_style_vars(name: str, category: str) -> dict:
     glow = "neon" if any(g in name for g in GLOW_STYLES) else "none"
     font = "monospace" if any(m in name for m in MONO_STYLES) else "inherit"
     shadow = SHADOW_STYLES.get(name, "none")
-    return {"radius": radius, "glow": glow, "shadow": shadow, "font": font}
+    blur = "12px" if name == "Glassmorphism" or name == "Liquid Glass" else "0px"
+    return {"radius": radius, "glow": glow, "shadow": shadow, "font": font, "blur": blur}
 
 
 def parse_design_vars(raw: str) -> dict:
@@ -145,6 +146,7 @@ def main():
         "  glow: string;",
         "  shadow: string;",
         "  font: string;",
+        "  blur: string;",
         "}",
         "",
         "export interface StyleEntry {",
@@ -168,6 +170,23 @@ def main():
             lines.append(f'      {k}: "{v}",')
         lines.append("    },")
         lines.append("  },")
+
+    # Apple "liquid glass" style (hand-authored; large radius, frosted glass
+    # blur, soft shadow, system font).
+    lines.append("  {")
+    lines.append('    id: "apple",')
+    lines.append('    name: "Apple",')
+    lines.append('    zh: "苹果",')
+    lines.append('    category: "设计",')
+    lines.append("    vars: {")
+    lines.append('      radius: "16px",')
+    lines.append('      glow: "none",')
+    lines.append('      shadow: "glass",')
+    lines.append('      font: "inherit",')
+    lines.append('      blur: "16px",')
+    lines.append("    },")
+    lines.append("  },")
+
     lines.append("];")
     lines.append("")
 

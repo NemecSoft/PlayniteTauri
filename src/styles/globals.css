@@ -111,6 +111,21 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* Frosted-glass (Apple style): semi-transparent surfaces + backdrop blur.
+   Enabled via [data-glass] by applyStyleVars when the style has a blur. */
+:root[data-glass="1"] [class*="card"],
+:root[data-glass="1"] [class*="modal"],
+:root[data-glass="1"] [class*="panel"],
+:root[data-glass="1"] [class*="tool-card"],
+:root[data-glass="1"] [class*="video-card"],
+:root[data-glass="1"] .context-menu,
+:root[data-glass="1"] .toast-container {
+  background-color: color-mix(in srgb, var(--card) 55%, transparent);
+  backdrop-filter: blur(var(--blur, 12px));
+  -webkit-backdrop-filter: blur(var(--blur, 12px));
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
+}
+
 /* Make the chosen style's glow visible on headings & emphasized text app-wide
    (keyframes/shadows kept subtle; default --glow is "none"). */
 h1,

@@ -8,6 +8,7 @@ export interface StyleVars {
   glow: string;
   shadow: string;
   font: string;
+  blur: string;
 }
 
 export interface StyleEntry {
@@ -29,6 +30,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -41,6 +43,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "soft",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -53,6 +56,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "glass",
       font: "inherit",
+      blur: "12px",
     },
   },
   {
@@ -65,6 +69,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "hard",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -77,6 +82,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -89,6 +95,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -101,6 +108,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -113,6 +121,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "soft",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -125,6 +134,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -137,6 +147,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "neon",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -149,6 +160,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -161,6 +173,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "deep",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -173,6 +186,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -185,6 +199,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -197,6 +212,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -209,6 +225,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -221,6 +238,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -233,6 +251,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -245,6 +264,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -257,6 +277,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -269,6 +290,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -281,6 +303,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -293,6 +316,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -305,6 +329,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -317,6 +342,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -329,6 +355,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -341,6 +368,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -353,6 +381,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -365,6 +394,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -377,6 +407,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -389,6 +420,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -401,6 +433,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -413,6 +446,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -425,6 +459,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -437,6 +472,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -449,6 +485,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -461,6 +498,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -473,6 +511,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -485,6 +524,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -497,6 +537,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -509,6 +550,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -521,6 +563,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -533,6 +576,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -545,6 +589,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -557,6 +602,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -569,6 +615,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -581,6 +628,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -593,6 +641,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -605,6 +654,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -617,6 +667,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -629,6 +680,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "none",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
     },
   },
   {
@@ -641,6 +693,7 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "monospace",
+      blur: "0px",
     },
   },
   {
@@ -653,6 +706,20 @@ export const styleLibrary: StyleEntry[] = [
       glow: "neon",
       shadow: "none",
       font: "inherit",
+      blur: "0px",
+    },
+  },
+  {
+    id: "apple",
+    name: "Apple",
+    zh: "苹果",
+    category: "设计",
+    vars: {
+      radius: "16px",
+      glow: "none",
+      shadow: "glass",
+      font: "inherit",
+      blur: "16px",
     },
   },
 ];

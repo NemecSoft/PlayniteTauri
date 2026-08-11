@@ -117,6 +117,10 @@ export function applyStyleVars(vars: StyleVars): void {
   root.style.setProperty("--glow", GLOW_MAP[vars.glow] || "none");
   root.style.setProperty("--shadow", SHADOW_MAP[vars.shadow] || "none");
   root.style.setProperty("--font-ui", vars.font);
+  root.style.setProperty("--blur", vars.blur || "0px");
+  // Toggle frosted-glass mode for surfaces when the style has a blur.
+  const glassOn = (vars.blur || "0px") !== "0px";
+  root.dataset.glass = glassOn ? "1" : "";
 }
 
 export function getStoredStyleId(): string | null {
