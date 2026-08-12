@@ -63,6 +63,17 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
     // Whether to record play time (user-toggleable setting).
     let track = settings.track_playtime;
 
+    // 启动前脚本：先同步执行完（成功与否都继续启动游戏，避免脚本问题阻止游戏运行）。
+    if game.pre_launch_enabled {
+        if let Some(s) = &game.pre_launch_script {
+            if !s.trim().is_empty() {
+                let expanded = crate::script_runner::expand_variables(s, &game);
+                let cwd = game.install_directory.as_deref().map(std::path::Path::new);
+                let _ = crate::script_runner::run_script(&expanded, cwd);
+            }
+        }
+    }
+
     let launched = if let Some(play_task_id) = &game.play_task {
         let action = game
             .actions
@@ -127,6 +138,23 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
             false
         }
     };
+
+    // 启动后脚本：游戏进程已拉起，异步执行（不阻塞命令返回）。
+    if launched && game.post_launch_enabled {
+        if let Some(s) = &game.post_launch_script {
+            if !s.trim().is_empty() {
+                let expanded = crate::script_runner::expand_variables(s, &game);
+                let cwd = game
+                    .install_directory
+                    .as_deref()
+                    .map(std::path::PathBuf::from);
+                // 放到后台线程跑，避免阻塞命令响应。
+                std::thread::spawn(move || {
+                    let _ = crate::script_runner::run_script(&expanded, cwd.as_deref());
+                });
+            }
+        }
+    }
 
     Ok(launched)
 }
