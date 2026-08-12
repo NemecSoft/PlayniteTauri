@@ -209,19 +209,31 @@ pub fn running_games(state: State<AppState>) -> crate::Result<Vec<crate::process
 }
 
 /// 管理端"测试脚本"：不启动游戏，只执行传入的脚本并返回每行结果。
-/// 若提供 game_id，会用该游戏的安装目录作为工作目录。
+/// 工作目录优先级：游戏所属游戏库的根目录（基准文件夹）→ 游戏安装目录 → 应用目录。
+/// 脚本里用相对路径时，按这个目录解析。
 #[tauri::command]
 pub fn test_script(
     state: State<AppState>,
     script: String,
     game_id: Option<String>,
 ) -> crate::Result<Vec<crate::script_runner::ScriptLineResult>> {
-    // 若给了游戏，用它的安装目录当工作目录，方便脚本里用相对路径。
     let cwd = if let Some(id) = &game_id {
         let db = state.db.lock().unwrap();
-        db.get_game(id)?
-            .and_then(|g| g.install_directory)
-            .map(std::path::PathBuf::from)
+        // 先取游戏所属游戏库的名字
+        let lib_name = db.get_game(id)?.and_then(|g| g.game_library);
+        // 再查 settings 里的游戏库列表，找到对应 path
+        let settings = db.load_settings().ok();
+        let lib_path = lib_name.as_deref().and_then(|n| {
+            settings
+                .as_ref()
+                .and_then(|s| s.game_libraries.iter().find(|l| l.name == n))
+                .map(|l| l.path.clone())
+        });
+        // 回退到游戏安装目录，最后回退到应用目录
+        let dir = lib_path
+            .or_else(|| db.get_game(id).ok().flatten().and_then(|g| g.install_directory))
+            .unwrap_or_else(|| crate::settings::AppPaths::config_root().to_string_lossy().to_string());
+        Some(std::path::PathBuf::from(dir))
     } else {
         None
     };

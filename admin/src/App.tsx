@@ -1149,56 +1149,36 @@ export default function AdminApp() {
                   </div>
                 )}
 
-                {/* Bottom of the actions tab: read-only summary of referenced
-                    libraries + one-shot path migration helper. */}
+                {/* 指令页底部：只读显示当前游戏所属的游戏库，作为启动项路径的
+                    基准文件夹。通用页选了哪个游戏库，这里就显示哪个（及其根路径），
+                    不再扫启动项路径里出现的占位符。 */}
                 <div className="actions-head" style={{ marginTop: 16 }}>
-                  <span>此启动项引用的游戏库（只读）</span>
+                  <span>基准游戏库（只读，来自"通用"页选择）</span>
                 </div>
                 {(() => {
-                  const used = new Set<string>();
-                  for (const a of gameForm.actions) {
-                    for (const k of ["path", "workingDir"] as const) {
-                      const v = a[k];
-                      if (!v) continue;
-                      const m = v.match(/\{([^}]+)\}/g);
-                      if (m) m.forEach((t) => used.add(t.slice(1, -1)));
-                    }
+                  const libName = gameForm.gameLibrary?.trim() || "";
+                  if (!libName) {
+                    return <p className="hint">未在"通用"页指定游戏库。启动项路径只能用绝对路径。</p>;
                   }
-                  if (used.size === 0) {
-                    return <p className="hint">未在启动项路径中引用任何游戏库占位符。</p>;
-                  }
+                  const lib = gameLibraries.find((l) => l.name === libName);
                   return (
-                    <div className="tag-picker">
-                      {Array.from(used).map((name) => (
-                        <span key={name} className="lib-token">{`{${name}}`}</span>
-                      ))}
+                    <div className="lib-base-box">
+                      <div className="lib-base-row">
+                        <span className="lib-base-label">占位符</span>
+                        <code className="lib-base-token">{`{${libName}}`}</code>
+                      </div>
+                      <div className="lib-base-row">
+                        <span className="lib-base-label">基准目录</span>
+                        <span className="lib-base-path">
+                          {lib?.path || <em className="hint">（该库尚未在"游戏库管理"页配置根目录）</em>}
+                        </span>
+                      </div>
+                      <p className="hint" style={{ marginTop: 8 }}>
+                        启动项路径用 <code>{`{${libName}}\\子路径\\game.exe`}</code> 这种写法时，客户端会用上面的"基准目录"展开。
+                      </p>
                     </div>
                   );
                 })()}
-
-                <div className="actions-head" style={{ marginTop: 16 }}>
-                  <span>迁移旧路径（一次性，将全库 .\Gamelibrary\ 升级为 {"{Gamelibrary1}"}）</span>
-                  <button
-                    onClick={() => {
-                      askConfirm(
-                        "将所有游戏的启动项路径从旧的 .\\Gamelibrary\\ 升级为 {Gamelibrary1}\\ 占位符？",
-                        async () => {
-                          try {
-                            const r = await call<{ scanned: number; updated: number; examples: string[] }>(
-                              "admin_migrate_gamelibrary_placeholder"
-                            );
-                            showToast(`迁移完成：扫描 ${r.scanned}，更新 ${r.updated}`);
-                            await reload();
-                          } catch (e) {
-                            showToast(`迁移失败: ${String(e)}`);
-                          }
-                        }
-                      );
-                    }}
-                  >
-                    迁移旧路径
-                  </button>
-                </div>
               </div>
             )}
 

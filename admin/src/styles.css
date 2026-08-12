@@ -379,6 +379,36 @@ button.danger:hover {
   font-size: 13px;
   color: #374151;
 }
+.lib-base-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f9fafb;
+}
+.lib-base-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+.lib-base-label {
+  font-size: 12px;
+  color: #6b7280;
+  min-width: 56px;
+}
+.lib-base-token {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  background: #eef0f3;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.lib-base-path {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  color: #1b1b1b;
+  word-break: break-all;
+}
 .actions-list {
   display: flex;
   flex-direction: column;
