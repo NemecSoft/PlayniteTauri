@@ -87,6 +87,8 @@ pub struct Game {
     #[serde(default)]
     pub alternate_names: Vec<String>,
     pub game_id: Option<String>,
+    /// 是否已安装。默认 false，缺省时不强制要求前端传（用 false 兜底）。
+    #[serde(default)]
     pub installed: bool,
     pub install_directory: Option<String>,
     pub play_task: Option<String>,

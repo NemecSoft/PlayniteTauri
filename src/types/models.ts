@@ -39,7 +39,8 @@ export interface Game {
   /** Unofficial nicknames / colloquial aliases without a language tag. */
   alternateNames?: string[];
   gameId?: string;
-  installed: boolean;
+  /** 是否已安装。缺省视为未安装。 */
+  installed?: boolean;
   installDirectory?: string;
   playTask?: string;
   otherTasks: string[];
