@@ -15,6 +15,7 @@ pub mod models;
 pub mod plugins;
 pub mod process;
 pub mod sample_data;
+pub mod script_runner;
 pub mod settings;
 pub mod system;
 
