@@ -88,6 +88,12 @@ export interface Game {
   guide?: string | null;
   screenshots?: string[];
   videos?: GameVideo[];
+  preLaunchScript?: string | null;
+  preLaunchEnabled?: boolean;
+  postLaunchScript?: string | null;
+  postLaunchEnabled?: boolean;
+  postExitScript?: string | null;
+  postExitEnabled?: boolean;
 }
 
 export interface PublicUser {

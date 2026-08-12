@@ -326,6 +326,51 @@ button.danger:hover {
   border-radius: 4px;
   font-size: 11px;
 }
+.script-editor {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.script-editor .check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.script-editor textarea {
+  width: 100%;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.script-editor .script-tools {
+  margin-top: 8px;
+}
+.script-editor .script-result {
+  margin-top: 8px;
+  font-size: 12px;
+  max-height: 140px;
+  overflow: auto;
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 8px;
+}
+.script-result .ok {
+  color: #15803d;
+}
+.script-result .bad {
+  color: #b91c1c;
+}
+.script-result .err {
+  color: #6b7280;
+  margin-left: 4px;
+}
 .actions-head {
   display: flex;
   align-items: center;

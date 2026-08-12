@@ -13,7 +13,7 @@ function ModalMask({ children }: { children: React.ReactNode }) {
 type Tab = "games" | "users" | "libraries";
 
 // Editor sub-tabs for a game.
-type EditTab = "general" | "actions";
+type EditTab = "general" | "actions" | "scripts";
 
 export default function AdminApp() {
   const [tab, setTab] = useState<Tab>("games");
@@ -46,6 +46,12 @@ export default function AdminApp() {
     favorite: false,
     hidden: false,
     actions: [] as GameAction[],
+    preLaunchScript: "",
+    preLaunchEnabled: false,
+    postLaunchScript: "",
+    postLaunchEnabled: false,
+    postExitScript: "",
+    postExitEnabled: false,
   });
   // Game libraries: [{ name, path }] — name is user-editable ("库1" etc.),
   // path is the root directory. Referenced via `{name}` placeholders.
@@ -107,6 +113,25 @@ export default function AdminApp() {
   // default working directory is derived from `path` (exe.parent) and is
   // auto-synced while the user hasn't touched it.
   const customWorkingDirRef = useRef<Record<string, boolean>>({});
+
+  // 脚本"测试"的每行结果，key 区分三段脚本（pre/postLaunch/postExit）。
+  const [scriptTest, setScriptTest] = useState<Record<string, { line: string; ok: boolean; error?: string }[]>>({});
+  const runTestScript = async (kind: "pre" | "postLaunch" | "postExit") => {
+    const script = kind === "pre" ? gameForm.preLaunchScript : kind === "postLaunch" ? gameForm.postLaunchScript : gameForm.postExitScript;
+    if (!script || !script.trim()) {
+      showToast("脚本为空，无可测试");
+      return;
+    }
+    try {
+      const r = await call<{ line: string; ok: boolean; error?: string }[]>("test_script", {
+        script,
+        gameId: editingGame?.id || null,
+      });
+      setScriptTest((prev) => ({ ...prev, [kind]: r }));
+    } catch (e) {
+      showToast(`测试失败: ${String(e)}`);
+    }
+  };
 
   /** Derive the default working directory from a launch path.
    *
@@ -219,7 +244,7 @@ export default function AdminApp() {
   const openNewGame = () => {
     setEditingGame({ id: "", name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [] });
     setEditTab("general");
-    const f = { name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [], tags: [], gameLibrary: "", version: "", publisher: [], series: [], releaseDate: "", description: "", guide: "", notes: "", favorite: false, hidden: false, actions: [] };
+    const f = { name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [], tags: [], gameLibrary: "", version: "", publisher: [], series: [], releaseDate: "", description: "", guide: "", notes: "", favorite: false, hidden: false, actions: [], preLaunchScript: "", preLaunchEnabled: false, postLaunchScript: "", postLaunchEnabled: false, postExitScript: "", postExitEnabled: false };
     setGameForm(f);
     gameFormInitRef.current = JSON.stringify(f);
     customWorkingDirRef.current = {};
@@ -262,6 +287,12 @@ export default function AdminApp() {
           trackGame: !!a.trackGame,
         };
       }),
+      preLaunchScript: g.preLaunchScript || "",
+      preLaunchEnabled: !!g.preLaunchEnabled,
+      postLaunchScript: g.postLaunchScript || "",
+      postLaunchEnabled: !!g.postLaunchEnabled,
+      postExitScript: g.postExitScript || "",
+      postExitEnabled: !!g.postExitEnabled,
     };
     setGameForm(f);
     gameFormInitRef.current = JSON.stringify(f);
@@ -370,6 +401,12 @@ export default function AdminApp() {
       favorite: gameForm.favorite,
       hidden: gameForm.hidden,
       actions: gameForm.actions,
+      preLaunchScript: gameForm.preLaunchScript || null,
+      preLaunchEnabled: !!gameForm.preLaunchEnabled,
+      postLaunchScript: gameForm.postLaunchScript || null,
+      postLaunchEnabled: !!gameForm.postLaunchEnabled,
+      postExitScript: gameForm.postExitScript || null,
+      postExitEnabled: !!gameForm.postExitEnabled,
       modified: new Date().toISOString(),
     };
     try {
@@ -792,6 +829,9 @@ export default function AdminApp() {
               <button className={editTab === "actions" ? "active" : ""} onClick={() => setEditTab("actions")}>
                 指令
               </button>
+              <button className={editTab === "scripts" ? "active" : ""} onClick={() => setEditTab("scripts")}>
+                脚本
+              </button>
             </div>
 
             {editTab === "general" && (
@@ -1159,6 +1199,110 @@ export default function AdminApp() {
                   >
                     迁移旧路径
                   </button>
+                </div>
+              </div>
+            )}
+
+            {editTab === "scripts" && (
+              <div className="edit-pane">
+                <p className="hint">
+                  脚本在客户端启动/退出游戏时执行。每行一条命令（如{" "}
+                  <code>config.exe</code>、<code>reg.exe import 1.reg</code>），
+                  支持变量：<code>{"{InstallDir}"}</code> <code>{"{GameName}"}</code>{" "}
+                  <code>{"{AppDir}"}</code>。以 <code>#</code> 开头的行为注释。
+                </p>
+
+                {/* 启动游戏前 */}
+                <div className="script-editor">
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={gameForm.preLaunchEnabled}
+                      onChange={(e) => setGameForm((f) => ({ ...f, preLaunchEnabled: e.target.checked }))}
+                    />
+                    启动游戏前执行
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="每行一条命令，在启动游戏 exe 前执行"
+                    value={gameForm.preLaunchScript}
+                    onChange={(e) => setGameForm((f) => ({ ...f, preLaunchScript: e.target.value }))}
+                  />
+                  <div className="script-tools">
+                    <button type="button" onClick={() => void runTestScript("pre")}>测试脚本</button>
+                  </div>
+                  {scriptTest.pre && (
+                    <div className="script-result">
+                      {scriptTest.pre.map((r, i) => (
+                        <div key={i} className={r.ok ? "ok" : "bad"}>
+                          {r.ok ? "✓" : "✕"} {r.line}
+                          {r.error ? <span className="err"> — {r.error}</span> : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 启动游戏后 */}
+                <div className="script-editor">
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={gameForm.postLaunchEnabled}
+                      onChange={(e) => setGameForm((f) => ({ ...f, postLaunchEnabled: e.target.checked }))}
+                    />
+                    启动游戏后执行
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="每行一条命令，游戏进程启动后执行"
+                    value={gameForm.postLaunchScript}
+                    onChange={(e) => setGameForm((f) => ({ ...f, postLaunchScript: e.target.value }))}
+                  />
+                  <div className="script-tools">
+                    <button type="button" onClick={() => void runTestScript("postLaunch")}>测试脚本</button>
+                  </div>
+                  {scriptTest.postLaunch && (
+                    <div className="script-result">
+                      {scriptTest.postLaunch.map((r, i) => (
+                        <div key={i} className={r.ok ? "ok" : "bad"}>
+                          {r.ok ? "✓" : "✕"} {r.line}
+                          {r.error ? <span className="err"> — {r.error}</span> : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 退出游戏后 */}
+                <div className="script-editor">
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={gameForm.postExitEnabled}
+                      onChange={(e) => setGameForm((f) => ({ ...f, postExitEnabled: e.target.checked }))}
+                    />
+                    退出游戏后执行
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="每行一条命令，游戏退出后执行"
+                    value={gameForm.postExitScript}
+                    onChange={(e) => setGameForm((f) => ({ ...f, postExitScript: e.target.value }))}
+                  />
+                  <div className="script-tools">
+                    <button type="button" onClick={() => void runTestScript("postExit")}>测试脚本</button>
+                  </div>
+                  {scriptTest.postExit && (
+                    <div className="script-result">
+                      {scriptTest.postExit.map((r, i) => (
+                        <div key={i} className={r.ok ? "ok" : "bad"}>
+                          {r.ok ? "✓" : "✕"} {r.line}
+                          {r.error ? <span className="err"> — {r.error}</span> : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
