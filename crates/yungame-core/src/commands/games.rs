@@ -44,8 +44,13 @@ pub fn delete_game(state: State<AppState>, id: String) -> crate::Result<()> {
 }
 
 /// Launches a game by its id. Resolves the play action and starts the process.
+/// 若传了 action_id，则启动指定的指令；否则用默认的 play action。
 #[tauri::command]
-pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
+pub fn launch_game(
+    state: State<AppState>,
+    id: String,
+    action_id: Option<String>,
+) -> crate::Result<bool> {
     let db = state.db.lock().unwrap();
     let game = db
         .get_game(&id)?
@@ -75,10 +80,11 @@ pub fn launch_game(state: State<AppState>, id: String) -> crate::Result<bool> {
     }
 
     let launched = if let Some(play_task_id) = &game.play_task {
-        let action = game
-            .actions
-            .iter()
-            .find(|a| a.id == *play_task_id || a.is_play_action)
+        // 优先用前端传入的指定指令；否则用 play_task 匹配或默认 play action。
+        let action = action_id
+            .as_ref()
+            .and_then(|aid| game.actions.iter().find(|a| a.id == *aid))
+            .or_else(|| game.actions.iter().find(|a| a.id == *play_task_id))
             .or_else(|| game.actions.iter().find(|a| a.is_play_action));
 
         if let Some(action) = action {
