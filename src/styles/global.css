@@ -2325,6 +2325,120 @@ textarea {
    to control opacity/transform itself. Keeping parallel CSS keyframes on the
    same elements double-animates them and causes stutter. */
 
+/* 启动方式选择弹窗：多个可启动指令时让用户选一个 */
+.launch-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 9, 16, 0.55);
+}
+.launch-modal {
+  width: min(440px, 92vw);
+  background: var(--bg, #fff);
+  color: var(--text, #1a1a1a);
+  border-radius: 16px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.launch-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+}
+.launch-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.launch-modal-sub {
+  font-size: 12px;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+.launch-modal-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  opacity: 0.6;
+}
+.launch-modal-close:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.15);
+}
+.launch-action-list {
+  padding: 4px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow: auto;
+}
+.launch-action-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  background: var(--surface, rgba(128, 128, 128, 0.06));
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.launch-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent, #3b82f6);
+  background: var(--surface-hover, rgba(128, 128, 128, 0.12));
+}
+.launch-action-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent, #3b82f6);
+  color: var(--accent-contrast, #fff);
+  flex-shrink: 0;
+}
+.launch-action-info {
+  flex: 1;
+  min-width: 0;
+}
+.launch-action-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.launch-action-path,
+.launch-action-args {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.launch-action-go {
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.launch-modal-footer {
+  padding: 10px 20px 16px;
+  font-size: 11px;
+  text-align: center;
+  opacity: 0.45;
+}
+
 /* Animated aurora background behind the card */
 .announcement-aurora {
   position: absolute;

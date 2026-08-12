@@ -8,6 +8,7 @@ import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import LoginScreen from "./components/LoginScreen";
 import AnnouncementModal from "./components/AnnouncementModal";
+import LaunchActionModal from "./components/LaunchActionModal";
 import SettingsModal from "./components/settings/SettingsModal";
 import ToastContainer from "./components/ToastContainer";
 import ImageProgressBar from "./components/ImageProgressBar";
@@ -141,6 +142,7 @@ function AppShell() {
           {showAnnouncement && (
             <AnnouncementModal onClose={closeAnnouncement} />
           )}
+          <LaunchActionModal />
         </AnimatePresence>
       </div>
   );

@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { api } from "../api/client";
 import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
-import type { Game } from "../types/models";
+import type { Game, GameAction } from "../types/models";
 
 export type ViewMode = "grid" | "list" | "details" | "planet";
 export type SortOrder = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate";
@@ -41,6 +41,8 @@ interface GamesState {
    * game-detail page so the user can read the guide / instructions while
    * playing. Cleared via `clearLastLaunched` after navigation. */
   lastLaunchedId: string | null;
+  /** 待用户选择启动项的弹窗数据（有多个可启动指令时设置）。 */
+  pendingLaunch: { game: Game; actions: GameAction[] } | null;
 
   // actions
   load: () => Promise<void>;
@@ -66,7 +68,8 @@ interface GamesState {
   toggleFavorite: (id: string) => Promise<void>;
   toggleHiddenGame: (id: string) => Promise<void>;
   deleteGame: (id: string) => Promise<void>;
-  launchGame: (id: string) => Promise<boolean>;
+  launchGame: (id: string, actionId?: string) => Promise<boolean>;
+  setPendingLaunch: (v: { game: Game; actions: GameAction[] } | null) => void;
   clearLastLaunched: () => void;
   saveGame: (game: Game) => Promise<void>;
   rescanCovers: () => Promise<{ matched: number; coverFiles: number; considered: number; dirExists: boolean; dirPath: string }>;
@@ -93,6 +96,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   selectedTags: [],
   sidebarVisible: false,
   lastLaunchedId: null,
+  pendingLaunch: null,
 
   load: async () => {
     set({ loading: true });
@@ -135,6 +139,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setSidebarVisible: (v) => set({ sidebarVisible: v }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   clearLastLaunched: () => set({ lastLaunchedId: null }),
+  setPendingLaunch: (v) => set({ pendingLaunch: v }),
   clearFilters: () =>
     set({
       searchQuery: "",
@@ -187,7 +192,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
     });
   },
 
-  launchGame: async (id) => {
+  launchGame: async (id, actionId) => {
     const game = get().games.find((g) => g.id === id);
     if (game) {
       // Front-end access check (backend enforces too). Show a friendly toast
@@ -201,7 +206,17 @@ export const useGamesStore = create<GamesState>((set, get) => ({
         return false;
       }
     }
-    const launched = await api.launchGame(id);
+    // 有多个可启动指令且未指定具体指令时，弹窗让用户选择。
+    if (!actionId && game) {
+      const playable = game.actions.filter(
+        (a) => a.type === "File" && (a.path ?? "").trim() !== ""
+      );
+      if (playable.length > 1) {
+        set({ pendingLaunch: { game, actions: playable } });
+        return false;
+      }
+    }
+    const launched = await api.launchGame(id, actionId);
     if (launched) {
       // Signal to App.tsx to navigate to the detail page (so the user can read
       // the guide / instructions while playing).

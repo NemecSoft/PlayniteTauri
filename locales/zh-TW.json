@@ -57,6 +57,8 @@
   "valley_drive_hint": "WASD / 方向鍵駕駛 · 開進山洞開始遊戲",
   "valley_empty": "該分區暫無遊戲",
   "valley_enter": "進入 {{name}}",
+  "launch_choose": "選擇啟動方式",
+  "launch_cancel_hint": "點擊空白處取消",
   "toolbar_addGames": "新增遊戲",
   "toolbar_settings": "設定",
   "toolbar_sort": "排序",

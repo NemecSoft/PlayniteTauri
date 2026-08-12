@@ -57,6 +57,8 @@
   "valley_drive_hint": "WASD / Arrow keys to drive · Drive into a cave to start",
   "valley_empty": "No games in this zone",
   "valley_enter": "Enter {{name}}",
+  "launch_choose": "Choose how to launch",
+  "launch_cancel_hint": "Click outside to cancel",
   "toolbar_addGames": "Add Games",
   "toolbar_settings": "Settings",
   "toolbar_sort": "Sort",

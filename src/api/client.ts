@@ -18,7 +18,8 @@ export const api = {
   getGame: (id: string) => call<Game | null>("get_game", { id }),
   saveGame: (game: Game) => call<Game>("save_game", { payload: { game } }),
   deleteGame: (id: string) => call<void>("delete_game", { id }),
-  launchGame: (id: string) => call<boolean>("launch_game", { id }),
+  launchGame: (id: string, actionId?: string) =>
+    call<boolean>("launch_game", { id, actionId: actionId ?? null }),
   stopGameTracking: (id: string) => call<number>("stop_game_tracking", { id }),
   runningGames: () => call<{ gameId: string; gameName: string; startedAt: number }[]>("running_games"),
   testScript: (script: string, gameId?: string) =>
