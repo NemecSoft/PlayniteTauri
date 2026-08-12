@@ -201,3 +201,23 @@ pub fn stop_game_tracking(state: State<AppState>, id: String) -> crate::Result<u
 pub fn running_games(state: State<AppState>) -> crate::Result<Vec<crate::process::RunningGame>> {
     Ok(state.process.running_games())
 }
+
+/// 管理端"测试脚本"：不启动游戏，只执行传入的脚本并返回每行结果。
+/// 若提供 game_id，会用该游戏的安装目录作为工作目录。
+#[tauri::command]
+pub fn test_script(
+    state: State<AppState>,
+    script: String,
+    game_id: Option<String>,
+) -> crate::Result<Vec<crate::script_runner::ScriptLineResult>> {
+    // 若给了游戏，用它的安装目录当工作目录，方便脚本里用相对路径。
+    let cwd = if let Some(id) = &game_id {
+        let db = state.db.lock().unwrap();
+        db.get_game(id)?
+            .and_then(|g| g.install_directory)
+            .map(std::path::PathBuf::from)
+    } else {
+        None
+    };
+    Ok(crate::script_runner::run_script(&script, cwd.as_deref()))
+}

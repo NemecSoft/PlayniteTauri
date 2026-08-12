@@ -614,6 +614,7 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             commands::games::save_game,
             commands::games::delete_game,
             commands::games::launch_game,
+            commands::games::test_script,
             // settings
             commands::settings::get_settings,
             commands::settings::save_settings,
