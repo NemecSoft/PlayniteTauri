@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { call, type Game, type GameAction, type GameLibrary, type PublicUser, type AppSettings } from "./lib";
+import { matchSearch } from "./search";
 
 // Modal backdrop. Clicking the mask does NOT close the modal — the dialog can
 // only be closed via an explicit button (取消 / 保存). This prevents accidental
@@ -600,12 +601,11 @@ export default function AdminApp() {
     });
   };
 
-  // Filter games for search
+  // Filter games for search（和客户端一致：支持子串 + 拼音首字母匹配）
   const [query, setQuery] = useState("");
   const filteredGames = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return games;
-    return games.filter((g) => g.name.toLowerCase().includes(q));
+    if (!query.trim()) return games;
+    return games.filter((g) => matchSearch(g, query));
   }, [games, query]);
 
   // All unique tags across the whole library (for the tag picker).

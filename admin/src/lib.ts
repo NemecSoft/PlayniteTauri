@@ -39,7 +39,7 @@ export interface Game {
   name: string;
   gameLevel: number;
   sortName?: string | null;
-  localizedNames?: unknown[];
+  localizedNames?: { language: string; name: string }[];
   alternateNames?: string[];
   gameId?: string | null;
   installed?: boolean;
