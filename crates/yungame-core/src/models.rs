@@ -92,28 +92,45 @@ pub struct Game {
     pub installed: bool,
     pub install_directory: Option<String>,
     pub play_task: Option<String>,
+    #[serde(default)]
     pub other_tasks: Vec<String>,
     pub last_played: Option<String>,
+    #[serde(default)]
     pub play_count: u32,
     pub last_activity: Option<String>,
+    #[serde(default)]
     pub playtime: u64,
+    #[serde(default)]
     pub added: String,
+    #[serde(default)]
     pub modified: String,
+    #[serde(default)]
     pub category: Vec<String>,
+    #[serde(default)]
     pub genre: Vec<String>,
+    #[serde(default)]
     pub developer: Vec<String>,
+    #[serde(default)]
     pub publisher: Vec<String>,
+    #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
     pub series: Vec<String>,
+    #[serde(default)]
     pub age_rating: Vec<String>,
+    #[serde(default)]
     pub region: Vec<String>,
+    #[serde(default)]
     pub source: Vec<String>,
+    #[serde(default)]
     pub features: Vec<String>,
     pub release_date: Option<String>,
     pub community_score: Option<i32>,
     pub critic_score: Option<i32>,
     pub user_score: Option<i32>,
+    #[serde(default)]
     pub hidden: bool,
+    #[serde(default)]
     pub favorite: bool,
     pub background_image: Option<String>,
     pub cover_image: Option<String>,
@@ -121,14 +138,20 @@ pub struct Game {
     pub description: Option<String>,
     pub notes: Option<String>,
     pub version: Option<String>,
+    #[serde(default)]
     pub platform: Vec<String>,
     pub emulator: Option<String>,
     pub completion_status: Option<String>,
+    #[serde(default)]
     pub user_score_set: bool,
+    #[serde(default)]
     pub manual_game: bool,
     pub plugin_id: Option<String>,
+    #[serde(default)]
     pub links: Vec<GameLink>,
+    #[serde(default)]
     pub actions: Vec<GameAction>,
+    #[serde(default)]
     pub features_enabled: bool,
     /// HTML guide / how-to-play instructions shown on the detail page.
     #[serde(default)]
