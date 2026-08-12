@@ -448,3 +448,33 @@ pub struct LibraryPluginInfo {
     pub enabled: bool,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 复现前端保存游戏的最小 payload：只传 id 和 name，其它字段都缺省。
+    /// 保证 serde 用 #[serde(default)] 兜底，不报 missing field。
+    #[test]
+    fn game_deserializes_with_minimal_fields() {
+        let json = r#"{"id":"test-id","name":"测试游戏"}"#;
+        let game: Game = serde_json::from_str(json).expect("最小 payload 应能反序列化");
+        assert_eq!(game.id, "test-id");
+        assert_eq!(game.name, "测试游戏");
+        assert!(!game.installed);
+        assert!(game.genre.is_empty());
+        assert!(game.actions.is_empty());
+        assert!(game.added.is_empty());
+        assert_eq!(game.playtime, 0);
+    }
+
+    /// 反序列化 UpdateGamePayload 形式（{ game: {...} }），也是保存命令的入口。
+    #[test]
+    fn update_payload_accepts_partial_game() {
+        // UpdateGamePayload 定义在 commands::games 里，这里只验证 Game 本身宽容。
+        let json = r#"{"id":"g1","name":"n","playtime":10}"#;
+        let game: Game = serde_json::from_str(json).unwrap();
+        assert_eq!(game.playtime, 10);
+        assert_eq!(game.modified, "");
+    }
+}
+
