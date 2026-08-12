@@ -148,6 +148,22 @@ pub struct Game {
     /// A user with level N can play any game whose `game_level` <= N.
     #[serde(default = "default_game_level")]
     pub game_level: i32,
+    /// Script to run before launching the game (one command per line).
+    /// `enabled` decides whether it actually runs.
+    #[serde(default)]
+    pub pre_launch_script: Option<String>,
+    #[serde(default)]
+    pub pre_launch_enabled: bool,
+    /// Script to run right after the game process has started.
+    #[serde(default)]
+    pub post_launch_script: Option<String>,
+    #[serde(default)]
+    pub post_launch_enabled: bool,
+    /// Script to run after the game has exited.
+    #[serde(default)]
+    pub post_exit_script: Option<String>,
+    #[serde(default)]
+    pub post_exit_enabled: bool,
 }
 
 fn default_game_level() -> i32 {

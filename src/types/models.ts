@@ -88,6 +88,15 @@ export interface Game {
   videos?: GameVideo[];
   /** Access level required to play: 1 | 2 | 3. */
   gameLevel: number;
+  /** Script run before launching the game (one command per line). */
+  preLaunchScript?: string;
+  preLaunchEnabled: boolean;
+  /** Script run after the game process started. */
+  postLaunchScript?: string;
+  postLaunchEnabled: boolean;
+  /** Script run after the game exited. */
+  postExitScript?: string;
+  postExitEnabled: boolean;
 }
 
 /** A gameplay/live video attached to a game. */

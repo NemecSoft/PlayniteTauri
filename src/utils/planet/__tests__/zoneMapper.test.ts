@@ -33,6 +33,9 @@ function makeGame(over: Partial<Game>): Game {
     links: [],
     featuresEnabled: false,
     gameLevel: 1,
+    preLaunchEnabled: false,
+    postLaunchEnabled: false,
+    postExitEnabled: false,
     ...over,
   };
 }

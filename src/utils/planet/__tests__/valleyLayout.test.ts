@@ -9,6 +9,7 @@ function makeGame(id: string): Game {
     tags: [], series: [], ageRating: [], region: [], source: [], features: [],
     hidden: false, favorite: false, platform: [], userScoreSet: false,
     manualGame: false, actions: [], links: [], featuresEnabled: false, gameLevel: 1,
+    preLaunchEnabled: false, postLaunchEnabled: false, postExitEnabled: false,
   };
 }
 

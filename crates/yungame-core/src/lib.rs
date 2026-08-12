@@ -169,6 +169,12 @@ fn import_game_catalog(db: &Database) -> usize {
             videos: Vec::new(),
             game_library: None,
             game_level: 1,
+            pre_launch_script: None,
+            pre_launch_enabled: false,
+            post_launch_script: None,
+            post_launch_enabled: false,
+            post_exit_script: None,
+            post_exit_enabled: false,
         });
     }
     let n = games.len();
