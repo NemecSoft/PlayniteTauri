@@ -173,8 +173,26 @@ fn open_url(url: &str) -> std::io::Result<()> {
 }
 
 /// Stops tracking a game's play session and returns accumulated playtime (sec).
+/// 若该游戏配置了"退出后脚本"，在停止追踪（游戏退出）时执行。
 #[tauri::command]
 pub fn stop_game_tracking(state: State<AppState>, id: String) -> crate::Result<u64> {
+    // 先取回游戏，用于执行退出后脚本。
+    let game = {
+        let db = state.db.lock().unwrap();
+        db.get_game(&id)?
+    };
+    // 退出后脚本：游戏已退出，执行清理脚本（同步）。
+    if let Some(g) = &game {
+        if g.post_exit_enabled {
+            if let Some(s) = &g.post_exit_script {
+                if !s.trim().is_empty() {
+                    let expanded = crate::script_runner::expand_variables(s, g);
+                    let cwd = g.install_directory.as_deref().map(std::path::Path::new);
+                    let _ = crate::script_runner::run_script(&expanded, cwd);
+                }
+            }
+        }
+    }
     Ok(state.process.stop_tracking(&id))
 }
 
