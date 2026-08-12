@@ -1,7 +1,7 @@
 // Root application shell: loads settings & data, wires the title bar and
 // optional login screen.
 
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode, type ErrorInfo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
 import TopBar from "./components/TopBar";
@@ -131,10 +131,12 @@ function AppShell() {
   return (
       <div className="app">
         <TopBar />
-        <Routes>
-          <Route path="/" element={<AppBody />} />
-          <Route path="/game/:id" element={<GameDetailPage />} />
-        </Routes>
+        <RoutesErrorBoundary>
+          <Routes>
+            <Route path="/" element={<AppBody />} />
+            <Route path="/game/:id" element={<GameDetailPage />} />
+          </Routes>
+        </RoutesErrorBoundary>
         <ToastContainer />
         <ImageProgressBar />
         <AnimatePresence>
@@ -146,4 +148,86 @@ function AppShell() {
         </AnimatePresence>
       </div>
   );
+}
+
+/**
+ * 包裹路由。任何路由组件（包括 GameDetailPage）render 期间抛错都会被
+ * 捕获并显示降级 UI，避免整个应用被卸载成一片空白（之前有过"启动游戏
+ * 后主页空白"的 bug，就是因为某个组件抛错导致 React 卸载了路由树）。
+ * 降级 UI 显示错误信息和"返回主页"按钮。
+ */
+class RoutesErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    // 把错误打到 console，调试时方便查。
+    console.error("[RoutesErrorBoundary] 路由渲染抛错：", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      const e = this.state.error;
+      return (
+        <div
+          style={{
+            flex: 1,
+            display: "grid",
+            placeItems: "center",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ maxWidth: 560 }}>
+            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>
+              出错了
+            </div>
+            <p style={{ opacity: 0.75, marginBottom: 16 }}>
+              路由渲染时发生异常，已被捕获。点下方按钮返回主页。
+            </p>
+            <pre
+              style={{
+                background: "rgba(0,0,0,0.06)",
+                padding: 12,
+                borderRadius: 8,
+                overflow: "auto",
+                fontSize: 12,
+                textAlign: "left",
+                marginBottom: 16,
+              }}
+            >
+              {String(e?.message || e)}
+            </pre>
+            <button
+              type="button"
+              onClick={() => {
+                this.setState({ error: null });
+                // 用 history 直接回到首页，避免再次抛错导致死循环
+                if (typeof window !== "undefined") {
+                  window.location.hash = "#/";
+                }
+              }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 999,
+                border: "none",
+                background: "var(--accent, #3b82f6)",
+                color: "var(--accent-contrast, #fff)",
+                cursor: "pointer",
+              }}
+            >
+              返回主页
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
