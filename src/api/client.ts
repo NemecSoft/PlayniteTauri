@@ -21,6 +21,8 @@ export const api = {
   launchGame: (id: string) => call<boolean>("launch_game", { id }),
   stopGameTracking: (id: string) => call<number>("stop_game_tracking", { id }),
   runningGames: () => call<{ gameId: string; gameName: string; startedAt: number }[]>("running_games"),
+  testScript: (script: string, gameId?: string) =>
+    call<{ line: string; ok: boolean; error?: string }[]>("test_script", { script, gameId: gameId ?? null }),
   regenerateTags: () => call<number>("regenerate_tags"),
 
   // library
