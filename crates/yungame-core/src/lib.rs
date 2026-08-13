@@ -17,6 +17,7 @@ pub mod process;
 pub mod sample_data;
 pub mod script_runner;
 pub mod settings;
+pub mod validation;
 pub mod system;
 
 use db::Database;

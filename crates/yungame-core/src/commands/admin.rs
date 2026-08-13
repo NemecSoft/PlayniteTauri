@@ -159,21 +159,8 @@ pub fn admin_set_enterprise_config(
 //
 // Real filesystem validation of a launch action's executable path, used by the
 // admin when adding/editing a game so invalid paths are caught before saving.
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ActionValidation {
-    /// Whether the resolved path exists and is an executable file.
-    pub valid: bool,
-    /// Resolved absolute path after substituting `{LibraryName}` placeholders.
-    pub resolved: String,
-    /// Human-readable reason when `valid` is false (empty when valid).
-    pub reason: String,
-    /// File extension of the resolved path (e.g. "exe", "bat", "").
-    pub extension: String,
-}
-
-const EXECUTABLE_EXTS: [&str; 5] = ["exe", "bat", "cmd", "lnk", "com"];
+// 检测核心逻辑（类型、扩展名、存在性判断）统一在 `validation::validate_launch_path`，
+// 客户端运行前检测和管理端批量检测共用同一份，避免两套实现。
 
 /// Validates a launch-action path (or URL) against the real filesystem.
 /// `path` may contain `{LibraryName}` placeholders — they are resolved against
@@ -184,66 +171,10 @@ pub fn admin_validate_action(
     state: State<AppState>,
     path: String,
     r#type: Option<String>,
-) -> crate::Result<ActionValidation> {
-    // URLs are not filesystem paths — nothing to validate on disk.
-    if r#type.as_deref().map(|t| t.eq_ignore_ascii_case("URL")).unwrap_or(false) {
-        return Ok(ActionValidation {
-            valid: !path.trim().is_empty(),
-            resolved: path,
-            reason: "".into(),
-            extension: "".into(),
-        });
-    }
-
+) -> crate::Result<crate::validation::ActionValidation> {
     let db = state.db.lock().unwrap();
     let libs = db.load_settings()?.game_libraries;
-    let resolved = crate::process::resolve_path(&path, &libs);
-
-    if resolved.trim().is_empty() {
-        return Ok(ActionValidation {
-            valid: false,
-            resolved,
-            reason: "路径为空".into(),
-            extension: "".into(),
-        });
-    }
-
-    let p = std::path::Path::new(&resolved);
-    let extension = p
-        .extension()
-        .map(|e| e.to_string_lossy().to_lowercase())
-        .unwrap_or_default();
-
-    if !p.exists() {
-        return Ok(ActionValidation {
-            valid: false,
-            resolved,
-            reason: "文件不存在".into(),
-            extension,
-        });
-    }
-    if p.is_dir() {
-        return Ok(ActionValidation {
-            valid: false,
-            resolved,
-            reason: "是目录而非可执行文件".into(),
-            extension,
-        });
-    }
-    if !EXECUTABLE_EXTS.contains(&extension.as_str()) {
-        return Ok(ActionValidation {
-            valid: false,
-            resolved,
-            reason: format!("不是可执行文件（.exe/.bat/.cmd/.lnk/.com，当前是 .{extension}）"),
-            extension,
-        });
-    }
-    Ok(ActionValidation {
-        valid: true,
-        resolved,
-        reason: "".into(),
-        extension,
-    })
+    Ok(crate::validation::validate_launch_path(&path, r#type.as_deref(), &libs))
 }
 
 // ---------------- One-shot data migration ----------------
