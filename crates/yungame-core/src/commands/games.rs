@@ -92,43 +92,48 @@ pub fn launch_game(
                 "File" => {
                     let exe = action.path.clone().unwrap_or_default();
                     if exe.is_empty() {
-                        false
-                    } else {
-                        // 运行前检测：用共享的校验逻辑解析目标 exe 并确认存在。
-                        // 不存在则阻止启动并返回错误（前端会 toast 提示）。
-                        let precheck =
-                            crate::validation::validate_launch_path(&exe, Some("File"), &settings.game_libraries);
-                        if !precheck.valid {
-                            return Err(crate::AppError::Launch(format!(
-                                "启动前检测未通过：{}（解析路径：{}）",
-                                precheck.reason, precheck.resolved
-                            )));
-                        }
-                        state
-                            .process
-                            .launch(
-                                &exe,
-                                action.arguments.as_deref(),
-                                action.working_dir.as_deref(),
-                                &settings.game_libraries,
-                            )
-                            .map_err(|e| crate::AppError::Launch(e.to_string()))?;
-                        if track {
-                            state.process.start_tracking(&game);
-                        }
-                        true
+                        return Err(crate::AppError::Launch("启动指令路径为空".into()));
                     }
+                    // 运行前检测：用共享的校验逻辑解析目标 exe 并确认存在。
+                    // 不存在则阻止启动并返回错误（前端会 toast 提示）。
+                    let precheck =
+                        crate::validation::validate_launch_path(&exe, Some("File"), &settings.game_libraries);
+                    if !precheck.valid {
+                        return Err(crate::AppError::Launch(format!(
+                            "启动前检测未通过：{}（解析路径：{}）",
+                            precheck.reason, precheck.resolved
+                        )));
+                    }
+                    state
+                        .process
+                        .launch(
+                            &exe,
+                            action.arguments.as_deref(),
+                            action.working_dir.as_deref(),
+                            &settings.game_libraries,
+                        )
+                        .map_err(|e| crate::AppError::Launch(e.to_string()))?;
+                    if track {
+                        state.process.start_tracking(&game);
+                    }
+                    true
                 }
                 "URL" => {
                     if let Some(url) = &action.path {
                         let _ = open_url(url);
+                    } else {
+                        return Err(crate::AppError::Launch("URL 启动指令的地址为空".into()));
                     }
-                    false
+                    true
                 }
-                _ => false,
+                other => {
+                    return Err(crate::AppError::Launch(format!(
+                        "未知的启动指令类型：{other}"
+                    )));
+                }
             }
         } else {
-            false
+            return Err(crate::AppError::Launch("游戏没有可启动的指令".into()));
         }
     } else {
         // No play task: try to auto-detect an executable in the install dir.
@@ -148,10 +153,15 @@ pub fn launch_game(
                 }
                 true
             } else {
-                false
+                return Err(crate::AppError::Launch(format!(
+                    "未配置启动指令，且在安装目录 {} 中也找不到可执行文件",
+                    dir
+                )));
             }
         } else {
-            false
+            return Err(crate::AppError::Launch(
+                "游戏未配置启动指令且没有安装目录".into(),
+            ));
         }
     };
 
