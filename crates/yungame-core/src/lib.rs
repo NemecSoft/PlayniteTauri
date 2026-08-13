@@ -605,6 +605,7 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             commands::admin::admin_delete_game_library,
             commands::admin::admin_migrate_gamelibrary_placeholder,
             commands::admin::admin_validate_action,
+            commands::admin::validate_selected_actions,
             // auth (status / current user)
             commands::auth::get_current_user,
             commands::auth::resolve_enterprise,

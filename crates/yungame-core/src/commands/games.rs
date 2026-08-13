@@ -94,6 +94,16 @@ pub fn launch_game(
                     if exe.is_empty() {
                         false
                     } else {
+                        // 运行前检测：用共享的校验逻辑解析目标 exe 并确认存在。
+                        // 不存在则阻止启动并返回错误（前端会 toast 提示）。
+                        let precheck =
+                            crate::validation::validate_launch_path(&exe, Some("File"), &settings.game_libraries);
+                        if !precheck.valid {
+                            return Err(crate::AppError::Launch(format!(
+                                "启动前检测未通过：{}（解析路径：{}）",
+                                precheck.reason, precheck.resolved
+                            )));
+                        }
                         state
                             .process
                             .launch(

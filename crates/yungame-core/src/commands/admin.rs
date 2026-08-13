@@ -177,6 +177,88 @@ pub fn admin_validate_action(
     Ok(crate::validation::validate_launch_path(&path, r#type.as_deref(), &libs))
 }
 
+/// 单个游戏"运行前检测"的结果（管理端批量检测用）。
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GameValidationResult {
+    pub game_id: String,
+    pub game_name: String,
+    /// 该游戏实际启动用的指令名（is_play_action；无则空）。
+    pub action_name: String,
+    /// 解析后的目标 exe 绝对路径（无 play action 时为空）。
+    pub exe_path: String,
+    /// 目标 exe 是否存在且可执行。
+    pub exists: bool,
+    /// 检测失败的说明（如"文件不存在"、"不是可执行文件"；合法时为空）。
+    pub reason: String,
+}
+
+/// 对选中的多个游戏做"运行前检测"：逐个解析其启动指令的目标 exe，
+/// 只报告"目标 exe 是否存在"，方便管理端批量体检（可能在测试环境，
+/// 不要求 exe 真实存在也能给出"缺失"的明确结论）。
+#[tauri::command]
+pub fn validate_selected_actions(
+    state: State<AppState>,
+    game_ids: Vec<String>,
+) -> crate::Result<Vec<GameValidationResult>> {
+    let db = state.db.lock().unwrap();
+    let libs = db.load_settings()?.game_libraries;
+    let mut results = Vec::with_capacity(game_ids.len());
+    for id in &game_ids {
+        let game = db.get_game(id)?;
+        let Some(g) = game else {
+            results.push(GameValidationResult {
+                game_id: id.clone(),
+                game_name: "(已删除)".into(),
+                action_name: String::new(),
+                exe_path: String::new(),
+                exists: false,
+                reason: "找不到该游戏".into(),
+            });
+            continue;
+        };
+        // 取该游戏的启动指令（is_play_action；没有就取第一个文件型指令）。
+        let play = g
+            .actions
+            .iter()
+            .find(|a| a.is_play_action)
+            .or_else(|| g.actions.iter().find(|a| a.r#type == "File"));
+        let Some(action) = play else {
+            results.push(GameValidationResult {
+                game_id: g.id.clone(),
+                game_name: g.name.clone(),
+                action_name: String::new(),
+                exe_path: String::new(),
+                exists: false,
+                reason: "未配置启动指令".into(),
+            });
+            continue;
+        };
+        let exe_path = action.path.clone().unwrap_or_default();
+        if exe_path.trim().is_empty() {
+            results.push(GameValidationResult {
+                game_id: g.id.clone(),
+                game_name: g.name.clone(),
+                action_name: action.name.clone(),
+                exe_path: String::new(),
+                exists: false,
+                reason: "启动指令路径为空".into(),
+            });
+            continue;
+        }
+        let r = crate::validation::validate_launch_path(&exe_path, Some("File"), &libs);
+        results.push(GameValidationResult {
+            game_id: g.id.clone(),
+            game_name: g.name.clone(),
+            action_name: action.name.clone(),
+            exe_path: r.resolved,
+            exists: r.valid,
+            reason: r.reason,
+        });
+    }
+    Ok(results)
+}
+
 // ---------------- One-shot data migration ----------------
 //
 // Migrate launch action paths / working directories from the old relative
