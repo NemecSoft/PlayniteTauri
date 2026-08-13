@@ -414,6 +414,58 @@ button.danger:hover {
   color: #1b1b1b;
   word-break: break-all;
 }
+/* 游戏列表多选 + 批量检测 */
+.sel-col {
+  width: 34px;
+  text-align: center;
+}
+tbody tr.selected {
+  background: rgba(59, 130, 246, 0.08);
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+button.ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.batch-result {
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+.batch-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.batch-result .action-path code {
+  max-width: 380px;
+}
+.ok-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+}
+.bad-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12px;
+}
 .actions-list {
   display: flex;
   flex-direction: column;

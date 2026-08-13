@@ -216,7 +216,18 @@ export const useGamesStore = create<GamesState>((set, get) => ({
         return false;
       }
     }
-    const launched = await api.launchGame(id, actionId);
+    let launched: boolean;
+    try {
+      launched = await api.launchGame(id, actionId);
+    } catch (e) {
+      // 后端"运行前检测"未通过时会返回错误（如"文件不存在"），这里弹出提示，
+      // 而不是让未捕获的 Promise rejection 悄悄失败。
+      void api.showNotification(
+        "无法启动",
+        game ? `《${game.name}》：${String(e)}` : String(e)
+      );
+      return false;
+    }
     if (launched) {
       // Signal to App.tsx to navigate to the detail page (so the user can read
       // the guide / instructions while playing).

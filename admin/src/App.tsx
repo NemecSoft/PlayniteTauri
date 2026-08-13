@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { call, type Game, type GameAction, type GameLibrary, type PublicUser, type AppSettings } from "./lib";
 import { matchSearch } from "./search";
+import type { GameValidationResult } from "../../shared/validate";
 
 // Modal backdrop. Clicking the mask does NOT close the modal — the dialog can
 // only be closed via an explicit button (取消 / 保存). This prevents accidental
@@ -653,6 +654,45 @@ export default function AdminApp() {
     return games.filter((g) => matchSearch(g, query));
   }, [games, query]);
 
+  // ---- 多选 + 批量运行前检测 ----
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // 批量检测结果：null = 未检测；数组 = 结果列表（含"检测中"状态）。
+  const [batchResult, setBatchResult] = useState<GameValidationResult[] | null>(null);
+  const [batchBusy, setBatchBusy] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) =>
+      prev.size === filteredGames.length
+        ? new Set()
+        : new Set(filteredGames.map((g) => g.id))
+    );
+  };
+
+  const runBatchCheck = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) {
+      showToast("请先勾选要检测的游戏");
+      return;
+    }
+    setBatchBusy(true);
+    try {
+      const r = await call<GameValidationResult[]>("validate_selected_actions", { gameIds: ids });
+      setBatchResult(r);
+    } catch (e) {
+      showToast(`批量检测失败: ${String(e)}`);
+    } finally {
+      setBatchBusy(false);
+    }
+  };
+
   // All unique tags across the whole library (for the tag picker).
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -711,11 +751,26 @@ export default function AdminApp() {
                 onChange={(e) => setQuery(e.target.value)}
               />
               <button onClick={openNewGame}>+ 新增游戏</button>
+              <button
+                className="ghost"
+                disabled={batchBusy}
+                onClick={() => void runBatchCheck()}
+                title="对勾选的游戏做运行前检测（目标 exe 是否存在）"
+              >
+                批量检测
+              </button>
             </div>
 
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th className="sel-col">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size > 0 && selectedIds.size === filteredGames.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th>ID</th>
                   <th>名称</th>
                   <th>等级</th>
@@ -728,7 +783,14 @@ export default function AdminApp() {
                   const play = (g.actions || []).find((a) => a.isPlayAction) || (g.actions || [])[0];
                   const actionCount = (g.actions || []).length;
                   return (
-                  <tr key={g.id}>
+                  <tr key={g.id} className={selectedIds.has(g.id) ? "selected" : ""}>
+                    <td className="sel-col">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(g.id)}
+                        onChange={() => toggleSelect(g.id)}
+                      />
+                    </td>
                     <td className="mono">{g.id || "—"}</td>
                     <td>{g.name}</td>
                     <td>
@@ -763,6 +825,46 @@ export default function AdminApp() {
                 })}
               </tbody>
             </table>
+
+            {/* 批量运行前检测结果 */}
+            {batchResult && (
+              <div className="batch-result">
+                <div className="batch-result-head">
+                  <span>批量检测结果（{batchResult.filter((r) => r.exists).length}/{batchResult.length} 个可执行文件存在）</span>
+                  <button className="ghost" onClick={() => setBatchResult(null)}>关闭</button>
+                </div>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>游戏</th>
+                      <th>启动指令</th>
+                      <th>目标 exe</th>
+                      <th>状态</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {batchResult.map((r) => (
+                      <tr key={r.gameId}>
+                        <td>{r.gameName}</td>
+                        <td>{r.actionName || "—"}</td>
+                        <td className="action-path">
+                          <code title={r.exePath}>{r.exePath || "—"}</code>
+                        </td>
+                        <td>
+                          {r.exists ? (
+                            <span className="ok-tag">存在</span>
+                          ) : (
+                            <span className="bad-tag" title={r.reason}>
+                              缺失
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         )}
 
