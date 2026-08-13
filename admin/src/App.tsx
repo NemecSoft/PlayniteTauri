@@ -1196,28 +1196,17 @@ export default function AdminApp() {
                                   <button
                                     type="button"
                                     className="valid-btn"
-                                    title="便捷填充：工作目录设为 exe 所在目录（exe.parent）。注意：很多游戏的工作目录是 exe.parent 的子目录（如 \\bin），需要手动修改。"
-                                    onClick={async () => {
-                                      try {
-                                        const r = await call<{ valid: boolean; resolved: string }>(
-                                          "admin_validate_action",
-                                          { path: a.path || "", type: a.type || "File" }
-                                        );
-                                        // resolved 是 exe 绝对路径；取其 parent
-                                        const exe = r.resolved.replace(/[\\/]+$/, "");
-                                        const sep = exe.includes("\\") ? "\\" : "/";
-                                        const parent = exe.substring(0, exe.lastIndexOf(sep));
-                                        updateAction(idx, { workingDir: parent });
-                                        showToast(`工作目录已设为：${parent}`);
-                                      } catch (e) {
-                                        showToast(`失败: ${String(e)}`);
-                                      }
-                                    }}
+                                    title="在真实文件系统上校验此路径（手动触发，不影响保存）"
+                                    onClick={() => validateAction(a.id, a.path || "", a.type)}
                                   >
-                                    用 exe 所在目录
+                                    校验
                                   </button>
                                 </div>
                               </label>
+                              {/* 删除了"用 exe 所在目录"按钮：它会把 workingDir 填成
+                                   解析后的绝对路径（如 D:\games\Grain Rot），违反"以游戏库为
+                                   基础"原则；workingDir 已由 path 自动按占位符形式
+                                   推算（{Gamelibrary2}\Grain Rot），无需手动填绝对路径。*/}
                               <label>
                                 启动参数
                                 <input
