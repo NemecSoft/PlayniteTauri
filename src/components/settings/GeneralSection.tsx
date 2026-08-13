@@ -25,9 +25,9 @@ export default function GeneralSection() {
           value={settings.startupBehavior}
           onChange={(e) => save({ startupBehavior: e.target.value })}
         >
-          <option value="StartNormal">{t("settings_startNormal")}</option>
-          <option value="StartMinimized">{t("settings_startMinimized")}</option>
-          <option value="StartMinimizedTray">{t("settings_startMinimizedTray")}</option>
+          <option value="StartNormal">{t("settings_startNormal", { defaultValue: "正常启动" })}</option>
+          <option value="StartMinimized">{t("settings_startMinimized", { defaultValue: "最小化启动" })}</option>
+          <option value="StartMinimizedTray">{t("settings_startMinimizedTray", { defaultValue: "最小化到托盘启动" })}</option>
         </select>
       </div>
 
@@ -83,7 +83,7 @@ export default function GeneralSection() {
           checked={settings.trackPlaytime}
           onChange={(e) => save({ trackPlaytime: e.target.checked })}
         />
-        <label htmlFor="trackPlaytime">{t("settings_trackPlaytime")}</label>
+        <label htmlFor="trackPlaytime">{t("settings_trackPlaytime", { defaultValue: "启用游戏时间追踪" })}</label>
       </div>
     </div>
   );

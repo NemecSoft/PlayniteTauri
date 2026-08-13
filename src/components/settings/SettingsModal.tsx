@@ -1,14 +1,17 @@
 // Settings dialog with sections mirroring Playnite's settings window.
+//
+// 注意：当前版本只保留三个 tab（通用 / 外观 / 主题）。"登录 / 游戏库 / 插件"
+// 三个 tab 已从侧栏移除（功能未实现，UI 占位）。对应的 LoginSection /
+// LibrarySection / PluginsSection 组件文件保留在仓库里以便以后启用时复用。
+// 重新启用时只需：1) 在 SECTIONS 加回 3 项；2) 在 SectionId 加回 3 个值；
+// 3) 在 sectionContent 加回 3 个 case；4) 重新 import 这 3 个组件。
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Settings, Palette, Database, Plug, Brush, Lock } from "lucide-react";
+import { X, Settings, Palette, Brush } from "lucide-react";
 import GeneralSection from "./GeneralSection";
 import AppearanceSection from "./AppearanceSection";
-import LibrarySection from "./LibrarySection";
-import PluginsSection from "./PluginsSection";
 import ThemesSection from "./ThemesSection";
-import LoginSection from "./LoginSection";
 import { Button } from "../ui/button";
 import { useI18n } from "../../i18n";
 
@@ -16,7 +19,7 @@ interface Props {
   onClose: () => void;
 }
 
-type SectionId = "general" | "appearance" | "themes" | "login" | "library" | "plugins";
+type SectionId = "general" | "appearance" | "themes";
 
 export default function SettingsModal({ onClose }: Props) {
   const [section, setSection] = useState<SectionId>("themes");
@@ -26,9 +29,6 @@ export default function SettingsModal({ onClose }: Props) {
     { id: "general", label: t("settings_general"), icon: <Settings size={15} /> },
     { id: "appearance", label: t("settings_appearance"), icon: <Palette size={15} /> },
     { id: "themes", label: t("settings_themes"), icon: <Brush size={15} /> },
-    { id: "login", label: t("settings_login"), icon: <Lock size={15} /> },
-    { id: "library", label: t("settings_library"), icon: <Database size={15} /> },
-    { id: "plugins", label: t("settings_plugins"), icon: <Plug size={15} /> },
   ];
 
   const sectionContent = () => {
@@ -39,12 +39,6 @@ export default function SettingsModal({ onClose }: Props) {
         return <AppearanceSection />;
       case "themes":
         return <ThemesSection />;
-      case "login":
-        return <LoginSection />;
-      case "library":
-        return <LibrarySection />;
-      case "plugins":
-        return <PluginsSection />;
     }
   };
 

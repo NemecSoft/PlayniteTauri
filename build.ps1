@@ -10,8 +10,9 @@
 # the dev server (localhost) -> connection refused.
 #
 # Build acceleration:
-#   - workspace release profile uses thin-LTO + 16 codegen units + incremental
-#   - sccache (if installed) caches compiled artifacts across builds
+#   - workspace release profile uses thin-LTO + 16 codegen units
+#   - sccache compile cache is enabled globally via .cargo/config.toml,
+#     so every cargo invocation (not just this script) hits the cache.
 #
 # Usage:
 #   .\build.ps1               # release build (recommended)
@@ -28,13 +29,11 @@ param(
 $ErrorActionPreference = "Stop"
 Set-Location "$PSScriptRoot"
 
-# Enable sccache when available (Rust community standard compile cache).
+# sccache 编译缓存已在 .cargo/config.toml 全局启用，这里不需要再手动设置。
+# （sccache 没装也能正常构建，只是少了缓存加速。）
 $sccache = Get-Command sccache -ErrorAction SilentlyContinue
-if ($sccache) {
-    $env:RUSTC_WRAPPER = $sccache.Source
-    Write-Host "==> sccache enabled: $($sccache.Source)" -ForegroundColor Green
-} else {
-    Write-Host "==> sccache not found (optional; install for faster rebuilds: cargo install sccache)" -ForegroundColor Yellow
+if (-not $sccache) {
+    Write-Host "==> 提示：未安装 sccache（可选）。安装后构建会更快：cargo install sccache" -ForegroundColor Yellow
 }
 
 $profile = if ($Debug) { "debug" } else { "release" }

@@ -6,6 +6,13 @@ import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
 import type { Game, GameAction } from "../types/models";
 
+// 模块级变量：控制"正在启动游戏"横幅至少展示多久。
+// 启动流程可能几百毫秒就完成，如果不强制最短展示时间，横幅会一闪而过看不清。
+// 这里保证从 setLaunching 到真正清除至少间隔 MIN_LAUNCH_BANNER_MS。
+let launchingTimer: ReturnType<typeof setTimeout> | null = null;
+let launchingStartedAt = 0;
+const MIN_LAUNCH_BANNER_MS = 3000; // 至少显示 3 秒
+
 export type ViewMode = "grid" | "list" | "details" | "planet";
 export type SortOrder = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate";
 export type SortDirection = "ascending" | "descending";
@@ -43,6 +50,9 @@ interface GamesState {
   lastLaunchedId: string | null;
   /** 待用户选择启动项的弹窗数据（有多个可启动指令时设置）。 */
   pendingLaunch: { game: Game; actions: GameAction[] } | null;
+  /** 当前正在启动的游戏（启动过程耗时：spawn 进程 + 可能的前置脚本）。
+   *  用于给用户醒目的"正在启动《游戏名》…"反馈；启动完成后置回 null。 */
+  launchingGame: { id: string; name: string } | null;
 
   // actions
   load: () => Promise<void>;
@@ -71,6 +81,10 @@ interface GamesState {
   launchGame: (id: string, actionId?: string) => Promise<boolean>;
   setPendingLaunch: (v: { game: Game; actions: GameAction[] } | null) => void;
   clearLastLaunched: () => void;
+  /** 开始启动游戏：设置"正在启动《游戏名》"状态，供全局横幅展示。 */
+  setLaunching: (id: string, name: string) => void;
+  /** 启动结束（成功或失败）：清除"正在启动"状态。 */
+  clearLaunching: () => void;
   saveGame: (game: Game) => Promise<void>;
   rescanCovers: () => Promise<{ matched: number; coverFiles: number; considered: number; dirExists: boolean; dirPath: string }>;
 }
@@ -97,6 +111,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   sidebarVisible: false,
   lastLaunchedId: null,
   pendingLaunch: null,
+  launchingGame: null,
 
   load: async () => {
     set({ loading: true });
@@ -139,6 +154,25 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setSidebarVisible: (v) => set({ sidebarVisible: v }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   clearLastLaunched: () => set({ lastLaunchedId: null }),
+  setLaunching: (id, name) => {
+    // 记录横幅开始显示的时刻，用于保证"至少显示满 MIN_LAUNCH_BANNER_MS"。
+    launchingStartedAt = Date.now();
+    set({ launchingGame: { id, name } });
+  },
+  clearLaunching: () => {
+    // 启动可能 0.3 秒就完成，但如果立刻清掉横幅会"一闪而过"看不清。
+    // 这里延迟到"开始后至少 3 秒"再真正清除，让用户看得清"正在启动《游戏名》"。
+    const elapsed = Date.now() - launchingStartedAt;
+    const remaining = Math.max(0, MIN_LAUNCH_BANNER_MS - elapsed);
+    // 清掉上一次的定时器，避免多次启动叠加出多个定时器互相干扰。
+    if (launchingTimer) {
+      clearTimeout(launchingTimer);
+    }
+    launchingTimer = setTimeout(() => {
+      set({ launchingGame: null });
+      launchingTimer = null;
+    }, remaining);
+  },
   setPendingLaunch: (v) => set({ pendingLaunch: v }),
   clearFilters: () =>
     set({
@@ -216,25 +250,33 @@ export const useGamesStore = create<GamesState>((set, get) => ({
         return false;
       }
     }
+    // 进入启动流程：先给出醒目的"正在启动《游戏名》…"反馈（可能要先跑前置脚本
+    // / spawn 进程，耗时几百毫秒到几秒，不能让用户感觉"点了没反应"）。
+    const launchName = game?.name ?? "";
+    if (launchName) get().setLaunching(id, launchName);
+
     let launched: boolean;
     try {
       launched = await api.launchGame(id, actionId);
     } catch (e) {
       // 后端"运行前检测"未通过时会返回错误（如"文件不存在"），这里弹出提示，
       // 而不是让未捕获的 Promise rejection 悄悄失败。
+      get().clearLaunching(); // 启动失败也要清除"正在启动"（会延迟到最少展示 3 秒）
       void api.showNotification(
         "无法启动",
         game ? `《${game.name}》：${String(e)}` : String(e)
       );
       return false;
     }
+    // 启动流程结束（无论成功失败）都清除"正在启动"反馈（会延迟到最少展示 3 秒）。
+    get().clearLaunching();
     if (launched) {
       // Signal to App.tsx to navigate to the detail page (so the user can read
       // the guide / instructions while playing).
       set({ lastLaunchedId: id });
-      // Maximize the client window once the game starts, so the detail page
-      // (guide / instructions) gets as much screen space as possible.
-      void api.maximizeWindow();
+      // 注意：这里不再调用 maximize_window。之前调用它时，这个命令实际上是
+      // "最大化/还原"切换，窗口本来就是最大化时会把它还原，导致"点开始游戏
+      // 窗口被恢复"的怪异表现。启动游戏不应该改变用户的窗口状态，保持原样即可。
     }
     return launched;
   },

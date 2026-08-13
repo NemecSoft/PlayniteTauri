@@ -100,6 +100,13 @@ pub struct Game {
     pub last_activity: Option<String>,
     #[serde(default)]
     pub playtime: u64,
+    /// 最近一次会话的运行时长（秒）。进程退出时由后台监控写入，用于详情页
+    /// 显示"游戏已退出 · 最近共运行 X"。
+    #[serde(default)]
+    pub last_session_seconds: u64,
+    /// 最近一次会话的结束时间（ISO8601）。进程退出时写入，用于详情页展示。
+    #[serde(default)]
+    pub last_session_ended_at: Option<String>,
     #[serde(default)]
     pub added: String,
     #[serde(default)]

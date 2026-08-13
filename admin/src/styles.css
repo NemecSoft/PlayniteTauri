@@ -612,6 +612,16 @@ button:disabled {
   color: #6b7280;
 }
 
+/* 游戏缺 id 时的醒目提示：这种数据会导致客户端点详情跳转失败（闪一下回主页） */
+.bad-id {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 12px;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
 /* Tag picker in the game editor */
 .label-block {
   display: flex;

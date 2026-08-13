@@ -1,6 +1,7 @@
 //! Game CRUD, launch, playtime tracking commands.
 
 use crate::models::Game;
+use crate::process::ProcessManager;
 use crate::AppState;
 use serde::Deserialize;
 use tauri::State;
@@ -15,6 +16,22 @@ pub struct UpdateGamePayload {
 pub fn get_games(state: State<AppState>) -> crate::Result<Vec<Game>> {
     let db = state.db.lock().unwrap();
     let games = db.get_all_games()?;
+    // 自动修复空 id：老数据/导入数据可能 id 是空字符串，导致前端点详情跳转
+    // `/game/`（缺段）匹配不上路由，被兜底路由拉回主页——表现为"点详情闪一下
+    // 没变化"。这里给空 id 的游戏补一个 UUID 并回写数据库。
+    // 注意：必须先用新 id upsert（INSERT 会因 ON CONFLICT(id) 在空 id 上匹配
+    // 不到，从而插入一条新记录），再删掉旧的空 id 记录，否则库里会留一条
+    // 脏数据（id=""），下次 get_games 又会读到它重复修复。
+    let mut final_games: Vec<Game> = Vec::with_capacity(games.len());
+    for mut g in games {
+        if g.id.trim().is_empty() {
+            g.id = uuid::Uuid::new_v4().to_string();
+            let _ = db.upsert_game(&g);
+            let _ = db.delete_game(""); // 删掉旧的空 id 记录
+        }
+        final_games.push(g);
+    }
+    let games = final_games;
     // Auto-apply local cover images (CoverImages dir) for games without a
     // cover yet. Persist only the newly-matched ones.
     let (updated, _) = crate::covers::apply_covers_to_db(&db, games)?;
@@ -30,6 +47,11 @@ pub fn get_game(state: State<AppState>, id: String) -> crate::Result<Option<Game
 #[tauri::command]
 pub fn save_game(state: State<AppState>, payload: UpdateGamePayload) -> crate::Result<Game> {
     let mut game = payload.game;
+    // 治本：任何写入都保证 id 非空。若前端漏传 id（空字符串），这里自动补一个
+    // UUID，避免再次产生"空 id 游戏导致点详情闪一下"的脏数据。
+    if game.id.trim().is_empty() {
+        game.id = uuid::Uuid::new_v4().to_string();
+    }
     game.modified = chrono::Utc::now().to_rfc3339();
     let db = state.db.lock().unwrap();
     db.upsert_game(&game)?;
@@ -104,7 +126,7 @@ pub fn launch_game(
                             precheck.reason, precheck.resolved
                         )));
                     }
-                    state
+                    let child = state
                         .process
                         .launch(
                             &exe,
@@ -113,9 +135,16 @@ pub fn launch_game(
                             &settings.game_libraries,
                         )
                         .map_err(|e| crate::AppError::Launch(e.to_string()))?;
-                    if track {
-                        state.process.start_tracking(&game);
-                    }
+                    // 登记句柄并启动后台监控线程，检测该游戏进程何时退出。
+                    // track 控制是否累计 playtime；但无论是否 track，都要监控
+                    // 进程退出，因为详情页需要显示"运行中 / 已退出 / 未运行"。
+                    let game_id = game.id.clone();
+                    state.process.start_tracking(&game, child, track);
+                    spawn_process_monitor(
+                        state.process.clone(),
+                        state.db.clone(),
+                        game_id,
+                    );
                     true
                 }
                 "URL" => {
@@ -133,17 +162,13 @@ pub fn launch_game(
                 }
             }
         } else {
-            eprintln!(
-                "[launch_game] 启动失败（无 action）: id={} name={:?} actions.len={} install_dir={:?}",
-                game.id, game.name, game.actions.len(), game.install_directory
-            );
             return Err(crate::AppError::Launch("游戏没有可启动的指令".into()));
         }
     } else {
         // No play task: try to auto-detect an executable in the install dir.
         if let Some(dir) = &game.install_directory {
             if let Some((exe, wd)) = crate::process::find_game_executable(dir) {
-                state
+                let child = state
                     .process
                     .launch(
                         &exe.to_string_lossy(),
@@ -152,9 +177,13 @@ pub fn launch_game(
                         &settings.game_libraries,
                     )
                     .map_err(|e| crate::AppError::Launch(e.to_string()))?;
-                if track {
-                    state.process.start_tracking(&game);
-                }
+                let game_id = game.id.clone();
+                state.process.start_tracking(&game, child, track);
+                spawn_process_monitor(
+                    state.process.clone(),
+                    state.db.clone(),
+                    game_id,
+                );
                 true
             } else {
                 return Err(crate::AppError::Launch(format!(
@@ -163,10 +192,6 @@ pub fn launch_game(
                 )));
             }
         } else {
-            eprintln!(
-                "[launch_game] 启动失败（无 play task 且无 install_dir）: id={} name={:?} install_dir={:?}",
-                game.id, game.name, game.install_directory
-            );
             return Err(crate::AppError::Launch(
                 "游戏未配置启动指令且没有安装目录".into(),
             ));
@@ -191,6 +216,70 @@ pub fn launch_game(
     }
 
     Ok(launched)
+}
+
+/// 后台监控线程：轮询某游戏子进程是否退出。
+///
+/// 为什么需要这个：客户端详情页要显示"游戏在运行 / 已退出 / 未运行"三种状态。
+/// 仅仅把进程 spawn 出来还不够——需要一个后台线程每隔几秒 `try_wait()` 检测
+/// 进程是否已经退出，退出了就把本次运行时长和退出时间写回数据库，并更新
+/// ProcessManager 的状态。
+///
+/// 这个线程是"后台服务"性质：不挂在某个前端页面生命周期上，进程退不退出它都
+/// 持续检测，所以用户点返回再点详情进来，状态依然准确。
+fn spawn_process_monitor(
+    pm: ProcessManager,
+    db: std::sync::Arc<std::sync::Mutex<crate::db::Database>>,
+    game_id: String,
+) {
+    let handle = match pm.take_handle(&game_id) {
+        Some(h) => h,
+        None => return, // 句柄已被清理，直接退出监控。
+    };
+    // 记录本线程自己的开始时间，退出时用它算运行时长（不依赖 track_playtime）。
+    let started = std::time::Instant::now();
+    std::thread::spawn(move || loop {
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        // 尝试读取子进程句柄；若已被 stop_tracking 清理则为 None，结束监控。
+        let exited = {
+            let mut guard = match handle.lock() {
+                Ok(g) => g,
+                Err(_) => {
+                    // 锁被污染，放弃监控
+                    return;
+                }
+            };
+            match guard.as_mut() {
+                Some(child) => match child.try_wait() {
+                    Ok(Some(_)) => true, // 进程已退出
+                    Ok(None) => false,   // 还在跑
+                    Err(_) => false,
+                },
+                None => return, // 句柄已被清除（stop_tracking 调用了），结束
+            }
+        };
+        if exited {
+            let seconds = started.elapsed().as_secs();
+            // 更新 ProcessManager：记录最近退出时长、停止追踪、清理句柄。
+            pm.record_exit(&game_id, seconds);
+            let _played = pm.stop_tracking(&game_id);
+            // 把"最近一次运行时长 / 退出时间"持久化到数据库，供详情页展示
+            // "游戏已退出 · 最近共运行 X"。同时把这段时长累加到 playtime。
+            if let Ok(db) = db.lock() {
+                if let Ok(mut g) = db.get_game(&game_id) {
+                    if let Some(g) = g.as_mut() {
+                        g.last_session_seconds = seconds;
+                        g.last_session_ended_at = Some(
+                            chrono::Utc::now().to_rfc3339(),
+                        );
+                        g.playtime = g.playtime.saturating_add(seconds);
+                        let _ = db.upsert_game(g);
+                    }
+                }
+            }
+            return; // 监控结束
+        }
+    });
 }
 
 #[cfg(windows)]
@@ -234,6 +323,61 @@ pub fn stop_game_tracking(state: State<AppState>, id: String) -> crate::Result<u
 #[tauri::command]
 pub fn running_games(state: State<AppState>) -> crate::Result<Vec<crate::process::RunningGame>> {
     Ok(state.process.running_games())
+}
+
+/// 运行状态（详情页顶部展示用）。三种状态：
+/// - `running`：游戏进程正在运行。`elapsedSec` 为已运行秒数（前端据此实时计时）。
+/// - `stopped`：本会话内游戏已退出过一次。`lastSessionSec` 为最近一次运行时长。
+/// - `never`：既没在运行，本会话也没有退出记录（即"游戏未运行"）。
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RunState {
+    pub state: String,
+    pub elapsed_sec: u64,
+    pub last_session_sec: u64,
+}
+
+/// 查询某游戏的运行状态。详情页进入时轮询此命令，即可显示"运行中/已退出/未运行"。
+#[tauri::command]
+pub fn get_run_state(state: State<AppState>, game_id: String) -> crate::Result<RunState> {
+    let pm = &state.process;
+    // 读取持久化的最近一次会话时长（可能后端刚退出还没写、或跨进程重启）。
+    let db = state.db.lock().unwrap();
+    let persisted_last = db
+        .get_game(&game_id)
+        .ok()
+        .flatten()
+        .map(|g| g.last_session_seconds)
+        .unwrap_or(0);
+
+    if pm.is_running(&game_id) {
+        Ok(RunState {
+            state: "running".into(),
+            elapsed_sec: pm.elapsed_seconds(&game_id),
+            last_session_sec: persisted_last,
+        })
+    } else if let Some(sec) = pm.last_exit_seconds(&game_id) {
+        // 本会话刚退出过 → 显示"已退出 · 最近共运行 X"
+        Ok(RunState {
+            state: "stopped".into(),
+            elapsed_sec: 0,
+            last_session_sec: sec.max(persisted_last),
+        })
+    } else if persisted_last > 0 {
+        // 进程退出已被持久化（跨页面、跨重启仍能显示最近一次时长）
+        Ok(RunState {
+            state: "stopped".into(),
+            elapsed_sec: 0,
+            last_session_sec: persisted_last,
+        })
+    } else {
+        // 从没运行过 → "游戏未运行"
+        Ok(RunState {
+            state: "never".into(),
+            elapsed_sec: 0,
+            last_session_sec: 0,
+        })
+    }
 }
 
 /// 管理端"测试脚本"：不启动游戏，只执行传入的脚本并返回每行结果。

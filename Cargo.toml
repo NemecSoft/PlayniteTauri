@@ -13,11 +13,17 @@ lto = "thin"
 opt-level = 3
 panic = "abort"
 strip = true
-incremental = true
+# 注意：release 不开启 incremental。它跟 LTO 搭配会互相拖累、还占用大量磁盘，
+# 而且发布构建是最终产物，不需要保留中间态增量缓存。
 
 [profile.release.package."*"]
 opt-level = 2
 codegen-units = 16
 
+# 本地开发/调试构建：优先速度。
+# opt-level = 0 意味着不优化，编译最快，适合频繁改代码的迭代；
+# 配合上面的 sccache 缓存，改一处基本秒级完成。
 [profile.dev]
-opt-level = 1
+opt-level = 0
+# 开增量编译：改了 core 库后，下游依赖不用全量重编，只重编受影响的 crate。
+incremental = true

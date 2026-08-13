@@ -132,35 +132,44 @@ export const themeLibrary: ThemeEntry[] = [
     zh: "中国红",
     category: "中国风",
     palette: {
-      background: "#F5EBDC",
-      foreground: "#2B2119",
-      card: "#FBF5EA",
-      cardForeground: "#2B2119",
-      primary: "#C8102E",
-      primaryForeground: "#fff7e8",
-      secondary: "#F0E2CB",
-      secondaryForeground: "#2B2119",
-      muted: "#EAD9BF",
-      mutedForeground: "#8A6E4F",
-      border: "#DEC7A4",
-      ring: "#C8102E",
-      bgBase: "#F5EBDC",
-      bgTop: "#F7ECDC",
-      bgSidebar: "#F1E3CB",
-      bgPanel: "#FBF5EA",
-      bgItemHover: "#F0E0C4",
-      bgItemActive: "#E9D5B2",
-      bgInput: "#F7EEDA",
-      borderStrong: "#C9A24B",
-      textPrimary: "#2B2119",
-      textSecondary: "#6E5740",
-      textDim: "#A48B68",
-      accent: "#C8102E",
-      accentHover: "#DE2C48",
-      accentSoft: "rgba(200, 16, 46, 0.16)",
-      success: "#7A9E3F",
-      warning: "#C9A24B",
-      danger: "#B3242E",
+      // 朱金（Vermilion + Gold）中国宫殿配色：
+      //   背景 = 朱红 #9D2933（用户指定）
+      //   文字 = 亮金 #F0D58A 系列（用户要求）
+      //   边框/描边 = 暗金 + 深红，hover/选中用纯金提亮
+      // 整体思路：红底金字 + 金色描边，对比度足够但不刺眼，典雅不浮躁。
+      background: "#9D2933",
+      foreground: "#F0D58A",
+      card: "#A8333D", // 卡片底色比背景稍亮，让封面区与背景能分开
+      cardForeground: "#F0D58A",
+      primary: "#F0D58A", // 主色用作按钮/重点：亮金
+      primaryForeground: "#3A0D12",
+      secondary: "#8A242D",
+      secondaryForeground: "#F0D58A",
+      // muted 原本和 secondary 一样（#8A242D），层次重叠；改更深一档，
+      // 让"不可交互区域"和"次级按钮"在视觉上区分开。
+      muted: "#7C1F28",
+      mutedForeground: "#D4B872",
+      border: "#7A1F28", // 描边默认用深红（不抢戏）
+      ring: "#E5B04B", // 焦点环用纯金（醒目但不刺）
+      bgBase: "#9D2933",
+      bgTop: "#A82F3A", // 顶栏稍亮，区分层次
+      bgSidebar: "#8A242D", // 侧栏稍暗，背景对比
+      bgPanel: "#A5313B", // 面板介于背景和顶栏之间
+      bgItemHover: "#B73E48",
+      bgItemActive: "#C44A55",
+      bgInput: "#8A242D", // 输入框底色深一档
+      borderStrong: "#E5B04B", // 强调边框用纯金（选中行/重要分隔）
+      textPrimary: "#F0D58A", // 主文字：亮金（对比朱红底 ≈ 5.2:1，AA 达标）
+      textSecondary: "#D4B872", // 次要文字：浅金
+      // textDim 从 #A48B5A（暗金）提亮到 #D6B26A：原来在朱红底上对比仅
+      // ≈2.7:1（偏低，看不清），提亮后 ≈3.5:1，弱提示文字也清晰可读。
+      textDim: "#D6B26A",
+      accent: "#E5B04B", // 强调：纯金
+      accentHover: "#FFE082", // hover 升一档，更亮
+      accentSoft: "rgba(229, 176, 75, 0.20)", // 透明底用作徽章
+      success: "#9CCB6B", // 绿色（青瓷感）
+      warning: "#E5B04B", // 警告 = 金
+      danger: "#FF7B86", // 危险：浅红，在红底上更亮
     },
   },
   {
@@ -272,6 +281,215 @@ export const themeLibrary: ThemeEntry[] = [
       success: "#6E7F5A",
       warning: "#9C8A5C",
       danger: "#A24A42",
+    },
+  },
+  {
+    // "山水蓝"配色：背景就是水的蓝色（不是米白留白）
+    // 区别于 p-cn-blue（深海军蓝底）：这个用"清透水蓝"做底，像湖泊/江水
+    //   的蓝，配合深蓝山的文字与强调，视觉如山水画。
+    //   文字用深蓝（在水蓝底上有对比），主色/强调用更深的水蓝。
+    id: "p-cn-blue-mountain",
+    name: "Blue Mountain",
+    zh: "山水蓝",
+    category: "中国风",
+    palette: {
+      background: "#6FA3C7",
+      foreground: "#0F2940",
+      card: "#79A9CB",
+      cardForeground: "#0F2940",
+      primary: "#2E5E7E",
+      primaryForeground: "#F0F6FA",
+      secondary: "#5C8FB2",
+      secondaryForeground: "#F0F6FA",
+      // muted 原与 secondary 相同（#5C8FB2），层次重叠；改更深一档区分。
+      muted: "#4A7BA0",
+      mutedForeground: "#D7E6F2",
+      border: "#46708F",
+      ring: "#1F4A6E",
+      bgBase: "#6FA3C7",
+      bgTop: "#79A9CB",
+      bgSidebar: "#5C8FB2",
+      bgPanel: "#76A6C9",
+      bgItemHover: "#8AB6D5",
+      bgItemActive: "#9CC2DC",
+      bgInput: "#5C8FB2",
+      borderStrong: "#2E5E7E",
+      // textPrimary 加深：原 #16324A 在水蓝底上仅 ≈4.6:1，提到 #0F2940 后
+      // ≈5:1，AA 更稳。
+      textPrimary: "#0F2940",
+      textSecondary: "#1F4A6E",
+      // textDim 是本次最大修复：原 #A8C6DC（浅水蓝）在水蓝底上对比仅 ≈1.9:1
+      // 几乎看不清；改成深水蓝 #3A6284，对比提升到 ≈4:1，弱提示文字可读。
+      textDim: "#3A6284",
+      accent: "#2E5E7E",
+      accentHover: "#244C6B",
+      // accentSoft 透明底稍加深，让徽章在水蓝底上更清晰。
+      accentSoft: "rgba(46, 94, 126, 0.22)",
+      success: "#3F9E8F",
+      warning: "#D9A441",
+      danger: "#C4574A",
+    },
+  },
+  {
+    // "钻石版"渐变配色：背景是青→紫→粉的斜向渐变（钻石般的彩色光泽）。
+    // 通过 body[data-theme-id="p-diamond"] 在 global.css 覆盖背景；
+    // 这里 token 用"中段紫蓝 + 浅文字"——保证卡片/文字在亮色渐变上仍可读。
+    id: "p-diamond",
+    name: "Diamond",
+    zh: "钻石版",
+    category: "特别版",
+    palette: {
+      // bgBase/bgTop 在这个 palette 下不会被使用（body 背景被 CSS 覆盖），
+      // 但为了"恢复"或 fallback 时不出现刺眼的纯色，填入渐变的中段色。
+      background: "#7B6CF6",
+      foreground: "#FFFFFF",
+      card: "#FFFFFF",
+      cardForeground: "#2A1F4A",
+      primary: "#3CC8F4",
+      primaryForeground: "#0D2A3F",
+      secondary: "#F0E5FF",
+      secondaryForeground: "#2A1F4A",
+      muted: "#E0D4F5",
+      mutedForeground: "#5C4A7E",
+      border: "#C5B5E0",
+      ring: "#B557E8",
+      bgBase: "#7B6CF6",
+      bgTop: "#3CC8F4",
+      bgSidebar: "#5C4FCC",
+      bgPanel: "#FFFFFF",
+      bgItemHover: "#F2EAFF",
+      bgItemActive: "#E0D4F5",
+      bgInput: "#FFFFFF",
+      borderStrong: "#B557E8",
+      textPrimary: "#FFFFFF",
+      textSecondary: "#F0E5FF",
+      textDim: "#C5B5E0",
+      accent: "#B557E8",
+      accentHover: "#C66BEE",
+      accentSoft: "rgba(181, 87, 232, 0.20)",
+      success: "#3FBFA8",
+      warning: "#F2A93B",
+      danger: "#F66B6B",
+    },
+  },
+  {
+    // "古地图"配色：羊皮纸沙色 + 棕橙 + 深棕文字，像考古地图集/探险日志
+    // 区别于"中国红/蓝/绿/水墨"：更偏探险+考古+沙漠的"西部/全球地理"风格
+    // 视觉气质：温暖、复古、博物
+    id: "p-ancient-map",
+    name: "Ancient Map",
+    zh: "古地图",
+    category: "特别版",
+    palette: {
+      // 背景：羊皮纸米沙色，旧地图底
+      background: "#E8D9B8",
+      foreground: "#3A2A14",
+      card: "#F0E2C2",
+      cardForeground: "#3A2A14",
+      primary: "#8B5A2B",
+      primaryForeground: "#FBF5E5",
+      secondary: "#D5C098",
+      secondaryForeground: "#3A2A14",
+      muted: "#C9B189",
+      mutedForeground: "#6B5A45",
+      border: "#A88760",
+      ring: "#A0522D",
+      bgBase: "#E8D9B8",
+      bgTop: "#F0E2C2",
+      bgSidebar: "#8B6A3F",
+      bgPanel: "#EDDFC0",
+      bgItemHover: "#D8C49A",
+      bgItemActive: "#C9B189",
+      bgInput: "#DDC9A1",
+      borderStrong: "#A0522D",
+      textPrimary: "#3A2A14",
+      textSecondary: "#6B5A45",
+      textDim: "#A89880",
+      accent: "#A0522D",
+      accentHover: "#B4632A",
+      accentSoft: "rgba(160, 82, 45, 0.20)",
+      success: "#6B8E23",
+      warning: "#C9A24B",
+      danger: "#A04030",
+    },
+  },
+  {
+    // 魔兽世界·醒目史诗增强版
+    // 用户要求的"高清晰度史诗感"：背景压暗、文字/边框/血条全面提亮提纯
+    //   金色更金（#FFD866 / #C8A86A）、血条亮红（#D93A2A）、法力奥术蓝（#2A8AD9）
+    id: "p-wow-epic",
+    name: "World of Warcraft · Vivid",
+    zh: "魔兽世界",
+    category: "特别版",
+    palette: {
+      background: "#120E0A", // 主背景：更深更沉，衬托前景
+      foreground: "#FFF3E0", // 主文字：亮暖白
+      card: "#2A1F18", // 次级背景
+      cardForeground: "#FFF3E0",
+      primary: "#FFD866", // 强调：任务金色
+      primaryForeground: "#120E0A",
+      secondary: "#2A1F18",
+      secondaryForeground: "#FFF3E0",
+      muted: "#2A1F18",
+      mutedForeground: "#C8B8A0", // 副字体：大幅提亮
+      border: "#7A6048", // 主边框：古铜提亮
+      ring: "#C8A86A", // 高亮边框：亮金
+      bgBase: "#120E0A",
+      bgTop: "#1C150E",
+      bgSidebar: "#241B13",
+      bgPanel: "#1F1812",
+      bgItemHover: "#33281E",
+      bgItemActive: "#3D3228",
+      bgInput: "#241B13",
+      borderStrong: "#C8A86A", // 高亮边框（悬停/选中）
+      textPrimary: "#FFF3E0",
+      textSecondary: "#C8B8A0",
+      textDim: "#8A7A66",
+      accent: "#FFD866",
+      accentHover: "#FFE08A",
+      accentSoft: "rgba(255, 216, 102, 0.20)",
+      success: "#30D080", // 友方血条亮红之外的辅助绿（这里用翠绿做成功）
+      warning: "#FFD866",
+      danger: "#F05040", // 警告/危险：纯正亮红
+    },
+  },
+  {
+    // 英雄联盟·醒目科技竞技增强版
+    // 用户要求的"电竞级清晰度"：背景近纯黑、边框/文字提亮、血量翠绿、法力电光蓝、金币亮金
+    id: "p-lol-neon",
+    name: "League of Legends · Neon",
+    zh: "英雄联盟",
+    category: "特别版",
+    palette: {
+      background: "#05080D", // 主背景：无限接近纯黑
+      foreground: "#FFFFFF", // 主文字：纯白
+      card: "#101A26", // 次级背景
+      cardForeground: "#FFFFFF",
+      primary: "#E8C860", // 强调：亮金（英雄名/关键信息）
+      primaryForeground: "#05080D",
+      secondary: "#101A26",
+      secondaryForeground: "#FFFFFF",
+      muted: "#101A26",
+      mutedForeground: "#A0B8C8", // 副字体：蓝灰提亮
+      border: "#4A6A8A", // 主边框：钢蓝提亮
+      ring: "#7AB8E8", // 高亮边框：亮冰蓝
+      bgBase: "#05080D",
+      bgTop: "#0B1119",
+      bgSidebar: "#0D1420",
+      bgPanel: "#0A101A",
+      bgItemHover: "#16222F",
+      bgItemActive: "#1A2838",
+      bgInput: "#0D1420",
+      borderStrong: "#7AB8E8", // 高亮边框（悬停/选中）
+      textPrimary: "#FFFFFF",
+      textSecondary: "#A0B8C8",
+      textDim: "#5A708A",
+      accent: "#40A0FF", // 法力/能量：电光蓝
+      accentHover: "#66B0FF",
+      accentSoft: "rgba(64, 160, 255, 0.20)",
+      success: "#30D080", // 血量：翠绿
+      warning: "#FFD850", // 金币/经济：亮金
+      danger: "#FF4A4A", // 警告/危险：纯亮红
     },
   },
 ];

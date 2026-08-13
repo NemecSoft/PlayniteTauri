@@ -1,0 +1,13 @@
+# Cargo 全局配置（PlayniteTauri）
+#
+# 作用：让 sccache 编译缓存对所有 cargo 命令生效。
+# 以前只有跑 build.ps1 才会临时开启 sccache；直接敲 cargo 命令（比如
+# `cargo tauri build`）时缓存不会启用，导致每次改代码都要全量重编，
+# 这就是"明明没多大变化还要等很久"的原因。
+#
+# 现在在项目里固定配置好，无论你用什么命令构建都能命中缓存，大幅提速。
+# 前提：本机已安装 sccache（`sccache --version` 能打印版本号即可）。
+
+[build]
+# 用 sccache 包一层 rustc，编译产物按"源码+参数"缓存，改一处只重编这一处。
+rustc-wrapper = "sccache"

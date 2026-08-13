@@ -2,6 +2,220 @@
 
 ## 2026-08-13
 
+- **新增"钻石版"渐变配色（`p-diamond`，特别版分类）**：
+  - 背景是 **青 → 紫蓝 → 紫粉 → 粉** 的斜向渐变（`linear-gradient(135deg, ...)`），
+    与一般"单色顶底渐变"的 palette 区分。
+  - 通过 `body.theme-diamond`（class 选择器）在 global.css 覆盖默认 body 渐变；
+    主内容区 `.main-area` 在该主题下用 `background: transparent`，让卡片在彩色渐变上更突出。
+  - 配套加了 themeId 持久化：ThemesSection 切换时 `document.body.classList.toggle("theme-diamond", p.id === "p-diamond")`，
+    `restoreLibraryTheme` 启动恢复时也按 id 同步该 class，重启后钻石版背景能正确生效。
+  - 图标用 lucide-react `Gem`（宝石）。
+  - 选 class 选择器而非 `[data-theme-id]` 属性选择器：更稳、避免某些 PostCSS 工具处理属性选择器时的兼容性问题。
+
+- **新增"古地图"配色（`p-ancient-map`，特别版分类）**：
+  - 羊皮纸沙色 + 棕橙 + 深棕文字，像考古地图集/探险日志
+  - 主色 `#8B5A2B`（深棕）、背景 `#E8D9B8`（米沙）、边框 `#A0522D`（红棕）、
+    文字 `#3A2A14`（深棕黑）
+  - 图标用 lucide-react `Map`（地图）
+  - 区别于"中国红/蓝/绿/水墨"：更偏探险+考古+沙漠的"全球地理"风格，温暖复古
+
+- **"正在启动"横幅：至少保留 3 秒（修复一闪而过）**：
+  - 启动流程可能几百毫秒就完成，之前启动结束立即清除横幅 → "一闪而过看不清"。
+  - `gamesStore` 增加模块级定时器 + `launchingStartedAt`：`setLaunching` 记录开始
+    时刻；`clearLaunching` 计算已过去时间，**延迟到"开始后至少 3 秒"**再真正清除
+    （不足 3 秒则补足剩余时间，超出则立即清）。
+  - 多次快速启动会先清掉上一个定时器，避免叠加出多个定时器互相干扰。
+
+- **新增"正在启动游戏"醒目横幅反馈**：
+  - 用户点"开始游戏"后，游戏启动流程（跑前置脚本 + spawn 进程）可能耗时几百毫秒
+    到几秒。之前这段时间前端**没有任何反馈**，用户会以为"点了没反应"。
+  - 现在 `gamesStore` 增加 `launchingGame` 状态；`launchGame` 在启动开始时设置、
+    启动结束（成功/失败）后清除。
+  - 新增 `LaunchingBanner` 组件（挂载在 App 根）：启动过程中在**屏幕顶部中央**
+    显示醒目的"正在启动《游戏名》…"，带旋转加载图标 + 强调色渐变底 + 高 z-index；
+    启动完成自动消失。
+  - 用 framer-motion 的 AnimatePresence 做淡入/滑出过渡。
+
+- **新增两套"醒目版"游戏主题配色**：
+  - **魔兽世界·醒目史诗版（`p-wow-epic`）**：暖色高对比、古铜+金迸发。
+    主背景 `#120E0A`、正文 `#FFF3E0`、任务金 `#FFD866`、高亮边框 `#C8A86A`、
+    危险亮红 `#F05040`。图标 `Swords`。
+  - **英雄联盟·醒目科技版（`p-lol-neon`）**：冷色高对比、冰蓝+纯白。
+    主背景 `#05080D`、正文纯白 `#FFFFFF`、电光蓝 `#40A0FF`（法力）、翠绿
+    `#30D080`（血量）、亮金 `#FFD850`（金币）、危险 `#FF4A4A`。图标 `Gamepad2`。
+  - 色值全部来自用户给定表，按 palette-tuning skill 映射到 token 命名
+    （`success`/`accent`/`warning`/`danger` 语义落位），并补全其余 UI token。
+  - 决策与映射记录在 `docs/design/theme-system.md`。
+
+- **设置弹窗：去掉"登录 / 游戏库 / 插件"3 个 tab**：
+  - 用户反馈这三个 tab 功能未实现，UI 只是占位，先从侧栏移除。
+  - 保留 `LoginSection.tsx` / `LibrarySection.tsx` / `PluginsSection.tsx` 文件
+    在仓库里（不删），以备以后启用时复用；顶部注释说明如何重新启用。
+  - `SettingsModal.tsx`：从 `SectionId` 类型删 3 个值、从 `SECTIONS` 删 3 项、
+    从 `sectionContent` 删 3 个 case、清理不再用的 icon import
+    （`Database` / `Plug` / `Lock`）。
+
+- **修复"设置 → 外观"页 4 个英文 key**：
+  - 缺失的 4 个 i18n key（`settings_cardSize` / `settings_cardGap` /
+    `settings_coverLibrary` / `settings_coverRescan`）在三份语言文件里**完全不存在**，
+    导致界面显示英文 key 字面量。
+  - 三份文件（zh-CN / en / zh-TW）补全这 4 个 key：
+    - 卡片宽度 / 卡片间距 / 封面图库 / 重新扫描封面
+  - `AppearanceSection.tsx` 给 4 个 t() 调用加 `{ defaultValue: "中文回退" }`
+    兜底（i18next 26+ API），跟之前 GeneralSection 一样防止后续再漏 key。
+
+- **修复"设置 → 通用"页面下拉/复选框显示英文 key**：
+  - `settings_trackPlaytime` 在三份语言文件（zh-CN / en / zh-TW）里**完全缺失**，
+    导致复选框 label 显示 "settings_trackPlaytime"（key 字面量）。已补全中文
+    "启用游戏时间追踪" / English / 繁體中文。
+  - 给 GeneralSection 里所有 i18n 调用加 `{ defaultValue: "中文回退" }` 兜底
+    （i18next 26+ 支持），万一 key 缺失显示中文而不显示英文 key。
+  - 改动的 4 个 key：`settings_startNormal` / `settings_startMinimized` /
+    `settings_startMinimizedTray` / `settings_trackPlaytime`（复选框）。
+
+- **用 palette-tuning skill 优化"山水蓝"和"中国红/朱金"两个配色**：
+  - **山水蓝（浅水蓝底）**：修复"浅底上文字对比度不足"——`textDim` 由浅水蓝
+    `#A8C6DC` 改为深水蓝 `#3A6284`（对比 1.9:1 → ≈4:1）；`textPrimary` 加深到
+    `#0F2940`（≈5:1）；`muted` 与 `secondary` 区分、`border` 稍深。
+  - **中国红/朱金（朱红底）**：修复"暗金文字对比不足"——`textDim` 由 `#A48B5A`
+    提亮到 `#D6B26A`（对比 2.7:1 → ≈3.5:1）；`muted` 与 `secondary` 区分。
+  - 全程遵循 palette-tuning skill 的检查清单（对比度≥4.5:1、背景层次在主色家族内、
+    不破坏已确认的视觉）；决策与色值表同步 `docs/design/theme-system.md`。
+
+- **新增项目级 skill `palette-tuning`**（`.codebuddy/skills/palette-tuning/SKILL.md`）：
+  - 专门调节 PlayniteTauri 配色（添加/调整/重命名/对比度检查/渐变背景）时使用
+  - 内容覆盖：核心文件清单（themeLibrary.ts / themeApply.ts / global.css / ThemesSection.tsx）、
+    添加新 palette 的标准流程、必填字段、icon 映射 key bug 教训、命名约束、
+    调色前检查清单（对比度/背景层次/稀缺感）、反模式、调试技巧
+  - 描述里包含 "添加主题/palette/调整配色/改图标" 等关键词时会自动加载
+
+- **主背景改为渐变色（不再是纯色）**：
+  - `body` 和 `.main-area`（主内容区）背景从 `var(--bg-base)` 纯色改为
+    `linear-gradient(180deg, var(--bg-top), var(--bg-base))` 渐变。
+  - **渐变两端自动取自当前配色**的 `--bg-top`（通常比主色亮一档）和 `--bg-base`
+    （主色）——所以**所有 palette 都自动获得"顶部亮 → 底部主色"的柔和渐变**，
+    无需逐个改色值。
+  - 加了 `background-attachment: fixed`，滚动内容时渐变保持固定、不跟随滚动。
+  - 例如"山水蓝"配色：顶部 `#79A9CB`（亮水蓝）→ 底部 `#6FA3C7`（主水蓝），
+    像湖面由近及远的蓝色渐变。
+
+- **新增"山水蓝"配色（`p-cn-blue-mountain`）+ 修配色图标 key bug**：
+  - **新增 palette**：名为"**山水蓝**"，**背景是水的蓝色**（`#6FA3C7` 清透水蓝，
+    像湖泊/江水），不是米白留白。文字用深蓝 `#16324A`，主色/强调用更深的水蓝
+    `#2E5E7E`，视觉如水墨山水画（蓝山蓝水）。
+    区别于现有的"中国蓝"（深海军蓝底）和"中国水墨"（灰黑墨色）。
+  - **修 bug**：`paletteIconMap` 的 key 一直用 `"chinese-red"` 等短串，但
+    `themeLibrary.ts` 里实际 id 是 `"p-cn-red"`——**所有配色图标一直走 `Palette`
+    兜底**。已修正为真实 id（`p-light` / `p-dark` / `p-cn-red` / `p-cn-blue` /
+    `p-cn-green` / `p-cn-ink` / `p-cn-blue-mountain`），现在每种配色都会显示专属
+    图标（太阳/月亮/火焰/水滴/绿叶/毛笔/山峦）。
+  - 新图标用 `Mountain`（lucide-react 山峦）配"蓝山水"。
+
+- **中国红配色改为"朱金"主题（Vermilion + Gold）**：
+  - 按 ui-ux-pro-max skill 流程做配色：先列 4 个候选（米白底+红/红底+米白/红底+亮金/红底+冰蓝），
+    选定 **C. 朱金**——用户指定的 `#9D2933` 朱红做底 + 亮金 `#F0D58A` 做主文字 +
+    纯金 `#E5B04B` 做强调/描边，致敬紫禁城朱红墙 + 鎏金匾额。
+  - **关键设计原则**：金色只用于文字/强调/描边/焦点环（稀缺感 = 高级感）；
+    背景层次全部在朱红家族内做 5-8% 亮度差，不引入其他色相。
+  - **对比度**：亮金 vs 朱红 ≈ 5.2:1（AA 合规）；次要文字 ≈ 4.6:1。
+  - 新增 `docs/design/theme-system.md` 记录候选方案、调色表、设计原则。
+  - `docs/README.md` 加索引链接。
+
+- **设置弹窗"主题"标签页：风格 / 配色 列表对齐样式 + 加标志图标**：
+  - **风格（Style）区**：原为胶囊按钮组（只显示 `s.zh` 一个名），改为与配色
+    一致的"行项"形式：每行一个 lucide-react **标志图标** + 中文名 + 英文名 +
+    选中勾。图标按风格 id 映射，区分度强（苹果=Sparkles 灵动、毛玻璃=Layers
+    层叠、赛博=Zap 电流、像素=Grid3x3、粗野=Box、蒸汽波=Radio 等）。
+  - **配色（Palette）区**：原已显示色卡+中英名，**新增一个标志图标**
+    （明亮=Sun、暗黑=Moon、中国红=Flame、中国蓝=Droplet、中国绿=Leaf、水墨=Brush）。
+  - **未匹配兜底**：未来新增风格/配色时，库内没显式映射 → 统一用 `Palette`
+    图标兜底，保证"始终有图标"的设计一致性，不会因为没填映射就显示空白。
+  - 顺手给所有可点击行加了 `onKeyDown` 支持键盘 Enter/Space 选择（无障碍 + 跨设备一致）。
+
+- **修复"启动时先闪英文再切中文"**：
+  - **根因**：i18n config 硬编码默认 `lng: "en-US"`，settings 一开始是 DEFAULT
+    （`en-US`）。React 第一次渲染时 i18n 用 en-US 渲染，settings 异步加载完
+    （zh-CN）才 `changeLanguage` 切到中文——中间那一帧就是英文闪烁。
+  - **治本**：在 `main.tsx` 渲染 React 之前，**同步 await 后端拿 settings**，
+    立刻用该语言 `i18n.changeLanguage()`（资源已加载，changeLanguage 同步），
+    并把 settings 预注入到 `useSettingsStore`。React 第一次渲染时 i18n 已经是
+    正确语言。
+  - **保险**：`settingsStore.load()` 检查 `loaded` 标志，已注入则不再 invoke，
+    避免覆盖预加载值引发二次闪烁。
+  - **兜底**：invoke 失败/超时（1.5s）时用 `zh-CN` fallback 渲染，绝不闪英文。
+  - **顺带**：补全 `status_unknownCafe` 三语翻译（之前完全缺失，状态栏显示
+    key 字面量"status_unknownCafe"），现在显示"未连接 C-afe"。
+
+- **新增"详情页游戏运行状态监控"（后台服务式）**：
+  - 进入任意游戏详情页，顶部（返回按钮所在行）显示运行状态：
+    - `运行中 00:12:34`（实时计时）
+    - `游戏已退出 · 最近共运行 00:12:34`
+    - `游戏未运行`
+  - 支持"点开始游戏自动跳转进来"和"手动点详情进来"两种入口，都实时监控。
+  - **后台服务式**：后端在启动游戏时保存子进程句柄并启动监控线程，每 2 秒
+    `try_wait()` 检测进程退出；进程退出时把"本次运行时长 / 退出时间"写回数据库
+    （`game.last_session_seconds`、`last_session_ended_at`），并累加 `playtime`。
+    所以用户点返回再点详情进来，重新拉一次 `get_run_state` 就能从数据库读到准确
+    时长，不会丢。
+  - 新增命令 `get_run_state(game_id)`，返回 `{ state: running|stopped|never,
+    elapsedSec, lastSessionSec }`。
+  - 前端 `GameDetailPage` 用 `useRunState` hook 每 1 秒轮询 + 本地秒表平滑计时。
+  - 结构改动：`AppState.db` 从 `Mutex<Database>` 改为 `Arc<Mutex<Database>>`（供
+    监控线程 clone 写库）；`ProcessManager` 实现 `Clone`（内部全 Arc）；`launch`
+    现在返回 `Child` 供句柄登记。
+
+- **明确"启动游戏后跳转详情页"为固定行为（不做可选项）**：
+  - 用户点"开始游戏"成功拉起游戏后，客户端**统一跳转到该游戏详情页**（`/game/:id`），
+    方便用户边玩边看 `Game_Details/` 下的攻略图文 + `videos/` 视频教程。
+  - **固定，不提供** Playnite 式的"窗口保持 / 最小化到托盘 / 关闭窗口"可选设置。
+  - **不改窗口状态**：启动后不得调用 `maximize_window`/`minimize_window`/`hide_window`。
+    历史教训：曾调用 `api.maximizeWindow()`，但它本质是"最大化/还原"切换，窗口已
+    最大化时反而被还原，造成"点开始游戏窗口被恢复"的怪异表现——已删除，用户窗口
+    状态保持原样。设计决策已固化到 `docs/design/game-detail.md`。
+
+- **修复"朽木难雕点详情闪一下没变化"（空 id 脏数据）**：
+  - **根因**：朽木难雕这条游戏在数据库里的 `id` 是**空字符串 `""`**（其他 1270 个
+    游戏 id 都是正常 UUID）。前端点详情跳转 `/game/`（缺段）匹配不上 `/game/:id`
+    路由，被兜底路由 `Navigate to "/"` 拉回主页——表现为"点详情闪一下没变化"。
+  - **修复**：
+    1. 一次性清理：把库里空 id 的朽木难雕补上 UUID 并删除旧脏记录（总数不变，
+       空 id 归零）。
+    2. 治本：`get_games` 和 `save_game` 两个命令都保证 id 非空（空则补 UUID 并
+       清理脏记录），以后不会再产生空 id 游戏。
+    3. 前端 `GridView.openDetails` 对空 id/含特殊字符 id 加 `encodeURIComponent`
+       和 console 警告，跳转更健壮。
+  - **影响**：重启客户端后，朽木难雕详情可正常打开。
+
+- **修复"朽木难雕"启动报"未配置启动指令且没有安装目录"**：
+  - **根因**：管理端保存游戏时只写了 `actions` 数组，**漏掉了 `play_task` 和
+    `install_directory` 两个顶层字段**。后端 `launch_game` 看到 `play_task=None`
+    就走"自动检测 install_dir"分支，如果 install_dir 也是 None 就报这个错。
+  - **修复**：管理端 `saveGame` 改为根据 actions 里"作为启动指令"勾选**自动派生**
+    `playTask`（=该 action 的 id）和 `installDirectory`（=该 action 的工作目录或
+    exe 路径），用户填好启动项保存后数据天然完整。
+  - **老数据回填**：启动时跑一次性 `backfill_play_task_and_install_dir`，扫所有游戏
+    把这两个字段补上（守卫键 `play_task_backfilled` 防止重复跑），避免用户手动重存。
+
+- **管理端保存前占位符拼写纠错**（防"朽木难雕"再发生）：
+  - 新增 `admin_soft_validate_action` 命令，对单个启动项做**软校验**（不查文件
+    存在性，只看占位符拼写、扩展名、目录/路径合法性）。
+  - 管理端 `saveGame` 在保存前对每个 action 调一次，发现 invalid 时弹确认框
+    （"检测到启动项路径有问题，仍要保存吗？《启动项1》：……"），用户取消就放弃
+    保存，避免错数据落库。
+  - 之前的 `admin_validate_action` 仍可手动点"校验"按钮触发（强校验，会查文件
+    存在性），适合做最终部署前的体检。
+
+- **编译太慢优化**：
+  - 新增 `.cargo/config.toml` 全局启用 sccache，**所有 cargo 命令**都命中编译缓存
+    （之前只在 `build.ps1` 里临时启用，直接跑 `cargo tauri build` 不生效）。
+  - dev profile：`opt-level=0` + `incremental=true`，开发迭代秒级。
+  - release profile：移除与 LTO 冲突的 `incremental`。
+  - 实测：改一处 core 后 dev 构建 admin **12.7s**（之前数分钟）；无改动重跑 **<1s**。
+
+- **占位符拼写纠错**：`validation.rs` 集成 Levenshtein 距离检测，用户写错占位符名
+  （如 `gamelibray2` 少个 r）时，错误信息直接提示"你可能想写 `Gamelibrary2`"，避免
+  反复猜测。9 个 validation 单测全过。
+
 - **新增运行前/批量检测（统一共用一套检测）**：
   - **共享检测核心**：后端新增 `validation.rs`（`validate_launch_path`），把启动项路径
     解析 + 目标 exe/bat 存在性 + 可执行类型判断统一为一处；客户端运行前检测、管理端

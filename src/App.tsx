@@ -11,6 +11,7 @@ import AnnouncementModal from "./components/AnnouncementModal";
 import LaunchActionModal from "./components/LaunchActionModal";
 import SettingsModal from "./components/settings/SettingsModal";
 import ToastContainer from "./components/ToastContainer";
+import LaunchingBanner from "./components/LaunchingBanner";
 import ImageProgressBar from "./components/ImageProgressBar";
 import GameDetailPage from "./pages/GameDetailPage";
 import { useSettingsStore } from "./stores/settingsStore";
@@ -140,6 +141,7 @@ function AppShell() {
           </Routes>
         </RoutesErrorBoundary>
         <ToastContainer />
+        <LaunchingBanner />
         <ImageProgressBar />
         <AnimatePresence>
           {settingsOpen && <SettingsModal onClose={closeSettings} />}

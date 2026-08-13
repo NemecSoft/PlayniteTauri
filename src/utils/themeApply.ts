@@ -105,7 +105,12 @@ export function restoreLibraryTheme(library: {
   const id = getStoredThemeId();
   if (!id) return;
   const entry = library.find((t) => t.id === id);
-  if (entry) applyPaletteTheme(entry.palette);
+  if (entry) {
+    applyPaletteTheme(entry.palette);
+    // 让"钻石版渐变"这类需要专属背景的 palette 在重启后也能正确触发。
+    document.body.dataset.themeId = id;
+    document.body.classList.toggle("theme-diamond", id === "p-diamond");
+  }
 }
 
 /* ---- Style application (non-color design variables) ---- */

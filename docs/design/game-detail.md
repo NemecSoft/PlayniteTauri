@@ -1,5 +1,31 @@
 # 游戏静态详情页（Game_Details 容器）
 
+## 启动游戏后：统一跳转到本详情页（固定行为）
+
+**决策（固定，不做可选项）：** 用户点击"开始游戏"并成功拉起游戏后，客户端**统一跳转
+到该游戏的详情页**（`/game/:id`），方便用户边玩边查看操作攻略、图文与视频教程。
+
+- 这是**唯一且固定**的行为。不提供 Playnite 式的"窗口保持 / 最小化到托盘 / 关闭窗口"
+  等可选设置。
+- 原因：详情页承载 `Game_Details/<游戏名>/` 下的攻略图文 + `videos/` 视频教程，
+  跳转过去是**有明确价值**的——让玩家不必切出去找教程，直接在客户端内边看边玩。
+
+### 实现链路
+
+```
+launchGame(id) 启动成功
+   └─ set({ lastLaunchedId: id })          // gamesStore
+        └─ AppShell useEffect 监听 lastLaunchedId
+             └─ navigate(`/game/${id}`)    // 跳到详情页
+```
+
+- 前端：`src/stores/gamesStore.ts`（`launchGame` 成功 → 置 `lastLaunchedId`）、
+  `src/App.tsx`（`AppShell` 监听并 `navigate`）。
+- **不改变窗口状态**：启动游戏后**不得**调用 `maximize_window` / `minimize_window` /
+  `hide_window` 等命令（历史教训：曾调用 `maximize_window`，它本质是"最大化/还原"
+  切换，窗口已最大化时反而被还原，造成"点开始游戏窗口被恢复"的怪异表现——已删除）。
+  用户当前是最大化还是还原，启动后保持原样。
+
 ## 目标
 
 在客户端详情页（`/game/:id`）提供一个**通用静态网站容器**——任何 `Game_Details/<游戏名>/index.html`

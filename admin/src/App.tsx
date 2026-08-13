@@ -38,6 +38,9 @@ export default function AdminApp() {
 
   // Game editors
   const [editingGame, setEditingGame] = useState<Game | null>(null);
+  // 显式记录"当前是编辑模式还是新增模式"。editingGame.id 在 setConfirmState
+  // 等中间渲染下可能出现 transient 空值，用这个独立标志保证标题/按钮文案稳定。
+  const [isEditingGame, setIsEditingGame] = useState(false);
   const [editTab, setEditTab] = useState<EditTab>("general");
   const [gameForm, setGameForm] = useState({
     name: "",
@@ -79,9 +82,13 @@ export default function AdminApp() {
   // Close-request handlers: prompt before discarding unsaved edits.
   const requestCloseGame = () => {
     if (isGameDirty()) {
-      askConfirm("有未保存的修改，确定要放弃并关闭吗？", () => setEditingGame(null));
+      askConfirm("有未保存的修改，确定要放弃并关闭吗？", () => {
+        setEditingGame(null);
+        setIsEditingGame(false);
+      });
     } else {
       setEditingGame(null);
+      setIsEditingGame(false);
     }
   };
   const requestCloseLibrary = () => {
@@ -112,8 +119,12 @@ export default function AdminApp() {
   };
 
   // Custom confirmation dialog (window.confirm is unreliable in WebView2).
-  const [confirmState, setConfirmState] = useState<{ message: string; onOk: () => void } | null>(null);
-  const askConfirm = (message: string, onOk: () => void) => setConfirmState({ message, onOk });
+  const [confirmState, setConfirmState] = useState<{ message: string; onOk: () => void; onCancel?: () => void } | null>(null);
+  const askConfirm = (
+    message: string,
+    onOk: () => void,
+    onCancel?: () => void,
+  ) => setConfirmState({ message, onOk, onCancel });
 
   // Undo bar after a deletion, so destructive actions can be reverted.
   const [undoState, setUndoState] = useState<{ message: string; onUndo: () => Promise<void> } | null>(null);
@@ -288,6 +299,7 @@ export default function AdminApp() {
 
   const openNewGame = () => {
     setEditingGame({ id: "", name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [] });
+    setIsEditingGame(false);
     setEditTab("general");
     const f = { name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [], tags: [], gameLibrary: "", version: "", publisher: [], series: [], releaseDate: "", description: "", guide: "", notes: "", favorite: false, hidden: false, actions: [], preLaunchScript: "", preLaunchEnabled: false, postLaunchScript: "", postLaunchEnabled: false, postExitScript: "", postExitEnabled: false };
     setGameForm(f);
@@ -295,7 +307,18 @@ export default function AdminApp() {
     customWorkingDirRef.current = {};
   };
   const openEditGame = (g: Game) => {
-    setEditingGame(g);
+    // 防御：有些老数据可能没 id 字段（早期导入或手改 JSON）；如果没有 id，
+    // 但 games 列表里能根据 name 找到，就补上 id；否则视为"新增"但用
+    // editing 模式打开（用户能看到现有数据，但保存会按"已有游戏"逻辑走）。
+    let gameForEdit: Game = g;
+    if (!g.id && g.name) {
+      const found = games.find((x) => x.name === g.name);
+      if (found) gameForEdit = found;
+    }
+    setEditingGame(gameForEdit);
+    // 显式标记"编辑模式"，避免 editingGame.id 在某些中间渲染下被吞掉
+    // 导致标题/按钮文案错误地显示"新增游戏"。
+    setIsEditingGame(true);
     setEditTab("general");
     const f = {
       name: g.name,
@@ -350,6 +373,44 @@ export default function AdminApp() {
     if (!gameForm.name.trim()) {
       showToast("请输入游戏名称");
       return;
+    }
+    // 保存前软校验：检查每个启动项路径的占位符是否拼写正确、扩展名是否合法。
+    // 不查文件存在性（很多游戏在开发中，部署环境和开发机不同），只查"明显是
+    // 错的"——典型场景：把 `{Gamelibrary2}` 错写成 `{gamelibray2}` 之类的拼写
+    // 错误，这种会直接让客户端启动报"占位符找不到游戏库"。
+    if (gameForm.actions.length > 0) {
+      const invalidActions: { name: string; reason: string }[] = [];
+      for (const a of gameForm.actions) {
+        const p = (a.path || "").trim();
+        if (!p) continue;
+        // URL 类型不校验文件路径
+        if ((a.type || "File") === "URL") continue;
+        try {
+          const r = await call<{
+            valid: boolean;
+            reason: string;
+          }>("admin_soft_validate_action", { path: p, type: a.type || "File" });
+          if (!r.valid && r.reason) {
+            invalidActions.push({ name: a.name || "(未命名)", reason: r.reason });
+          }
+        } catch {
+          // 软校验失败不阻塞保存（避免后端异常时整个保存流程挂掉）
+        }
+      }
+      if (invalidActions.length > 0) {
+        const detail = invalidActions
+          .map((x) => `《${x.name}》：${x.reason}`)
+          .join("\n");
+        // 弹确认窗：用户取消就放弃保存，避免错数据落库。
+        const ok = await new Promise<boolean>((resolve) => {
+          askConfirm(
+            `检测到启动项路径有问题，仍要保存吗？\n\n${detail}`,
+            () => resolve(true),
+            () => resolve(false),
+          );
+        });
+        if (!ok) return; // 用户取消，放弃保存
+      }
     }
     // No real-filesystem check on save: dev environment differs from the
     // deployed one (games may not yet be copied to the configured library
@@ -424,6 +485,17 @@ export default function AdminApp() {
         if (v !== undefined) (merged as unknown as Record<string, unknown>)[k] = v;
       }
     }
+    // 自动同步：保存时根据"作为启动指令"勾选，自动推导出 playTask 和
+    // installDirectory 两个字段。playTask 指向 isPlayAction=true 的 action 的 id；
+    // installDirectory 指向"作为启动指令"那条 action 的工作目录（去掉占位符
+    // 后是真实的游戏安装目录，客户端用这个目录判断文件、跑 pre-launch 脚本等）。
+    // 这样管理端 UI 不需要额外暴露 playTask/installDirectory 两个字段，
+    // 用户填好启动项后保存，后端数据天然完整。
+    const playAction = gameForm.actions.find((a) => a.isPlayAction) || gameForm.actions[0];
+    const playTaskId: string | null = playAction?.id ?? null;
+    const installDir: string | null = playAction?.workingDir?.trim()
+      ? playAction.workingDir.trim()
+      : (playAction?.path?.trim() || null);
     const payload: Game = {
       ...merged,
       id: editingGame?.id || base.id,
@@ -445,6 +517,12 @@ export default function AdminApp() {
       favorite: gameForm.favorite,
       hidden: gameForm.hidden,
       actions: gameForm.actions,
+      // 关键：从"作为启动指令"那条 action 自动派生，存到 Game 顶层字段。
+      // 之前的实现漏了这步，导致后端 launch_game 看到 play_task=None 走
+      // install_directory 自动检测分支，install_directory 也是 None 时就报
+      // "游戏未配置启动指令且没有安装目录"。
+      playTask: playTaskId,
+      installDirectory: installDir,
       preLaunchScript: gameForm.preLaunchScript || null,
       preLaunchEnabled: !!gameForm.preLaunchEnabled,
       postLaunchScript: gameForm.postLaunchScript || null,
@@ -457,8 +535,9 @@ export default function AdminApp() {
       await call("save_game", { payload: { game: payload } });
       // 文案明确带上游戏名，并清楚区分"已保存"vs"已新增"，避免用户分不清。
       const savedName = gameForm.name.trim() || "(未命名)";
-      showToast(editingGame?.id ? `已保存《${savedName}》` : `已新增《${savedName}》`);
+      showToast(isEditingGame ? `已保存《${savedName}》` : `已新增《${savedName}》`);
       setEditingGame(null);
+      setIsEditingGame(false);
       await reload();
     } catch (e) {
       showToast(`保存失败: ${String(e)}`);
@@ -791,7 +870,9 @@ export default function AdminApp() {
                         onChange={() => toggleSelect(g.id)}
                       />
                     </td>
-                    <td className="mono">{g.id || "—"}</td>
+                    <td className="mono">
+                      {g.id ? g.id : <span className="bad-id" title="此游戏缺少 id，可能导致客户端无法打开详情页">缺 id</span>}
+                    </td>
                     <td>{g.name}</td>
                     <td>
                       <select
@@ -966,9 +1047,11 @@ export default function AdminApp() {
       {editingGame && (
         <ModalMask onMaskClick={() => requestCloseGame()}>
           <div className="admin-modal admin-modal-wide" onClick={(e) => e.stopPropagation()}>
-            {/* 标题清楚显示模式：编辑《name》/ 新增游戏；未保存改动时给个标记 */}
+            {/* 标题清楚显示模式：编辑《name》/ 新增游戏；未保存改动时给个标记。
+                用独立的 isEditingGame 状态判断（不再依赖 editingGame.id），
+                避免某些中间渲染下 id 暂时为空导致显示错误。 */}
             <h3>
-              {editingGame.id
+              {isEditingGame
                 ? `编辑游戏：${editingGame.name || "(未命名)"}`
                 : "新增游戏"}
               {isGameDirty() && <span className="dirty-mark" title="有未保存的修改"> ●</span>}
@@ -1472,7 +1555,7 @@ export default function AdminApp() {
             <div className="modal-actions">
               <button onClick={requestCloseGame}>取消</button>
               <button className="primary" onClick={() => void saveGame()}>
-                {editingGame.id ? "保存修改" : "新增游戏"}
+                {isEditingGame ? "保存修改" : "新增游戏"}
               </button>
             </div>
           </div>
@@ -1569,7 +1652,7 @@ export default function AdminApp() {
           <div className="admin-modal confirm-modal">
             <p className="confirm-message">{confirmState.message}</p>
             <div className="modal-actions">
-              <button onClick={() => setConfirmState(null)}>取消</button>
+              <button onClick={() => { confirmState.onCancel?.(); setConfirmState(null); }}>取消</button>
               <button
                 className="danger"
                 onClick={() => {

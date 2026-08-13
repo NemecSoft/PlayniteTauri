@@ -83,7 +83,7 @@ export default function AppearanceSection() {
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">
-          {t("settings_cardSize")}: <strong>{settings.cardWidth}px</strong>
+          {t("settings_cardSize", { defaultValue: "卡片宽度" })}: <strong>{settings.cardWidth}px</strong>
         </label>
         <input
           type="range"
@@ -119,7 +119,7 @@ export default function AppearanceSection() {
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">
-          {t("settings_cardGap")}: <strong>{settings.cardGap}px</strong>
+          {t("settings_cardGap", { defaultValue: "卡片间距" })}: <strong>{settings.cardGap}px</strong>
         </label>
         <input
           type="range"
@@ -137,7 +137,7 @@ export default function AppearanceSection() {
       </div>
 
       <div className="mt-[18px] rounded-xl border border-border bg-panel p-3.5">
-        <div className="mb-1.5 font-bold">{t("settings_coverLibrary")}</div>
+        <div className="mb-1.5 font-bold">{t("settings_coverLibrary", { defaultValue: "封面图库" })}</div>
         <div className="mb-2.5 text-xs text-secondary-text">{t("settings_coverLibraryHint")}</div>
         {coverInfo && (
           <div
@@ -150,7 +150,7 @@ export default function AppearanceSection() {
         <div className="flex items-center gap-2.5">
           <Button variant="secondary" size="sm" onClick={handleRescan} disabled={scanning}>
             <RefreshCw size={14} className="mr-1.5" />
-            {scanning ? t("settings_coverScanning") : t("settings_coverRescan")}
+            {scanning ? t("settings_coverScanning") : t("settings_coverRescan", { defaultValue: "重新扫描封面" })}
           </Button>
           {lastResult && <span className="text-xs text-accent">{lastResult}</span>}
         </div>

@@ -56,7 +56,9 @@ pub type Result<T> = std::result::Result<T, AppError>;
 
 /// Shared application state, managed by Tauri.
 pub struct AppState {
-    pub db: Mutex<Database>,
+    // 用 Arc 包一层：后台监控线程（游戏进程退出检测）需要 clone 一份 db 引用，
+    // 以便把"最近一次运行时长"写回数据库。
+    pub db: Arc<Mutex<Database>>,
     pub process: ProcessManager,
     pub plugins: Mutex<PluginHost>,
     pub config_root: PathBuf,
@@ -133,6 +135,8 @@ fn import_game_catalog(db: &Database) -> usize {
             play_count: 0,
             last_activity: None,
             playtime: 0,
+            last_session_seconds: 0,
+            last_session_ended_at: None,
             added: now.clone(),
             modified: now.clone(),
             category: Vec::new(),
@@ -400,6 +404,11 @@ fn init_app_db(app: &tauri::App) {
     } else {
         let _ = migrate_gamelibrary_paths(&db);
     }
+    // 一次性回填：之前保存的游戏可能有 actions 但顶层 play_task / install_directory
+    // 是空的（管理端 UI 没回填这两个字段），导致启动时 launch_game 找不到
+    // 启动指令。这里从 actions 里挑出 is_play_action=true 那条自动回填到
+    // 顶层字段。已回填的不会重复改。
+    backfill_play_task_and_install_dir(&db);
     if let Ok(settings) = db.load_settings() {
         let cfg = settings.enterprise_config_path.clone();
         if import_enterprise_if_empty(&db, &cfg) == 0 {
@@ -407,6 +416,67 @@ fn init_app_db(app: &tauri::App) {
         }
     }
     seed_demo_personal_users(&db);
+}
+
+/// 一次性回填：扫描所有游戏，凡是 `play_task` 为空但 actions 里有
+/// `is_play_action=true` 的，把对应的 action.id 写到 play_task；install_directory
+/// 若为空，用该 action 的 working_dir（优先）或 path 兜底。仅在启动时跑一次，
+/// 守卫键 `play_task_backfilled` 防止重复回填。
+fn backfill_play_task_and_install_dir(db: &Database) {
+    if db
+        .get_setting("play_task_backfilled")
+        .ok()
+        .flatten()
+        .map(|v| v == "1")
+        .unwrap_or(false)
+    {
+        return;
+    }
+    let Ok(games) = db.get_all_games() else {
+        return;
+    };
+    let mut fixed = 0usize;
+    for g in games {
+        // 找 actions 里"作为启动指令"那条；找不到就用第一条；都没有就跳过。
+        let play = g
+            .actions
+            .iter()
+            .find(|a| a.is_play_action)
+            .or_else(|| g.actions.first());
+        let Some(play) = play else { continue };
+        let mut ng = g.clone();
+        let mut changed = false;
+        if ng.play_task.as_deref().map(str::is_empty).unwrap_or(true) {
+            ng.play_task = Some(play.id.clone());
+            changed = true;
+        }
+        if ng.install_directory.as_deref().map(str::is_empty).unwrap_or(true) {
+            let wd = play
+                .working_dir
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty());
+            let p = play
+                .path
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty());
+            let resolved = wd.or(p).map(|s| s.to_string());
+            if resolved.is_some() {
+                ng.install_directory = resolved;
+                changed = true;
+            }
+        }
+        if changed {
+            if db.upsert_game(&ng).is_ok() {
+                fixed += 1;
+            }
+        }
+    }
+    if fixed > 0 {
+        // 回填完成（数量通过返回值传给调用方，本地不再打日志以免污染启动输出）。
+    }
+    let _ = db.set_setting("play_task_backfilled", "1");
 }
 
 /// Entry point for the **client** app (`Playnite.DesktopApp.exe`). The client
@@ -435,9 +505,9 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .manage(AppState {
-            db: Mutex::new(
+            db: Arc::new(Mutex::new(
                 Database::open(AppPaths::database_path()).expect("failed to open database"),
-            ),
+            )),
             process: ProcessManager::new(),
             plugins: Mutex::new(PluginHost::new(AppPaths::plugins_dir())),
             config_root,
@@ -473,6 +543,7 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             commands::admin::admin_delete_game_library,
             commands::admin::admin_migrate_gamelibrary_placeholder,
             commands::admin::admin_validate_action,
+            commands::admin::admin_soft_validate_action,
             // announcement
             commands::announcement::get_announcement,
             // per-game static detail page
@@ -486,6 +557,7 @@ pub fn build_client() -> tauri::Builder<tauri::Wry> {
             commands::games::launch_game,
             commands::games::stop_game_tracking,
             commands::games::running_games,
+            commands::games::get_run_state,
             // tags
             commands::tags::regenerate_tags,
             // library
@@ -575,9 +647,9 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .manage(AppState {
-            db: Mutex::new(
+            db: Arc::new(Mutex::new(
                 Database::open(AppPaths::database_path()).expect("failed to open database"),
-            ),
+            )),
             process: ProcessManager::new(),
             plugins: Mutex::new(PluginHost::new(AppPaths::plugins_dir())),
             config_root,
@@ -605,6 +677,7 @@ pub fn build_admin() -> tauri::Builder<tauri::Wry> {
             commands::admin::admin_delete_game_library,
             commands::admin::admin_migrate_gamelibrary_placeholder,
             commands::admin::admin_validate_action,
+            commands::admin::admin_soft_validate_action,
             commands::admin::validate_selected_actions,
             // auth (status / current user)
             commands::auth::get_current_user,

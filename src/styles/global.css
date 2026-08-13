@@ -335,18 +335,30 @@ body,
 
 body {
   font-family: var(--font-ui);
-  background: var(--bg-base);
+  /* 主背景用"顶部亮 → 底部主色"的柔和渐变，而不是纯色。
+     渐变两端取自当前配色的 --bg-top（通常比主色亮一档）和 --bg-base（主色），
+     这样所有 palette 自动获得渐变背景，无需逐个改色值。 */
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-base) 55%, var(--bg-base) 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+/* 钻石版渐变（p-diamond）：横向斜向彩色渐变，覆盖默认的单色顶底渐变。颜色：青 → 紫蓝 → 紫粉 → 粉。 */
+body.theme-diamond {
+  background: linear-gradient(135deg, #3CC8F4 0%, #7B6CF6 35%, #B557E8 65%, #F66BC4 100%);
+}
+body.theme-diamond .main-area {
+  background: transparent;
+}
   /* Global baseline: crisp default rendering. Glow/stroke effects are NOT
      inherited here — applying a stroke + multi-layer glow to every text
      node (sidebar nav, settings labels, small UI text) makes characters look
      "neon-blurred" and reduces readability on busy backgrounds like game
      covers. Use the `.text-emphasis` utility on the spots that actually
      need emphasis (titles over images, brand text). */
-}
 
 /* Readable text emphasis for elements rendered on top of busy backgrounds
    (game covers, hero banners, modal headers). A dark halo first gives a
@@ -455,7 +467,8 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--bg-base);
+  /* 与 body 主背景一致：顶部亮 → 底部主色渐变，保证内容区不盖住 body 渐变。 */
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-base) 55%, var(--bg-base) 100%);
 }
 
 /* Videos tab */
@@ -851,12 +864,15 @@ textarea {
   position: fixed;
   left: 0;
   top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  /* Tall enough for a short vertical hint, auto-sized to its content. */
+  /* 默认向右露 14px（文字"鼠标移到这里..."完整可见）：
+     handle 宽 22px，向左 translateX(-8px) → 右边缘在 +14px。
+     鼠标从屏幕最左进入能触发 hover（因为右半 14px 在屏幕内）。 */
+  transform: translateX(-8px) translateY(-50%);
+  width: 22px;
+  /* 高度随竖排文字撑开。 */
   height: auto;
   min-height: 220px;
-  padding: 14px 4px;
+  padding: 14px 2px;
   background: var(--accent-soft);
   border: 1px solid var(--border);
   border-left: none;
@@ -867,20 +883,44 @@ textarea {
   justify-content: center;
   cursor: pointer;
   z-index: 50;
-  transition: opacity 0.18s ease, transform 0.18s ease, background 0.15s, color 0.15s;
+  /* 默认带左右轻微摆动的呼吸动画，让用户感知"这里有东西可交互"；
+     hover/focus 时把动画停掉，避免和滑入动画叠加。 */
+  animation: sidebar-handle-pulse 2.4s ease-in-out infinite;
+  transition: opacity 0.18s ease, transform 0.2s ease, background 0.15s, color 0.15s;
   opacity: 0;
   pointer-events: none;
   /* Render the hint text vertically (top-to-bottom, single column). */
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 2px;
   user-select: none;
 }
-.sidebar-handle:hover {
+.sidebar-handle:hover,
+.sidebar-handle:focus-visible {
+  /* hover/focus 时停掉脉动、保持位置（不滑到 0 避免压到第一张卡片，
+     因为游戏网格有 left padding 20px 隔开），但背景变金、字体变白——
+     给用户清晰的"找到这个提示"的反馈。 */
+  animation: none;
   background: var(--accent);
   color: #fff;
+}
+
+/* 呼吸/脉动动画：左右轻微摆动（4px 幅度），告诉用户"这里有交互"。 */
+@keyframes sidebar-handle-pulse {
+  0%, 100% {
+    transform: translateX(-8px) translateY(-50%);
+  }
+  50% {
+    transform: translateX(-4px) translateY(-50%);
+  }
+}
+/* 兼容"用户偏好减少动效"（无障碍）：关闭脉动，保持静态。 */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-handle {
+    animation: none;
+  }
 }
 .sidebar-handle:not(.hidden) {
   opacity: 1;
@@ -1336,7 +1376,9 @@ textarea {
      covers any other place that still relies on the plain auto-fill grid. */
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  padding: 2px;
+  /* 左侧多留点 padding：给最左边的 sidebar-handle 提示句（hover 时展开到 22px）
+     留空间，避免 hover 时 handle 滑入挤压到第一张游戏卡片。 */
+  padding: 2px 2px 2px 20px;
 }
 
 /* Windowed grid (useVirtualGrid): the scroll container stays .content. The
@@ -1855,6 +1897,41 @@ textarea {
   flex: 1;
   overflow-y: auto;
   padding: 20px 24px;
+}
+
+/* 全局"正在启动游戏"醒目横幅：固定在屏幕顶部中央，高 z-index，
+   带旋转加载图标 + 游戏名，让用户清楚看到启动正在进行。 */
+.launching-banner {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  /* 用当前强调色的渐变底，醒目但不过分抢戏 */
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  color: var(--accent-hover);
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 3000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.launching-spinner {
+  animation: launching-spin 1s linear infinite;
+}
+.launching-icon {
+  opacity: 0.7;
+}
+@keyframes launching-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast notifications */

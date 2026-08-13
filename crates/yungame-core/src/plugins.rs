@@ -111,6 +111,8 @@ impl PluginHost {
                     play_count: 0,
                     last_activity: None,
                     playtime: 0,
+                    last_session_seconds: 0,
+                    last_session_ended_at: None,
                     added: now.clone(),
                     modified: now,
                     category: Vec::new(),

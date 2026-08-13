@@ -534,3 +534,34 @@ h3,
 :root[data-fx="retro"] .status-bar {
   border-top: 1px dashed rgba(0, 255, 240, 0.4);
 }
+
+/* ============================================================
+   详情页顶部"游戏运行状态"标签
+   用于显示：运行中（实时计时）/ 游戏已退出（最近运行时长）/ 游戏未运行
+   ============================================================ */
+.run-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.run-badge-running {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+}
+.run-badge-stopped {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+}
+.run-badge-never {
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--bg-input) 60%, transparent);
+  border: 1px solid var(--border);
+}

@@ -54,6 +54,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loaded: false,
 
   load: async () => {
+    // 如果 main.tsx 已经预加载并注入了 settings（治本：避免启动闪烁），
+    // 这里直接返回，不再 invoke——否则会在 React 渲染途中再次切换语言，
+    // 引发"先英文再中文"的闪烁。
+    if (get().loaded) return;
     const settings = await api.getSettings();
     set({ settings, loaded: true });
   },

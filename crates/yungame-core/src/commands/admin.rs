@@ -177,6 +177,49 @@ pub fn admin_validate_action(
     Ok(crate::validation::validate_launch_path(&path, r#type.as_deref(), &libs))
 }
 
+/// 管理端"软校验"启动项路径：不要求文件真实存在（很多游戏还在开发中或
+/// 部署环境不同），只校验占位符拼写、扩展名等"明显是错的"情况。返回结构
+/// 同 `admin_validate_action`，但 valid 仅在"格式/占位符/扩展名有问题"
+/// 时为 false。管理端保存游戏前用这个命令拦截常见的拼写错误（如
+/// `gamelibray2` → 应该是 `Gamelibrary2`），避免错数据落库。
+#[tauri::command]
+pub fn admin_soft_validate_action(
+    state: State<AppState>,
+    path: String,
+    r#type: Option<String>,
+) -> crate::Result<crate::validation::ActionValidation> {
+    let db = state.db.lock().unwrap();
+    let libs = db.load_settings()?.game_libraries;
+    let full = crate::validation::validate_launch_path(&path, r#type.as_deref(), &libs);
+    // "软校验"规则：
+    // 1. 文件存在 → valid（不用管占位符是否纠错过）
+    // 2. 文件不存在但占位符提示了拼写纠错 → 算 invalid（明显是拼错了）
+    // 3. 文件不存在 + 路径看起来是绝对路径 + 扩展名合法 → valid（可能是开发中
+    //    还没部署，不应该拦）
+    // 4. 文件不存在 + 路径是占位符形式但占位符没问题 + 扩展名合法 → valid
+    // 5. 扩展名非可执行类型、目录、其他 → invalid
+    if full.valid {
+        return Ok(full);
+    }
+    let is_typo_hint = full.reason.contains("你可能想写")
+        || full.reason.contains("找不到对应游戏库");
+    if is_typo_hint {
+        // 拼写错误：明确阻止
+        return Ok(full);
+    }
+    // 占位符没问题但文件确实不存在（可能开发中、可能部署环境不同）→ 放行
+    if full.reason.starts_with("文件不存在") {
+        return Ok(crate::validation::ActionValidation {
+            valid: true,
+            resolved: full.resolved,
+            reason: String::new(), // 软校验不放进 reason
+            extension: full.extension,
+        });
+    }
+    // 其他情况（不是可执行类型、是目录、路径为空）→ 仍然 invalid
+    Ok(full)
+}
+
 /// 单个游戏"运行前检测"的结果（管理端批量检测用）。
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

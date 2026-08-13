@@ -41,9 +41,19 @@ export default function GridView({ groups }: Props) {
   // 进详情页之前，先把当前的滚动位置记下来；等用户从详情页返回时再恢复，
   // 这样就不会一回来就跳到最顶上。
   const openDetails = (game: Game) => {
+    // 诊断：如果 id 为空或含特殊字符，路由 `/game/:id` 可能匹配不上，被兜底
+    // 路由 `Navigate to "/"` 拉回主页，表现就是"点详情闪一下没变化"。
+    if (!game.id || /[\/\\?#]/.test(game.id)) {
+      console.warn(
+        "[openDetails] 游戏 id 异常，无法跳转详情：id=",
+        JSON.stringify(game.id),
+        "name=",
+        game.name,
+      );
+    }
     const top = scrollRef.current?.scrollTop ?? 0;
     saveGridScroll(top);
-    navigate(`/game/${game.id}`);
+    navigate(`/game/${encodeURIComponent(game.id)}`);
   };
 
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex } =

@@ -16,9 +16,18 @@ pub struct RunningGame {
 }
 
 /// Tracks currently running games and accumulates playtime.
+/// 内部字段都是 Arc，所以可以 Clone——后台监控线程需要 move 一份到线程里，
+/// 与主线程共享同一份状态。
+#[derive(Clone)]
 pub struct ProcessManager {
     running: Arc<Mutex<HashMap<String, RunningGame>>>,
     started_at: Arc<Mutex<HashMap<String, Instant>>>,
+    /// 每个运行中游戏对应的子进程句柄，用于后台线程检测进程是否退出。
+    handles: Arc<Mutex<HashMap<String, Arc<Mutex<Option<std::process::Child>>>>>>,
+    /// 本会话内"最近一次退出"的游戏 → 该次运行时长（秒）。进程退出时由
+    /// 监控线程写入，用于详情页显示"游戏已退出 · 最近共运行 X"。游戏再次
+    /// 启动时会清掉该标记（回到 running 状态）。
+    last_exit: Arc<Mutex<HashMap<String, u64>>>,
 }
 
 impl ProcessManager {
@@ -26,7 +35,48 @@ impl ProcessManager {
         Self {
             running: Arc::new(Mutex::new(HashMap::new())),
             started_at: Arc::new(Mutex::new(HashMap::new())),
+            handles: Arc::new(Mutex::new(HashMap::new())),
+            last_exit: Arc::new(Mutex::new(HashMap::new())),
         }
+    }
+
+    /// 把一个已启动的子进程句柄登记到对应游戏名下，供后台监控线程使用。
+    /// `game_id` 为游戏主键，`child` 是 `launch` 返回的子进程句柄。
+    pub fn register_handle(&self, game_id: String, child: std::process::Child) {
+        self.handles.lock().unwrap().insert(
+            game_id,
+            Arc::new(Mutex::new(Some(child))),
+        );
+    }
+
+    /// 返回某个游戏对应的子进程句柄的共享引用（监控线程轮询用）。
+    pub fn take_handle(&self, game_id: &str) -> Option<Arc<Mutex<Option<std::process::Child>>>> {
+        self.handles.lock().unwrap().get(game_id).cloned()
+    }
+
+    /// 记录"某游戏最近一次退出"的时长（秒）。供监控线程在检测到进程退出时调用。
+    pub fn record_exit(&self, game_id: &str, seconds: u64) {
+        self.last_exit.lock().unwrap().insert(game_id.to_string(), seconds);
+    }
+
+    /// 查询某游戏"本会话最近一次退出"的时长（秒）。没有记录则返回 None。
+    pub fn last_exit_seconds(&self, game_id: &str) -> Option<u64> {
+        self.last_exit.lock().unwrap().get(game_id).copied()
+    }
+
+    /// 查询某游戏当前是否在运行（running 表里有记录）。
+    pub fn is_running(&self, game_id: &str) -> bool {
+        self.running.lock().unwrap().contains_key(game_id)
+    }
+
+    /// 查询某游戏已运行的秒数（从开始记录至今）。没在运行则返回 0。
+    pub fn elapsed_seconds(&self, game_id: &str) -> u64 {
+        self.started_at
+            .lock()
+            .unwrap()
+            .get(game_id)
+            .map(|i| i.elapsed().as_secs())
+            .unwrap_or(0)
     }
 
     /// Launches a game executable with the given arguments and working directory.
@@ -48,7 +98,7 @@ impl ProcessManager {
         args: Option<&str>,
         working_dir: Option<&str>,
         game_libraries: &[GameLibrary],
-    ) -> std::io::Result<()> {
+    ) -> std::io::Result<std::process::Child> {
         let exe_abs = resolve_path(exe, game_libraries);
         let mut cmd = std::process::Command::new(&exe_abs);
         if let Some(a) = args {
@@ -68,21 +118,34 @@ impl ProcessManager {
                 }
             }
         }
-        cmd.spawn()?;
-        Ok(())
+        let child = cmd.spawn()?;
+        Ok(child)
     }
 
-    pub fn start_tracking(&self, game: &Game) {
-        let now = chrono::Utc::now().timestamp() as u64;
-        self.running.lock().unwrap().insert(
+    /// 登记一个已启动的游戏及其子进程句柄。
+    /// `track` 为 true 时记录运行时长（running/started_at，用于累计 playtime）；
+    /// 无论是否 track，都会登记子进程句柄，供后台监控线程检测退出（详情页要
+    /// 显示"游戏在运行/已退出"的状态）。
+    pub fn start_tracking(&self, game: &Game, child: std::process::Child, track: bool) {
+        if track {
+            let now = chrono::Utc::now().timestamp() as u64;
+            self.running.lock().unwrap().insert(
+                game.id.clone(),
+                RunningGame {
+                    game_id: game.id.clone(),
+                    game_name: game.name.clone(),
+                    started_at: now,
+                },
+            );
+            self.started_at.lock().unwrap().insert(game.id.clone(), Instant::now());
+        }
+        // 游戏再次启动，清掉上次"最近退出"的标记，状态回到"运行中"。
+        self.last_exit.lock().unwrap().remove(&game.id);
+        // 登记子进程句柄，供后台监控线程检测退出。
+        self.handles.lock().unwrap().insert(
             game.id.clone(),
-            RunningGame {
-                game_id: game.id.clone(),
-                game_name: game.name.clone(),
-                started_at: now,
-            },
+            Arc::new(Mutex::new(Some(child))),
         );
-        self.started_at.lock().unwrap().insert(game.id.clone(), Instant::now());
     }
 
     /// Stops tracking a game and returns the accumulated playtime in seconds.
@@ -94,6 +157,8 @@ impl ProcessManager {
             played = start.elapsed().as_secs();
         }
         running.remove(game_id);
+        // 清理子进程句柄，释放对进程的引用。
+        self.handles.lock().unwrap().remove(game_id);
         played
     }
 
@@ -229,4 +294,50 @@ pub fn find_game_executable(install_dir: &str) -> Option<(PathBuf, PathBuf)> {
     let (_, path) = candidates.remove(0);
     let wd = path.parent().map(|p| p.to_path_buf()).unwrap_or(dir);
     Some((path, wd))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // 验证"记录最近一次退出时长"→"查询最近退出时长"的往返。
+    // 详情页"游戏已退出 · 最近共运行 X"就靠这两个方法联动。
+    #[test]
+    fn record_and_query_last_exit() {
+        let pm = ProcessManager::new();
+        assert_eq!(pm.last_exit_seconds("g1"), None);
+        pm.record_exit("g1", 1234);
+        assert_eq!(pm.last_exit_seconds("g1"), Some(1234));
+        assert_eq!(pm.last_exit_seconds("g2"), None);
+    }
+
+    // 未登记的游戏默认"未运行"（前端据此显示"游戏未运行"）。
+    #[test]
+    fn unregistered_game_is_not_running() {
+        let pm = ProcessManager::new();
+        assert!(!pm.is_running("whatever"));
+        assert_eq!(pm.elapsed_seconds("whatever"), 0);
+    }
+
+    // 一个游戏的"最近退出"记录，不会串到另一个游戏上（用独立 key 存）。
+    #[test]
+    fn last_exit_is_scoped_per_game() {
+        let pm = ProcessManager::new();
+        pm.record_exit("a", 10);
+        pm.record_exit("b", 99);
+        assert_eq!(pm.last_exit_seconds("a"), Some(10));
+        assert_eq!(pm.last_exit_seconds("b"), Some(99));
+    }
+
+    // 游戏再次启动（start_tracking）后，会清掉上次的"最近退出"标记，
+    // 让状态从"已退出"切回"运行中"。
+    #[test]
+    fn re_launch_clears_last_exit() {
+        let pm = ProcessManager::new();
+        pm.record_exit("g", 500);
+        assert_eq!(pm.last_exit_seconds("g"), Some(500));
+        // 模拟再次启动：直接清 last_exit 标记（start_tracking 里就是这个动作）。
+        pm.last_exit.lock().unwrap().remove("g");
+        assert_eq!(pm.last_exit_seconds("g"), None);
+    }
 }

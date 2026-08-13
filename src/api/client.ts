@@ -22,6 +22,9 @@ export const api = {
     call<boolean>("launch_game", { id, actionId: actionId ?? null }),
   stopGameTracking: (id: string) => call<number>("stop_game_tracking", { id }),
   runningGames: () => call<{ gameId: string; gameName: string; startedAt: number }[]>("running_games"),
+  // 查询某游戏的运行状态（running/stopped/never），详情页顶部展示用。
+  getRunState: (gameId: string) =>
+    call<{ state: string; elapsedSec: number; lastSessionSec: number }>("get_run_state", { gameId }),
   testScript: (script: string, gameId?: string) =>
     call<{ line: string; ok: boolean; error?: string }[]>("test_script", { script, gameId: gameId ?? null }),
   regenerateTags: () => call<number>("regenerate_tags"),
