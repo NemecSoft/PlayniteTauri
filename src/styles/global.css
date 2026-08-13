@@ -335,10 +335,10 @@ body,
 
 body {
   font-family: var(--font-ui);
-  /* 主背景用"顶部亮 → 底部主色"的柔和渐变，而不是纯色。
+  /* 主背景用 135deg 斜向渐变（"左上亮 → 右下主色"），不是顶底竖直。
      渐变两端取自当前配色的 --bg-top（通常比主色亮一档）和 --bg-base（主色），
-     这样所有 palette 自动获得渐变背景，无需逐个改色值。 */
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-base) 55%, var(--bg-base) 100%);
+     这样所有 palette 自动获得柔和斜向渐变背景，没有明显的顶/底分界。 */
+  background: linear-gradient(135deg, var(--bg-top) 0%, var(--bg-base) 60%, var(--bg-base) 100%);
   background-attachment: fixed;
   color: var(--text-primary);
   font-size: 13px;
@@ -352,6 +352,25 @@ body.theme-diamond {
 }
 body.theme-diamond .main-area {
   background: transparent;
+}
+
+/* 5 套新渐变配色（共用 theme-diamond class，用 data-theme-id 分发具体渐变）。
+   用户色卡：雾蓝/浅灰、墨黑/墨紫、赭红/深棕、桃粉/墨绿、苔绿/姜黄。
+   用 135deg 斜向（左上→右下）平滑过渡，不用 50% 硬切——避免中间有明显分界。 */
+body.theme-diamond[data-theme-id="p-grad-mist-blue"] {
+  background: linear-gradient(135deg, #0EA5E9 0%, #5BB8E8 35%, #97CFE5 65%, #D1D5DB 100%);
+}
+body.theme-diamond[data-theme-id="p-grad-ink-purple"] {
+  background: linear-gradient(135deg, #0B0C10 0%, #473965 35%, #7B5BB1 65%, #A855F7 100%);
+}
+body.theme-diamond[data-theme-id="p-grad-vermilion"] {
+  background: linear-gradient(135deg, #E11D48 0%, #B71D3F 35%, #7A1E2C 65%, #3F1F1F 100%);
+}
+body.theme-diamond[data-theme-id="p-grad-pink-green"] {
+  background: linear-gradient(135deg, #FBCFE8 0%, #E4B6D2 35%, #5F815E 65%, #065F46 100%);
+}
+body.theme-diamond[data-theme-id="p-grad-moss-yellow"] {
+  background: linear-gradient(135deg, #10B981 0%, #4FCA9F 35%, #B5C450 65%, #FBBF24 100%);
 }
   /* Global baseline: crisp default rendering. Glow/stroke effects are NOT
      inherited here — applying a stroke + multi-layer glow to every text
@@ -467,8 +486,8 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* 与 body 主背景一致：顶部亮 → 底部主色渐变，保证内容区不盖住 body 渐变。 */
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-base) 55%, var(--bg-base) 100%);
+  /* 与 body 主背景一致：135deg 斜向（左上亮 → 右下主色）渐变，保证内容区不盖住 body 渐变。 */
+  background: linear-gradient(135deg, var(--bg-top) 0%, var(--bg-base) 60%, var(--bg-base) 100%);
 }
 
 /* Videos tab */
@@ -717,7 +736,9 @@ textarea {
   padding: 4px 10px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-dim);
+  /* tab 文字默认用 text-primary（最亮），保证所有配色下都清晰可读。
+     之前用 text-dim 在中国红/赭红等红色底上对比度偏弱，"主页"等 tab 几乎看不见。 */
+  color: var(--text-primary);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -726,13 +747,18 @@ textarea {
   transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 .topbar-tab:hover {
-  color: var(--text);
-  background: var(--bg-hover);
+  /* hover 时保持 text-primary 颜色，加 accent 浅底作为反馈，不变字色（更稳定）。
+     之前 hover 用的 var(--text) 是坏引用（无 fallback），实际不生效。 */
+  color: var(--text-primary);
+  background: var(--bg-item-hover);
 }
 .topbar-tab.active {
-  color: var(--accent);
+  /* 当前激活 tab 用"亮黄色"硬编码（#FFE082 暖金），保证所有配色下都清晰醒目。
+     之前用 var(--accent) 在中国红下是 #E5B04B 纯金，对比度偏弱看不清；
+     改成最亮的暖金，所有深色/红色底上都是最亮的那抹黄。 */
+  color: #FFE082;
   background: var(--bg-base);
-  border-bottom-color: var(--accent);
+  border-bottom-color: #FFE082;
 }
 
 /* Right of the tabs: edition label (YunGame——黄金版) */
@@ -853,67 +879,73 @@ textarea {
   opacity: 1;
 }
 .sidebar.collapsed {
-  width: 0;
-  padding-left: 0;
-  padding-right: 0;
-  opacity: 0;
-  border-right-color: transparent;
-  pointer-events: none;
+  /* 折叠时 sidebar 不再是 width:0 硬收缩，而是宽度由 handle 内容自适应撑开。
+     这样主内容区被 flex 自动往右推（handle 不遮挡卡片），且能 hover 展开。 */
+  width: auto;
+  padding: 8px;
+  opacity: 1;
+  border-right-color: var(--border);
+  pointer-events: auto;
+  /* 折叠时 flex 居中 handle（不让 handle 顶部伸到 topbar 下覆盖搜索下拉）。 */
+  justify-content: center;
+  align-items: center;
+}
+/* handle 只在 sidebar 折叠时显示，作为提示窄条。 */
+.sidebar.collapsed .sidebar-handle {
+  display: flex;
+}
+.sidebar:not(.collapsed) .sidebar-handle {
+  display: none;
 }
 .sidebar-handle {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  /* 默认向右露 14px（文字"鼠标移到这里..."完整可见）：
-     handle 宽 22px，向左 translateX(-8px) → 右边缘在 +14px。
-     鼠标从屏幕最左进入能触发 hover（因为右半 14px 在屏幕内）。 */
-  transform: translateX(-8px) translateY(-50%);
-  width: 22px;
-  /* 高度随竖排文字撑开。 */
+  /* 占布局流（非 fixed），在 sidebar 折叠时撑开自适应宽度——主内容被 flex
+     推开，天然不遮挡卡片。之前用 position: fixed 覆盖在主内容上必然遮挡。 */
+  position: relative;
+  width: auto;
   height: auto;
   min-height: 220px;
-  padding: 14px 2px;
+  padding: 14px 8px;
   background: var(--accent-soft);
   border: 1px solid var(--border);
-  border-left: none;
-  border-radius: 0 8px 8px 0;
-  color: var(--accent-hover);
+  border-radius: 8px;
+  /* 文字用最亮的暖金（#FFE082），所有配色下都清晰可读；
+     之前用 var(--accent-hover) 在中国红下是 #B33445 暗红、对比度偏弱。 */
+  color: #FFE082;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 50;
-  /* 默认带左右轻微摆动的呼吸动画，让用户感知"这里有东西可交互"；
-     hover/focus 时把动画停掉，避免和滑入动画叠加。 */
-  animation: sidebar-handle-pulse 2.4s ease-in-out infinite;
-  transition: opacity 0.18s ease, transform 0.2s ease, background 0.15s, color 0.15s;
-  opacity: 0;
-  pointer-events: none;
+  /* 默认带"发光→变暗→发光"的呼吸光效（box-shadow 亮/暗循环），
+     告诉用户"这里有东西可交互"；hover/focus 时停掉动画 + 变金底。 */
+  animation: sidebar-handle-glow 2.4s ease-in-out infinite;
+  transition: background 0.15s, color 0.15s;
   /* Render the hint text vertically (top-to-bottom, single column). */
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 13px;
+  font-size: 15px; /* 比之前 13px 大 2 号，竖排提示更清晰 */
   font-weight: 600;
   letter-spacing: 2px;
   user-select: none;
+  /* handle 不要溢出 sidebar 容器，避免顶部覆盖 topbar 下的搜索下拉。 */
+  max-height: 50vh;
 }
 .sidebar-handle:hover,
 .sidebar-handle:focus-visible {
-  /* hover/focus 时停掉脉动、保持位置（不滑到 0 避免压到第一张卡片，
-     因为游戏网格有 left padding 20px 隔开），但背景变金、字体变白——
+  /* hover/focus 时停掉呼吸光效、背景变金、文字变白——
      给用户清晰的"找到这个提示"的反馈。 */
   animation: none;
   background: var(--accent);
   color: #fff;
 }
 
-/* 呼吸/脉动动画：左右轻微摆动（4px 幅度），告诉用户"这里有交互"。 */
-@keyframes sidebar-handle-pulse {
+/* 呼吸/发光动画：box-shadow 由弱到强再到弱，循环 2.4s。
+   "发光→变暗→发光"效果——告诉用户"这里有交互"但不会左右移动干扰卡片布局。 */
+@keyframes sidebar-handle-glow {
   0%, 100% {
-    transform: translateX(-8px) translateY(-50%);
+    box-shadow: 0 0 4px rgba(255, 224, 130, 0.25);
   }
   50% {
-    transform: translateX(-4px) translateY(-50%);
+    box-shadow: 0 0 18px rgba(255, 224, 130, 0.7);
   }
 }
 /* 兼容"用户偏好减少动效"（无障碍）：关闭脉动，保持静态。 */
@@ -1376,9 +1408,9 @@ textarea {
      covers any other place that still relies on the plain auto-fill grid. */
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  /* 左侧多留点 padding：给最左边的 sidebar-handle 提示句（hover 时展开到 22px）
-     留空间，避免 hover 时 handle 滑入挤压到第一张游戏卡片。 */
-  padding: 2px 2px 2px 20px;
+  /* 侧边栏折叠时的 handle 现在占布局流（flex 自动推开主内容），
+     网格本身不需要额外留左 padding 了，用默认小值即可。 */
+  padding: 2px;
 }
 
 /* Windowed grid (useVirtualGrid): the scroll container stays .content. The

@@ -94,8 +94,24 @@ export default function TopBar() {
   };
 
   const onFullscreenToggle = async () => {
-    const fs = await api.toggleFullscreen();
-    setIsFullscreen(fs);
+    // 真正的全屏：优先用 WebView 原生 requestFullscreen（OS 级全屏，
+    // 会自动隐藏任务栏、占满整个显示器），失败时 fallback 到 Tauri 的
+    // set_fullscreen（在 Windows 上对 borderless 窗口可能无效）。
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+        return;
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+        return;
+      }
+    } catch {
+      // WebView requestFullscreen 失败（如无用户手势）时 fallback 到 Tauri API。
+      const fs = await api.toggleFullscreen();
+      setIsFullscreen(fs);
+    }
   };
 
   const onClose = () => {

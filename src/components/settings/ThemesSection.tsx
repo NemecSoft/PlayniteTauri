@@ -155,9 +155,13 @@ export default function ThemesSection() {
                   applyPaletteTheme(p.palette);
                   storeThemeId(p.id);
                   setPaletteId(p.id);
-                  // 切到"钻石版"等需要自定义背景的 palette 时，给 body 加 class
-                  // 触发专属 CSS（其他 palette 通过 data-theme-id 走默认渐变）。
-                  document.body.classList.toggle("theme-diamond", p.id === "p-diamond");
+                  // 切到带 gradientClass 的 palette（如钻石版、5 套新渐变配色）
+                  // 时，给 body 加专属 class 触发 CSS 里的渐变背景；切回普通
+                  // palette 时把专属 class 去掉。其他 palette 走默认的顶底渐变。
+                  document.body.classList.toggle(
+                    "theme-diamond",
+                    p.gradientClass === "theme-diamond",
+                  );
                   document.body.dataset.themeId = p.id;
                 }}
                 onKeyDown={(e) => {
@@ -166,6 +170,10 @@ export default function ThemesSection() {
                     applyPaletteTheme(p.palette);
                     storeThemeId(p.id);
                     setPaletteId(p.id);
+                    document.body.classList.toggle(
+                      "theme-diamond",
+                      p.gradientClass === "theme-diamond",
+                    );
                     document.body.dataset.themeId = p.id;
                   }
                 }}

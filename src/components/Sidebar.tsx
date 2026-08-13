@@ -91,52 +91,56 @@ export default function Sidebar() {
   }, [games]);
 
   return (
-    <>
-      <div
-        className={`sidebar-handle ${sidebarVisible ? "hidden" : ""}`}
-        onMouseEnter={() => setSidebarVisible(true)}
-        onClick={() => setSidebarVisible(true)}
-        title={t("sidebar_open")}
-      >
-        {t("sidebar_handle_hint")}
-      </div>
-
-      <aside
-        className={`sidebar ${sidebarVisible ? "" : "collapsed"}`}
-        style={{ "--sidebar-width": `${liveWidth}px` } as CSSProperties}
-        onMouseLeave={() => setSidebarVisible(false)}
-      >
-        <div className="sidebar-tag-list">
-          {tagStats.map(({ name, count }) => {
-            const checked = selectedTags.includes(name);
-            return (
-              <label
-                key={name}
-                className={`sidebar-tag ${checked ? "checked" : ""}`}
-                title={`#${name} (${count})`}
-              >
-                <span className="sidebar-tag-name">#{name}</span>
-                <span className="sidebar-tag-meta">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleTag(name)}
-                  />
-                  <span className="count">{count}</span>
-                </span>
-              </label>
-            );
-          })}
-          {tagStats.length === 0 && (
-            <div className="sidebar-empty">{t("sidebar_noTags")}</div>
-          )}
-        </div>
+    <aside
+      className={`sidebar ${sidebarVisible ? "" : "collapsed"}`}
+      style={{ "--sidebar-width": `${liveWidth}px` } as CSSProperties}
+      onMouseLeave={() => setSidebarVisible(false)}
+    >
+      {sidebarVisible ? (
+        <>
+          <div className="sidebar-tag-list">
+            {tagStats.map(({ name, count }) => {
+              const checked = selectedTags.includes(name);
+              return (
+                <label
+                  key={name}
+                  className={`sidebar-tag ${checked ? "checked" : ""}`}
+                  title={`#${name} (${count})`}
+                >
+                  <span className="sidebar-tag-name">#{name}</span>
+                  <span className="sidebar-tag-meta">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleTag(name)}
+                    />
+                    <span className="count">{count}</span>
+                  </span>
+                </label>
+              );
+            })}
+            {tagStats.length === 0 && (
+              <div className="sidebar-empty">{t("sidebar_noTags")}</div>
+            )}
+          </div>
+          <div
+            className="sidebar-resizer"
+            onMouseDown={onResizeMouseDown}
+            title={t("sidebar_resize")}
+          />
+        </>
+      ) : (
+        // 折叠时：显示竖排提示窄条。它占布局流宽度，主内容区会被 flex 自动推开，
+        // 从而不会遮挡游戏卡片（比之前的 position: fixed 覆盖方案更稳）。
         <div
-          className="sidebar-resizer"
-          onMouseDown={onResizeMouseDown}
-          title={t("sidebar_resize")}
-        />
-      </aside>
-    </>
+          className="sidebar-handle"
+          onMouseEnter={() => setSidebarVisible(true)}
+          onClick={() => setSidebarVisible(true)}
+          title={t("sidebar_open")}
+        >
+          {t("sidebar_handle_hint")}
+        </div>
+      )}
+    </aside>
   );
 }

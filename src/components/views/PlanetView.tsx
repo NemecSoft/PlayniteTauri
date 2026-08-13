@@ -3,7 +3,7 @@
 // 它带 three + cannon，只在进入时才加载。
 
 import { Component, lazy, Suspense, type ReactNode, useState } from "react";
-import PlanetScene from "../planet/PlanetScene";
+import BoardScene from "../board/BoardScene";
 import { useI18n } from "../../i18n";
 import type { Zone, ZoneId } from "../../utils/planet/types";
 
@@ -21,7 +21,9 @@ class PlanetErrorBoundary extends Component<
     return { failed: true };
   }
 
-  componentDidCatch() {
+  componentDidCatch(err: unknown, info: unknown) {
+    // 打印被吞掉的原始错误，方便排查 3D 渲染异常（否则白屏但控制台看不到原因）。
+    console.error("[PlanetErrorBoundary] 3D 视图渲染异常:", err, info);
     this.props.onError();
   }
 
@@ -64,7 +66,7 @@ export default function PlanetView({ zones }: Props) {
     );
   }
 
-  // 星球模式：点击分区进入对应地图（目前只有恐怖谷）
+  // 棋盘模式：点击恐怖谷游戏进入对应地图
   const handleEnterZone = (zoneId: ZoneId) => {
     if (zoneId === "horror") setMode("horrorValley");
   };
@@ -72,7 +74,7 @@ export default function PlanetView({ zones }: Props) {
   return (
     <div className="planet-container">
       <PlanetErrorBoundary onError={() => setWebglFailed(true)}>
-        <PlanetScene
+        <BoardScene
           zones={zones}
           onWebGLFailed={() => setWebglFailed(true)}
           onEnterZone={handleEnterZone}

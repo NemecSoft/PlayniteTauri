@@ -97,11 +97,13 @@ export function storeThemeId(id: string | null): void {
   else localStorage.removeItem(STORAGE_KEY);
 }
 
-/** Restore the previously chosen library theme on startup. */
-export function restoreLibraryTheme(library: {
-  id: string;
-  palette: ThemePaletteTokens;
-}[]): void {
+/** Restore the previously chosen library theme on startup.
+ *  `gradientClass` 可选：传入当前选中 palette 的 gradientClass 字段，
+ *  用于恢复 body 专属 class（如钻石版、5 套新渐变配色）。 */
+export function restoreLibraryTheme(
+  library: { id: string; palette: ThemePaletteTokens }[],
+  gradientClass?: string,
+): void {
   const id = getStoredThemeId();
   if (!id) return;
   const entry = library.find((t) => t.id === id);
@@ -109,7 +111,10 @@ export function restoreLibraryTheme(library: {
     applyPaletteTheme(entry.palette);
     // 让"钻石版渐变"这类需要专属背景的 palette 在重启后也能正确触发。
     document.body.dataset.themeId = id;
-    document.body.classList.toggle("theme-diamond", id === "p-diamond");
+    document.body.classList.toggle(
+      "theme-diamond",
+      gradientClass === "theme-diamond",
+    );
   }
 }
 

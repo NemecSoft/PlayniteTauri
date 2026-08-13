@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { restoreLibraryTheme, restoreStyle } from "./utils/themeApply";
+import { restoreLibraryTheme, restoreStyle, getStoredThemeId } from "./utils/themeApply";
 import { themeLibrary } from "./utils/themeLibrary";
 import { styleLibrary } from "./utils/styleLibrary";
 // Initialize i18next (imported for its side effect).
@@ -43,7 +43,13 @@ window.addEventListener("unhandledrejection", (e) => {
 try {
   // Restore the user's previously chosen library palette + style before first
   // paint, if any (both are injected on :root).
-  restoreLibraryTheme(themeLibrary);
+  // 启动时从 localStorage 拿选中的 palette id，查出对应 gradientClass 一并
+  // 恢复（用于钻石版/5 套新渐变配色这些带专属背景的 palette）。
+  const storedId = getStoredThemeId();
+  const initialGradientClass = storedId
+    ? themeLibrary.find((t) => t.id === storedId)?.gradientClass
+    : undefined;
+  restoreLibraryTheme(themeLibrary, initialGradientClass);
   restoreStyle(styleLibrary);
 
   // 启动时序（治本：避免"先闪英文再切中文"的闪烁）：
