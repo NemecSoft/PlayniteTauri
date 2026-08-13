@@ -133,6 +133,10 @@ pub fn launch_game(
                 }
             }
         } else {
+            eprintln!(
+                "[launch_game] 启动失败（无 action）: id={} name={:?} actions.len={} install_dir={:?}",
+                game.id, game.name, game.actions.len(), game.install_directory
+            );
             return Err(crate::AppError::Launch("游戏没有可启动的指令".into()));
         }
     } else {
@@ -159,6 +163,10 @@ pub fn launch_game(
                 )));
             }
         } else {
+            eprintln!(
+                "[launch_game] 启动失败（无 play task 且无 install_dir）: id={} name={:?} install_dir={:?}",
+                game.id, game.name, game.install_directory
+            );
             return Err(crate::AppError::Launch(
                 "游戏未配置启动指令且没有安装目录".into(),
             ));
