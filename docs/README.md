@@ -22,6 +22,7 @@
 - [视图系统](./design/views.md) — 网格 / 列表 / 详情 + 顶层标签页（主页 / 视频 / 工具）
 - [大列表虚拟滚动](./design/virtual-scrolling.md) — 千级游戏库下只渲染视口附近的行，降低 DOM 数量与滚动开销
 - [管理端（Playnite.Admin.exe）](./design/admin.md) — 独立管理程序、游戏/用户管理、与客户端同库
+- [游戏库管理（权威文档）](./design/game-library-management.md) — 根本业务原则：所有游戏必须属于游戏库、路径以游戏库为根、迁移友好
 - [主题系统（多主题即时切换）](./design/theming.md) — 卡通 / 赛博朋克 / 孟菲斯 / 新拟态 / 美漫 / 吉卜力 / 中国风
 - [封面图库（CoverImages 自动匹配）](./design/covers.md) — 本地图片按中文名自动设置封面
 - [游戏静态详情页（Game_Details 容器）](./design/game-detail.md) — axum + tower-http ServeDir 加载任意静态网站（含视频 Range）
