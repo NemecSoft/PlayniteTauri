@@ -3,7 +3,7 @@
 
 import { Component, useEffect, useRef, useState, type ReactNode, type ErrorInfo } from "react";
 import { AnimatePresence } from "framer-motion";
-import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import LoginScreen from "./components/LoginScreen";
@@ -135,6 +135,8 @@ function AppShell() {
           <Routes>
             <Route path="/" element={<AppBody />} />
             <Route path="/game/:id" element={<GameDetailPage />} />
+            {/* 兜底：任何未匹配路径回到主页，避免空白 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </RoutesErrorBoundary>
         <ToastContainer />
