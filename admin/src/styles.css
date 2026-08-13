@@ -238,6 +238,11 @@ button.danger:hover {
 .admin-modal h3 {
   margin: 0 0 16px;
 }
+.dirty-mark {
+  color: #f59e0b;
+  font-size: 14px;
+  margin-left: 4px;
+}
 .action-block {
   margin: 14px 0 4px;
   padding: 12px;
@@ -487,6 +492,24 @@ button.danger:hover {
 }
 .path-row input {
   flex: 1;
+}
+.lib-prefix {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  background: #eef0f3;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.lib-root-hint {
+  font-size: 11px;
+  color: #6b7280;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-self: center;
 }
 .path-row button {
   white-space: nowrap;

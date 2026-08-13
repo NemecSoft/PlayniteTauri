@@ -7,8 +7,18 @@ import { matchSearch } from "./search";
 // only be closed via an explicit button (取消 / 保存). This prevents accidental
 // data loss from mis-clicks, and also ignores drags that start inside the
 // dialog (text selection spilling onto the backdrop).
-function ModalMask({ children }: { children: React.ReactNode }) {
-  return <div className="admin-modal-mask">{children}</div>;
+function ModalMask({ children, onMaskClick }: { children: React.ReactNode; onMaskClick?: () => void }) {
+  // 点遮罩（不含子元素）触发关闭请求，便于用 ESC / 点外面关闭。
+  return (
+    <div
+      className="admin-modal-mask"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onMaskClick?.();
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 type Tab = "games" | "users" | "libraries";
@@ -134,6 +144,38 @@ export default function AdminApp() {
     }
   };
 
+  // ------------ 路径与游戏库联动 helpers ------------
+  // 把用户填的"完整 path"（含 `{Gamelibrary2}\`）拆成"游戏库名 + 相对路径"，
+  // 让 UI 只显示/编辑相对路径，游戏库名作为只读前缀。
+  const splitActionPath = (fullPath: string, libName: string): { rel: string } => {
+    if (!fullPath) return { rel: "" };
+    const prefix = `{${libName}}\\`;
+    if (libName && fullPath.toLowerCase().startsWith(prefix.toLowerCase())) {
+      return { rel: fullPath.slice(prefix.length) };
+    }
+    return { rel: fullPath };
+  };
+
+  // 把"游戏库名 + 相对路径"拼回完整 path（带占位符），用于存到 actions[i].path。
+  const joinActionPath = (libName: string, rel: string): string => {
+    if (!libName) return rel;
+    const trimmed = rel.replace(/^[\\/]+/, "");
+    return `{${libName}}\\${trimmed}`;
+  };
+
+  // 把一个绝对路径（来自"浏览"）转成"相对当前游戏库根"的相对路径。
+  // 若不在该游戏库下，返回原值（用户可能选到了别处的文件）。
+  const makeRelativeToLib = (absolutePath: string, libRoot: string): string => {
+    if (!absolutePath || !libRoot) return absolutePath;
+    const a = absolutePath.replace(/[\\/]+$/, "").toLowerCase();
+    const b = libRoot.replace(/[\\/]+$/, "").toLowerCase();
+    if (a === b) return "";
+    if (a.startsWith(b + "\\") || a.startsWith(b + "/")) {
+      return absolutePath.slice(libRoot.length).replace(/^[\\/]+/, "");
+    }
+    return absolutePath;
+  };
+
   /** Derive the default working directory from a launch path.
    *
    * The working directory is always the **game's own directory**:
@@ -210,10 +252,11 @@ export default function AdminApp() {
     if (Array.isArray(sel) && sel.length > 0) return sel[0];
     return "";
   };
-  const pickExecutable = async (): Promise<string> => {
+  const pickExecutable = async (defaultPath?: string): Promise<string> => {
     try {
       const sel: string | string[] | null = await open({
         title: "选择可执行文件",
+        defaultPath,
         multiple: false,
         filters: [{ name: "程序", extensions: ["exe", "bat", "cmd", "lnk"] }],
       });
@@ -411,7 +454,9 @@ export default function AdminApp() {
     };
     try {
       await call("save_game", { payload: { game: payload } });
-      showToast(editingGame?.id ? "已保存游戏" : "已新增游戏");
+      // 文案明确带上游戏名，并清楚区分"已保存"vs"已新增"，避免用户分不清。
+      const savedName = gameForm.name.trim() || "(未命名)";
+      showToast(editingGame?.id ? `已保存《${savedName}》` : `已新增《${savedName}》`);
       setEditingGame(null);
       await reload();
     } catch (e) {
@@ -817,9 +862,15 @@ export default function AdminApp() {
 
       {/* ---------------- Game editor modal (multi-tab) ---------------- */}
       {editingGame && (
-        <ModalMask>
+        <ModalMask onMaskClick={() => requestCloseGame()}>
           <div className="admin-modal admin-modal-wide" onClick={(e) => e.stopPropagation()}>
-            <h3>{editingGame.id ? "编辑游戏" : "新增游戏"}</h3>
+            {/* 标题清楚显示模式：编辑《name》/ 新增游戏；未保存改动时给个标记 */}
+            <h3>
+              {editingGame.id
+                ? `编辑游戏：${editingGame.name || "(未命名)"}`
+                : "新增游戏"}
+              {isGameDirty() && <span className="dirty-mark" title="有未保存的修改"> ●</span>}
+            </h3>
 
             <div className="edit-tabs">
               <button className={editTab === "general" ? "active" : ""} onClick={() => setEditTab("general")}>
@@ -1035,26 +1086,67 @@ export default function AdminApp() {
                             </select>
                           </label>
                           <label className="wide">
-                            {a.type === "URL" ? "URL 地址" : "路径（支持 {GamelibraryN} 占位符）"}
+                            {a.type === "URL"
+                              ? "URL 地址"
+                              : gameForm.gameLibrary?.trim()
+                              ? "可执行文件（在「通用」页选定的游戏库下）"
+                              : "路径（支持 {GamelibraryN} 占位符）"}
                             <div className="path-row">
-                              <input
-                                value={a.path || ""}
-                                placeholder={a.type === "URL" ? "https://…" : "{Gamelibrary1}\\Game\\Game.exe"}
-                                onChange={(e) => {
-                                  const newPath = e.target.value;
-                                  const patch: Partial<GameAction> = { path: newPath };
-                                  // While the user hasn't customized workingDir,
-                                  // keep it in sync with the exe directory.
-                                  if (!customWorkingDirRef.current[a.id]) {
-                                    patch.workingDir = deriveWorkingDir(newPath);
-                                  }
-                                  updateAction(idx, patch);
-                                }}
-                              />
+                              {/* 当选了游戏库 + 文件型：联动游戏库根；path 拆成"库名 chip + 相对路径" */}
+                              {a.type !== "URL" && gameForm.gameLibrary?.trim() ? (
+                                <>
+                                  <span className="lib-prefix">{`{${gameForm.gameLibrary.trim()}}\\`}</span>
+                                  <input
+                                    value={splitActionPath(a.path || "", gameForm.gameLibrary.trim()).rel}
+                                    placeholder="Grain Rot\\Helden.exe"
+                                    onChange={(e) => {
+                                      const rel = e.target.value;
+                                      const full = joinActionPath(gameForm.gameLibrary!.trim(), rel);
+                                      const patch: Partial<GameAction> = { path: full };
+                                      if (!customWorkingDirRef.current[a.id]) {
+                                        patch.workingDir = deriveWorkingDir(full);
+                                      }
+                                      updateAction(idx, patch);
+                                    }}
+                                  />
+                                  {(() => {
+                                    const lib = gameLibraries.find((l) => l.name === gameForm.gameLibrary!.trim());
+                                    return lib ? (
+                                      <span className="lib-root-hint" title={`游戏库根：${lib.path}`}>
+                                        根: {lib.path}
+                                      </span>
+                                    ) : null;
+                                  })()}
+                                </>
+                              ) : (
+                                <input
+                                  value={a.path || ""}
+                                  placeholder={a.type === "URL" ? "https://…" : "{Gamelibrary1}\\Game\\Game.exe"}
+                                  onChange={(e) => {
+                                    const newPath = e.target.value;
+                                    const patch: Partial<GameAction> = { path: newPath };
+                                    if (!customWorkingDirRef.current[a.id]) {
+                                      patch.workingDir = deriveWorkingDir(newPath);
+                                    }
+                                    updateAction(idx, patch);
+                                  }}
+                                />
+                              )}
                               {a.type !== "URL" && (
                                 <button type="button" onClick={async () => {
-                                  const p = await pickExecutable();
-                                  if (p) updateAction(idx, { path: p });
+                                  // 联动游戏库根：浏览从该库的根目录开始；选中后转成"库名+相对路径"存。
+                                  const libName = gameForm.gameLibrary?.trim();
+                                  const lib = libName ? gameLibraries.find((l) => l.name === libName) : undefined;
+                                  const picked = await pickExecutable(lib?.path);
+                                  if (!picked) return;
+                                  const finalPath = lib
+                                    ? joinActionPath(libName!, makeRelativeToLib(picked, lib.path))
+                                    : picked;
+                                  const patch: Partial<GameAction> = { path: finalPath };
+                                  if (!customWorkingDirRef.current[a.id]) {
+                                    patch.workingDir = deriveWorkingDir(finalPath);
+                                  }
+                                  updateAction(idx, patch);
                                 }}>浏览…</button>
                               )}
                               {a.type !== "URL" && (
@@ -1289,7 +1381,7 @@ export default function AdminApp() {
             <div className="modal-actions">
               <button onClick={requestCloseGame}>取消</button>
               <button className="primary" onClick={() => void saveGame()}>
-                保存
+                {editingGame.id ? "保存修改" : "新增游戏"}
               </button>
             </div>
           </div>

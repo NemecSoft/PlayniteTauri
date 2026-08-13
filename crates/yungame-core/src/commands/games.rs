@@ -217,21 +217,42 @@ pub fn test_script(
     script: String,
     game_id: Option<String>,
 ) -> crate::Result<Vec<crate::script_runner::ScriptLineResult>> {
+    // 工作目录优先级：游戏工作目录（从 is_play_action 路径解析）→ 游戏库根 →
+    // 游戏安装目录 → 应用目录。脚本里的相对路径（如 ./cn.exe）按这个目录解析，
+    // 与实际启动游戏时的工作目录一致（联动"执行目录"）。
     let cwd = if let Some(id) = &game_id {
         let db = state.db.lock().unwrap();
-        // 先取游戏所属游戏库的名字
-        let lib_name = db.get_game(id)?.and_then(|g| g.game_library);
-        // 再查 settings 里的游戏库列表，找到对应 path
-        let settings = db.load_settings().ok();
-        let lib_path = lib_name.as_deref().and_then(|n| {
-            settings
-                .as_ref()
-                .and_then(|s| s.game_libraries.iter().find(|l| l.name == n))
-                .map(|l| l.path.clone())
+        let game = db.get_game(id)?;
+        let libs = db.load_settings().ok().map(|s| s.game_libraries).unwrap_or_default();
+        let lib_root: Option<String> = game
+            .as_ref()
+            .and_then(|g| g.game_library.as_deref())
+            .and_then(|n| libs.iter().find(|l| l.name == n))
+            .map(|l| l.path.clone());
+
+        // 从游戏的"作为启动指令"路径解析出工作目录（去掉文件名）。
+        let workdir_from_action: Option<String> = game.as_ref().and_then(|g| {
+            g.actions
+                .iter()
+                .find(|a| a.is_play_action && a.r#type == "File")
+                .and_then(|a| a.path.as_deref())
+                .filter(|p| !p.trim().is_empty())
+                .map(|p| crate::process::resolve_path(p, &libs))
+                .map(|resolved| {
+                    let pb = std::path::PathBuf::from(&resolved);
+                    // 去掉文件名，保留目录
+                    if pb.extension().is_some() {
+                        pb.parent().map(|p| p.to_string_lossy().to_string())
+                    } else {
+                        Some(resolved)
+                    }
+                })
+                .flatten()
         });
-        // 回退到游戏安装目录，最后回退到应用目录
-        let dir = lib_path
-            .or_else(|| db.get_game(id).ok().flatten().and_then(|g| g.install_directory))
+
+        let dir = workdir_from_action
+            .or(lib_root.clone())
+            .or_else(|| game.as_ref().and_then(|g| g.install_directory.clone()))
             .unwrap_or_else(|| crate::settings::AppPaths::config_root().to_string_lossy().to_string());
         Some(std::path::PathBuf::from(dir))
     } else {
